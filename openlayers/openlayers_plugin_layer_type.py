@@ -5,8 +5,8 @@ OpenLayers Plugin
 A QGIS plugin
 
                              -------------------
-begin                : 2009-11-30
-copyright            : (C) 2009 by Pirmin Kalberer, Sourcepole
+begin                : 2010-02-03
+copyright            : (C) 2010 by Pirmin Kalberer, Sourcepole
 email                : pka at sourcepole.ch
  ***************************************************************************/
 
@@ -18,16 +18,18 @@ email                : pka at sourcepole.ch
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
- This script initializes the plugin, making it known to QGIS.
 """
-def name():
-  return "OpenLayers Plugin"
-def description():
-  return "TMS, Google Maps, Yahoo Maps, Bing Maps layers and more"
-def version():
-  return "Version 0.2"
-def qgisMinimumVersion():
-  return "1.5"
-def classFactory(iface):
-  from openlayers_plugin import OpenlayersPlugin
-  return OpenlayersPlugin(iface)
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
+from PyQt4.QtWebKit import *
+from qgis.core import *
+
+from openlayers_layer import OpenlayersLayer
+
+class OpenlayersPluginLayerType(QgsPluginLayerType):
+
+  def __init__(self):
+    QgsPluginLayerType.__init__(self, OpenlayersLayer.LAYER_TYPE)
+
+  def createLayer(self):
+    return OpenlayersLayer()

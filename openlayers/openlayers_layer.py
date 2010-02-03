@@ -24,6 +24,8 @@ from PyQt4.QtGui import *
 from PyQt4.QtWebKit import *
 from qgis.core import *
 
+import os.path
+
 class OpenlayersLayer(QgsPluginLayer):
 
   LAYER_TYPE="openlayers"
@@ -43,7 +45,7 @@ class OpenlayersLayer(QgsPluginLayer):
 
     if not self.loaded:
       self.page = QWebPage()
-      self.page.mainFrame().load(QUrl("file:///home/pi/apps/share/qgis/python/plugins/openlayers/html/google.html"))
+      self.page.mainFrame().load(QUrl(os.path.dirname( __file__ ) + "/html/google.html"))
       QObject.connect(self.page, SIGNAL("loadFinished(bool)"), self.loadFinished)
       QObject.connect(self.page, SIGNAL("loadProgress(int)"), self.loadProgress)
     else:

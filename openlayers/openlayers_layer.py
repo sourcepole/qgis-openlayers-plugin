@@ -32,7 +32,9 @@ import os.path
 
 class OpenlayersLayer(QgsPluginLayer):
 
-  LAYER_TYPE="openlayers"
+  LAYER_TYPE = "openlayers"
+  MAX_ZOOM_LEVEL = 15
+  SCALE_ON_MAX_ZOOM = 16925 # QGIS scale
 
   def __init__(self):
     QgsPluginLayer.__init__(self, OpenlayersLayer.LAYER_TYPE, "OpenLayers plugin layer")

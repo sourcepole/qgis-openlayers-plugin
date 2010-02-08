@@ -25,6 +25,7 @@ from PyQt4.QtWebKit import *
 from qgis.core import *
 
 import resources
+import math
 
 from openlayers_layer import OpenlayersLayer
 from openlayers_plugin_layer_type import OpenlayersPluginLayerType
@@ -46,7 +47,35 @@ class OpenlayersPlugin:
     self.iface.addPluginToMenu("OpenLayers plugin", self.action)
 
     # Register plugin layer type
-    self.creatorId = QgsPluginLayerRegistry.instance().addPluginLayerType(OpenlayersPluginLayerType())
+    QgsPluginLayerRegistry.instance().addPluginLayerType(OpenlayersPluginLayerType())
+
+    # Add zoom level slider
+    layoutWidget = QWidget()
+    layout = QVBoxLayout(layoutWidget)
+
+    self.slider = QSlider(Qt.Horizontal, layoutWidget)
+    self.slider.setTickInterval(1)
+    self.slider.setTickPosition(QSlider.TicksAbove)
+    self.slider.setMinimum(0)
+    self.slider.setMaximum(OpenlayersLayer.MAX_ZOOM_LEVEL)
+    self.slider.setSingleStep(0)
+    self.slider.setPageStep(0)
+    self.slider.setTracking(False)
+    layout.addWidget(self.slider)
+
+    self.zoomLabel = QLabel(layoutWidget)
+    self.zoomLabel.setAlignment(Qt.AlignHCenter)
+    layout.addWidget(self.zoomLabel)
+
+    self.dw = QDockWidget("OpenLayers zoom level", None)
+    self.dw.setObjectName("OpenLayersZoomLevel")
+    self.dw.setAllowedAreas(Qt.LeftDockWidgetArea)
+    self.dw.setWidget(layoutWidget)
+    self.iface.addDockWidget(Qt.LeftDockWidgetArea, self.dw)
+
+    QObject.connect(self.slider, SIGNAL("valueChanged(int)"), self.zoomLevelChanged)
+    QObject.connect(self.slider, SIGNAL("sliderReleased()"), self.zoomSliderReleased)
+    QObject.connect(self.iface.mapCanvas(), SIGNAL("scaleChanged(double)"), self.scaleChanged)
 
   def unload(self):
     # Remove the plugin menu item and icon
@@ -56,7 +85,51 @@ class OpenlayersPlugin:
     # Unregister plugin layer type
     QgsPluginLayerRegistry.instance().removePluginLayerType(OpenlayersLayer.LAYER_TYPE)
 
+    # Remove zoom level slider
+    QObject.disconnect(self.slider, SIGNAL("valueChanged(int)"), self.zoomLevelChanged)
+    QObject.disconnect(self.slider, SIGNAL("sliderReleased()"), self.zoomSliderReleased)
+    QObject.disconnect(self.iface.mapCanvas(), SIGNAL("scaleChanged(double)"), self.scaleChanged)
+
+    self.iface.removeDockWidget(self.dw)
+    del self.dw
+    self.dw = None
+    del self.slider
+    self.slider = None
+
   def run(self):
     layer = OpenlayersLayer()
     if layer.isValid():
       QgsMapLayerRegistry.instance().addMapLayer(layer)
+
+  def zoomLevelChanged(self, zoom):
+    scale = self.iface.mapCanvas().mapRenderer().scale()
+    if scale > 0:
+      # adjust QGIS scale
+      targetScale = math.pow(2, (OpenlayersLayer.MAX_ZOOM_LEVEL - zoom)) * OpenlayersLayer.SCALE_ON_MAX_ZOOM
+      QObject.disconnect(self.iface.mapCanvas(), SIGNAL("scaleChanged(double)"), self.scaleChanged)
+      self.iface.mapCanvas().zoomByFactor(targetScale / scale)
+      QObject.connect(self.iface.mapCanvas(), SIGNAL("scaleChanged(double)"), self.scaleChanged)
+
+    # update zoom label
+    self.zoomLabel.setText("%d" % zoom)
+
+  def zoomSliderReleased(self):
+    if self.slider.value() == self.slider.sliderPosition():
+      # update scale when clicking on current slider position
+      self.zoomLevelChanged(self.slider.value())
+
+  def scaleChanged(self, scale):
+    if scale > 0:
+      zoom = OpenlayersLayer.MAX_ZOOM_LEVEL - math.log((scale / OpenlayersLayer.SCALE_ON_MAX_ZOOM), 2)
+      zoomLevel = math.floor(zoom + 0.5)
+
+      # set zoom slider to nearest level
+      QObject.disconnect(self.slider, SIGNAL("valueChanged(int)"), self.zoomLevelChanged)
+      self.slider.setValue(zoomLevel)
+      QObject.connect(self.slider, SIGNAL("valueChanged(int)"), self.zoomLevelChanged)
+
+      # update zoom label
+      if math.fabs(zoom - zoomLevel) < 0.000001:
+        self.zoomLabel.setText("%d" % zoomLevel)
+      else:
+        self.zoomLabel.setText("%f" % zoom)

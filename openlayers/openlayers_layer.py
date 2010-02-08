@@ -25,6 +25,7 @@ from PyQt4.QtWebKit import *
 from qgis.core import *
 
 import os.path
+import math
 
 # TODO: add projection to QGIS
 # OpenLayers Spherical Mercator
@@ -36,7 +37,7 @@ class OpenlayersLayer(QgsPluginLayer):
   MAX_ZOOM_LEVEL = 15
   SCALE_ON_MAX_ZOOM = 16925 # QGIS scale
 
-  def __init__(self):
+  def __init__(self, iface):
     QgsPluginLayer.__init__(self, OpenlayersLayer.LAYER_TYPE, "OpenLayers plugin layer")
     self.setValid(True)
 
@@ -44,6 +45,7 @@ class OpenlayersLayer(QgsPluginLayer):
     crs.createFromProj4("+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs")
     self.setCrs(crs)
 
+    self.iface = iface
     self.loaded = False
     self.page = None
 
@@ -79,12 +81,25 @@ class OpenlayersLayer(QgsPluginLayer):
     extent = rendererContext.extent()
     self.page.mainFrame().evaluateJavaScript("map.zoomToExtent(new OpenLayers.Bounds(%f, %f, %f, %f));" % (extent.xMinimum(), extent.yMinimum(), extent.xMaximum(), extent.yMaximum()))
 
-    # OpenLayers scale (72 dpi) to QGIS scale (90 dpi)
-    scale = self.page.mainFrame().evaluateJavaScript("map.getScale()")
-    qgis_scale = float(scale.toString()) * 90.0/72.0
-    print "OpenLayers scale:", scale.toString(), " -> QGIS Scale: <", qgis_scale
+    rendererContext.painter().save()
 
-    self.page.mainFrame().render(rendererContext.painter())
+    # draw transparent on intermediate zoom levels
+    qgisScale = self.iface.mapCanvas().scale()
+    zoom = OpenlayersLayer.zoomFromScale(qgisScale)
+    zoomLevel = math.floor(zoom + 0.5)
+    if math.fabs(zoom - zoomLevel) < 0.000001:
+      # draw normal
+      self.page.mainFrame().render(rendererContext.painter())
+    else:
+      # draw transparent
+      image = QImage(self.page.viewportSize(), QImage.Format_ARGB32)
+      imgPainter = QPainter(image)
+      self.page.mainFrame().render(imgPainter)
+      imgPainter.end()
+      rendererContext.painter().setOpacity(0.2)
+      rendererContext.painter().drawImage(QPoint(0,0), image)
+
+    rendererContext.painter().restore()
 
   def writeXml(self, node, doc):
     element = node.toElement();
@@ -92,3 +107,11 @@ class OpenlayersLayer(QgsPluginLayer):
     element.setAttribute("type", "plugin")
     element.setAttribute("name", OpenlayersLayer.LAYER_TYPE);
     return True
+
+  def scaleFromZoom(zoom):
+    return math.pow(2, (OpenlayersLayer.MAX_ZOOM_LEVEL - zoom)) * OpenlayersLayer.SCALE_ON_MAX_ZOOM
+  scaleFromZoom = staticmethod(scaleFromZoom)
+
+  def zoomFromScale(scale):
+    return OpenlayersLayer.MAX_ZOOM_LEVEL - math.log((scale / OpenlayersLayer.SCALE_ON_MAX_ZOOM), 2)
+  zoomFromScale = staticmethod(zoomFromScale)

@@ -47,7 +47,7 @@ class OpenlayersPlugin:
     self.iface.addPluginToMenu("OpenLayers plugin", self.action)
 
     # Register plugin layer type
-    QgsPluginLayerRegistry.instance().addPluginLayerType(OpenlayersPluginLayerType())
+    QgsPluginLayerRegistry.instance().addPluginLayerType(OpenlayersPluginLayerType(self.iface))
 
     # Add zoom level slider
     layoutWidget = QWidget()
@@ -97,7 +97,7 @@ class OpenlayersPlugin:
     self.slider = None
 
   def run(self):
-    layer = OpenlayersLayer()
+    layer = OpenlayersLayer(self.iface)
     if layer.isValid():
       QgsMapLayerRegistry.instance().addMapLayer(layer)
 
@@ -105,7 +105,7 @@ class OpenlayersPlugin:
     scale = self.iface.mapCanvas().mapRenderer().scale()
     if scale > 0:
       # adjust QGIS scale
-      targetScale = math.pow(2, (OpenlayersLayer.MAX_ZOOM_LEVEL - zoom)) * OpenlayersLayer.SCALE_ON_MAX_ZOOM
+      targetScale = OpenlayersLayer.scaleFromZoom(zoom)
       QObject.disconnect(self.iface.mapCanvas(), SIGNAL("scaleChanged(double)"), self.scaleChanged)
       self.iface.mapCanvas().zoomByFactor(targetScale / scale)
       QObject.connect(self.iface.mapCanvas(), SIGNAL("scaleChanged(double)"), self.scaleChanged)
@@ -120,7 +120,7 @@ class OpenlayersPlugin:
 
   def scaleChanged(self, scale):
     if scale > 0:
-      zoom = OpenlayersLayer.MAX_ZOOM_LEVEL - math.log((scale / OpenlayersLayer.SCALE_ON_MAX_ZOOM), 2)
+      zoom = OpenlayersLayer.zoomFromScale(scale)
       zoomLevel = math.floor(zoom + 0.5)
 
       # set zoom slider to nearest level

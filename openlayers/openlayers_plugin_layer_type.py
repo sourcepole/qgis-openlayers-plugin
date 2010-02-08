@@ -28,8 +28,9 @@ from openlayers_layer import OpenlayersLayer
 
 class OpenlayersPluginLayerType(QgsPluginLayerType):
 
-  def __init__(self):
+  def __init__(self, iface):
     QgsPluginLayerType.__init__(self, OpenlayersLayer.LAYER_TYPE)
+    self.iface = iface
 
   def createLayer(self):
-    return OpenlayersLayer()
+    return OpenlayersLayer(self.iface)

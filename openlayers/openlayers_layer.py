@@ -37,12 +37,17 @@ class OpenlayersLayer(QgsPluginLayer):
   MAX_ZOOM_LEVEL = 15
   SCALE_ON_MAX_ZOOM = 16925 # QGIS scale
 
+  # NOTE: workaround: use actual Proj4 result of
+  #   "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs"
+  #   so it will match any existing SRS
+  SPHERICAL_MERCATOR_PROJ4 = "+proj=merc +lon_0=0 +lat_ts=0 +x_0=0 +y_0=0 +a=6378137 +b=6378137 +units=m +no_defs"
+
   def __init__(self, iface):
     QgsPluginLayer.__init__(self, OpenlayersLayer.LAYER_TYPE, "OpenLayers plugin layer")
     self.setValid(True)
 
     crs = QgsCoordinateReferenceSystem()
-    crs.createFromProj4("+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs")
+    crs.createFromProj4(OpenlayersLayer.SPHERICAL_MERCATOR_PROJ4)
     self.setCrs(crs)
 
     self.iface = iface

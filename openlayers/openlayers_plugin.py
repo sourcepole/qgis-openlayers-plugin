@@ -77,6 +77,11 @@ class OpenlayersPlugin:
     QObject.connect(self.slider, SIGNAL("sliderReleased()"), self.zoomSliderReleased)
     QObject.connect(self.iface.mapCanvas(), SIGNAL("scaleChanged(double)"), self.scaleChanged)
 
+    # find or create Spherical Mercator SRS
+    crs = QgsCoordinateReferenceSystem()
+    crs.createFromProj4(OpenlayersLayer.SPHERICAL_MERCATOR_PROJ4)
+    print "Spherical Mercator coordinate reference system is:\n  %s\n  SRS ID = %s" % (crs.description(), crs.srsid())
+
   def unload(self):
     # Remove the plugin menu item and icon
     self.iface.removePluginMenu("OpenLayers plugin",self.action)

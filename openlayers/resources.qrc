@@ -1,6 +1,6 @@
 <RCC> 
   <qresource prefix="/plugins/openlayers" > 
-    <file>icon.png</file> 
+    <file>google_icon.png</file> 
   </qresource> 
 </RCC> 
 

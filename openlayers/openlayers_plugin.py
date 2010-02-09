@@ -38,13 +38,21 @@ class OpenlayersPlugin:
 
   def initGui(self):
     # Create action that will start plugin configuration
-    self.action = QAction(QIcon(":/plugins/openlayers/icon.png"), "Add OpenLayers layer", self.iface.mainWindow())
+    self.actionAddGooglePhysical = QAction(QIcon(":/plugins/openlayers/google_icon.png"), "Add Google Physical layer", self.iface.mainWindow())
+    self.actionAddGoogleStreets = QAction(QIcon(":/plugins/openlayers/google_icon.png"), "Add Google Streets layer", self.iface.mainWindow())
+    self.actionAddGoogleHybrid = QAction(QIcon(":/plugins/openlayers/google_icon.png"), "Add Google Hybrid layer", self.iface.mainWindow())
+    self.actionAddGoogleSatellite = QAction(QIcon(":/plugins/openlayers/google_icon.png"), "Add Google Satellite layer", self.iface.mainWindow())
     # connect the action to the run method
-    QObject.connect(self.action, SIGNAL("triggered()"), self.run)
+    QObject.connect(self.actionAddGooglePhysical, SIGNAL("triggered()"), self.addGooglePhysical)
+    QObject.connect(self.actionAddGoogleStreets, SIGNAL("triggered()"), self.addGoogleStreets)
+    QObject.connect(self.actionAddGoogleHybrid, SIGNAL("triggered()"), self.addGoogleHybrid)
+    QObject.connect(self.actionAddGoogleSatellite, SIGNAL("triggered()"), self.addGoogleSatellite)
 
     # Add toolbar button and menu item
-    self.iface.addToolBarIcon(self.action)
-    self.iface.addPluginToMenu("OpenLayers plugin", self.action)
+    self.iface.addPluginToMenu("OpenLayers plugin", self.actionAddGooglePhysical)
+    self.iface.addPluginToMenu("OpenLayers plugin", self.actionAddGoogleStreets)
+    self.iface.addPluginToMenu("OpenLayers plugin", self.actionAddGoogleHybrid)
+    self.iface.addPluginToMenu("OpenLayers plugin", self.actionAddGoogleSatellite)
 
     # Register plugin layer type
     QgsPluginLayerRegistry.instance().addPluginLayerType(OpenlayersPluginLayerType(self.iface))
@@ -84,8 +92,10 @@ class OpenlayersPlugin:
 
   def unload(self):
     # Remove the plugin menu item and icon
-    self.iface.removePluginMenu("OpenLayers plugin",self.action)
-    self.iface.removeToolBarIcon(self.action)
+    self.iface.removePluginMenu("OpenLayers plugin",self.actionAddGooglePhysical)
+    self.iface.removePluginMenu("OpenLayers plugin",self.actionAddGoogleStreets)
+    self.iface.removePluginMenu("OpenLayers plugin",self.actionAddGoogleHybrid)
+    self.iface.removePluginMenu("OpenLayers plugin",self.actionAddGoogleSatellite)
 
     # Unregister plugin layer type
     QgsPluginLayerRegistry.instance().removePluginLayerType(OpenlayersLayer.LAYER_TYPE)
@@ -101,10 +111,24 @@ class OpenlayersPlugin:
     del self.slider
     self.slider = None
 
-  def run(self):
+  def addLayer(self, layerName, layerType):
     layer = OpenlayersLayer(self.iface)
+    layer.setLayerName(layerName)
+    layer.setLayerType(layerType)
     if layer.isValid():
       QgsMapLayerRegistry.instance().addMapLayer(layer)
+
+  def addGooglePhysical(self):
+    self.addLayer("Google Physical", OpenlayersLayer.LAYER_GOOGLE_PHYSICAL)
+
+  def addGoogleStreets(self):
+    self.addLayer("Google Streets", OpenlayersLayer.LAYER_GOOGLE_STREETS)
+
+  def addGoogleHybrid(self):
+    self.addLayer("Google Hybrid", OpenlayersLayer.LAYER_GOOGLE_HYBRID)
+
+  def addGoogleSatellite(self):
+    self.addLayer("Google Satellite", OpenlayersLayer.LAYER_GOOGLE_SATELLITE)
 
   def zoomLevelChanged(self, zoom):
     scale = self.iface.mapCanvas().mapRenderer().scale()

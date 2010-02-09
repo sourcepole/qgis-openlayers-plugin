@@ -1,16 +1,30 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <title>OpenLayers Google Layer Example</title>
-    <link rel="stylesheet" href="./theme/default/style.css" type="text/css" />
-        <style type="text/css">
-            body {
-                margin: 0;
-            }
-            #map {
-                width: 100%;
-                height: 100%;
-            }
-        </style>
+    <title>OpenLayers Google Satellite Layer</title>
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+        .olLayerGoogleCopyright {
+            left: 2px;
+            bottom: 2px;
+        }
+        .olLayerGooglePoweredBy {
+            left: 2px;
+            bottom: 15px;
+        }
+        .olControlAttribution {
+            font-size: smaller;
+            right: 3px;
+            bottom: 4.5em;
+            position: absolute;
+            display: block;
+        }
+    </style>
     <!-- this gmaps key generated for http://openlayers.org/dev/ -->
     <script src='http://maps.google.com/maps?file=api&amp;v=2&amp;key=ABQIAAAAjpkAC9ePGem0lIq5XcMiuhR_wWLPFku8Ix9i2SXYRVK3e45q1BQUd_beF8dtzKET_EteAjPdGDwqpQ'></script>
     <script src="OpenLayers.js"></script>
@@ -19,6 +33,7 @@
 
         function init() {
             map = new OpenLayers.Map('map', {
+                theme: null,
                 controls: [],
                 projection: new OpenLayers.Projection("EPSG:900913"),
                 units: "m",
@@ -26,26 +41,12 @@
                 maxExtent: new OpenLayers.Bounds(-20037508.34, -20037508.34, 20037508.34, 20037508.34)
             });
 
-            var gphy = new OpenLayers.Layer.Google(
-                "Google Physical",
-                {type: G_PHYSICAL_MAP, 'sphericalMercator': true}
-            );
             var gmap = new OpenLayers.Layer.Google(
-                "Google Streets", // the default
-                {numZoomLevels: 20, 'sphericalMercator': true}
-            );
-            var ghyb = new OpenLayers.Layer.Google(
-                "Google Hybrid",
-                {type: G_HYBRID_MAP, numZoomLevels: 20, 'sphericalMercator': true}
-            );
-            var gsat = new OpenLayers.Layer.Google(
                 "Google Satellite",
                 {type: G_SATELLITE_MAP, numZoomLevels: 20, 'sphericalMercator': true}
             );
-
-            map.addLayers([gphy, gmap, ghyb, gsat]);
-
-            map.setCenter(new OpenLayers.LonLat(935000, 5915000), 5);
+            map.addLayer(gmap);
+            map.setCenter(new OpenLayers.LonLat(0, 0), 2);
         }
     </script>
   </head>

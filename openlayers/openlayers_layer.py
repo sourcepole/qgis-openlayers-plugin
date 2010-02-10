@@ -51,6 +51,8 @@ class OpenlayersLayer(QgsPluginLayer):
     crs.createFromProj4(OpenlayersLayer.SPHERICAL_MERCATOR_PROJ4)
     self.setCrs(crs)
 
+    self.setExtent(QgsRectangle(-20037508.34, -20037508.34, 20037508.34, 20037508.34))
+
     self.iface = iface
     self.loaded = False
     self.page = None

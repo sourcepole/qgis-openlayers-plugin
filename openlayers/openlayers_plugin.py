@@ -88,6 +88,7 @@ class OpenlayersPlugin:
     # find or create Spherical Mercator SRS
     crs = QgsCoordinateReferenceSystem()
     crs.createFromProj4(OpenlayersLayer.SPHERICAL_MERCATOR_PROJ4)
+    self.sphericalMercatorSrsId = crs.srsid()
     print "Spherical Mercator coordinate reference system is:\n  %s\n  SRS ID = %s" % (crs.description(), crs.srsid())
 
   def unload(self):
@@ -112,6 +113,10 @@ class OpenlayersPlugin:
     self.slider = None
 
   def addLayer(self, layerName, layerType):
+    # show instructions how to setup project
+    if not self.iface.mapCanvas().hasCrsTransformEnabled() or self.iface.mapCanvas().mapRenderer().destinationSrs().srsid() != self.sphericalMercatorSrsId:
+      QMessageBox.information(None, "OpenLayers Plugin", "Use the following project properties for OpenLayers layers:\n\n- Enable on the fly projection\n- Select custom CRS with SRSID=%d" % self.sphericalMercatorSrsId)
+
     layer = OpenlayersLayer(self.iface)
     layer.setLayerName(layerName)
     layer.setLayerType(layerType)

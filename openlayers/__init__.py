@@ -28,6 +28,8 @@ def version():
   return "Version 0.2 PRERELEASE"
 def qgisMinimumVersion():
   return "1.5"
+def authorName():
+  return "Sourcepole"
 def classFactory(iface):
   from openlayers_plugin import OpenlayersPlugin
   return OpenlayersPlugin(iface)

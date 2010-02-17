@@ -25,7 +25,7 @@ def name():
 def description():
   return "TMS, Google Maps, Yahoo Maps, Bing Maps layers and more"
 def version():
-  return "Version 0.2"
+  return "Version 0.2 PRERELEASE"
 def qgisMinimumVersion():
   return "1.5"
 def classFactory(iface):

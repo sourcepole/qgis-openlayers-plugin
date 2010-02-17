@@ -8,6 +8,12 @@ qgis-openlayers-plugin is a QGIS[http://www.qgis.org/] plugin embedding OpenLaye
 === Plugin repository
  http://build.sourcepole.ch/qgis/plugins.xml
 
+==Usage
+
+- Use the following project properties for OpenLayers layers:
+  - Enable on the fly projection
+  - Select custom CRS with PROJ4="+proj=merc +lon_0=0 +lat_ts=0 +x_0=0 +y_0=0 +a=6378137 +b=6378137 +units=m +no_defs"
+- Use zoom level slider to set scale
 
 ==License
 

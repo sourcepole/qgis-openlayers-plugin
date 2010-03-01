@@ -31,7 +31,7 @@ class OpenlayersLayer(QgsPluginLayer):
 
   LAYER_TYPE = "openlayers"
   MAX_ZOOM_LEVEL = 15
-  SCALE_ON_MAX_ZOOM = 16925 # QGIS scale
+  SCALE_ON_MAX_ZOOM = 13540 # QGIS scale for 72 dpi
 
   LAYER_GOOGLE_PHYSICAL =  0
   LAYER_GOOGLE_STREETS =   1
@@ -95,7 +95,7 @@ class OpenlayersLayer(QgsPluginLayer):
 
     # draw transparent on intermediate zoom levels
     qgisScale = self.iface.mapCanvas().scale()
-    zoom = OpenlayersLayer.zoomFromScale(qgisScale)
+    zoom = OpenlayersLayer.zoomFromScale(qgisScale, self.iface.mapCanvas().mapRenderer().outputDpi())
     zoomLevel = math.floor(zoom + 0.5)
     if math.fabs(zoom - zoomLevel) < 0.000001:
       # draw normal
@@ -135,10 +135,12 @@ class OpenlayersLayer(QgsPluginLayer):
     }
     self.html = layerSelect.get(layerType, "google_physical.html")
 
-  def scaleFromZoom(zoom):
-    return math.pow(2, (OpenlayersLayer.MAX_ZOOM_LEVEL - zoom)) * OpenlayersLayer.SCALE_ON_MAX_ZOOM
+  def scaleFromZoom(zoom, dpi):
+    scale_on_max_zoom = OpenlayersLayer.SCALE_ON_MAX_ZOOM * dpi / 72.0
+    return math.pow(2, (OpenlayersLayer.MAX_ZOOM_LEVEL - zoom)) * scale_on_max_zoom
   scaleFromZoom = staticmethod(scaleFromZoom)
 
-  def zoomFromScale(scale):
-    return OpenlayersLayer.MAX_ZOOM_LEVEL - math.log((scale / OpenlayersLayer.SCALE_ON_MAX_ZOOM), 2)
+  def zoomFromScale(scale, dpi):
+    scale_on_max_zoom = OpenlayersLayer.SCALE_ON_MAX_ZOOM * dpi / 72.0
+    return OpenlayersLayer.MAX_ZOOM_LEVEL - math.log((scale / scale_on_max_zoom), 2)
   zoomFromScale = staticmethod(zoomFromScale)

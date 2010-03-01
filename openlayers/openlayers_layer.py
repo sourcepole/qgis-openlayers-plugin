@@ -38,10 +38,8 @@ class OpenlayersLayer(QgsPluginLayer):
   LAYER_GOOGLE_HYBRID =    2
   LAYER_GOOGLE_SATELLITE = 3
 
-  # NOTE: workaround: use actual Proj4 result of
-  #   "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs"
-  #   so it will match any existing SRS
-  SPHERICAL_MERCATOR_PROJ4 = "+proj=merc +lon_0=0 +lat_ts=0 +x_0=0 +y_0=0 +a=6378137 +b=6378137 +units=m +no_defs"
+  # use Proj4 result of QGIS Google Mercator
+  SPHERICAL_MERCATOR_PROJ4 = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0+units=m +nadgrids=@null +no_defs"
 
   def __init__(self, iface):
     QgsPluginLayer.__init__(self, OpenlayersLayer.LAYER_TYPE, "OpenLayers plugin layer")

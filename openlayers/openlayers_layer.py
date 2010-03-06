@@ -23,6 +23,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.QtWebKit import *
 from qgis.core import *
+import time
 
 import os.path
 import math
@@ -54,6 +55,7 @@ class OpenlayersLayer(QgsPluginLayer):
     self.iface = iface
     self.loaded = False
     self.page = None
+    self.ext = None
 
     self.setLayerType(OpenlayersLayer.LAYER_GOOGLE_PHYSICAL)
 
@@ -64,17 +66,13 @@ class OpenlayersLayer(QgsPluginLayer):
       self.page = QWebPage()
       self.page.mainFrame().load(QUrl(os.path.dirname( __file__ ) + "/html/" + self.html))
       QObject.connect(self.page, SIGNAL("loadFinished(bool)"), self.loadFinished)
-      QObject.connect(self.page, SIGNAL("loadProgress(int)"), self.loadProgress)
     else:
       self.render(rendererContext)
 
     return True
 
-  def loadProgress(self, progress):
-    print "OpenlayersLayer loadProgress", progress
-
   def loadFinished(self, ok):
-    print "OpenlayersLayer loadFinished", ok
+    print "OpenlayersLayer loadFinished ", ok
     if ok:
       self.loaded = ok
       self.emit(SIGNAL("repaintRequested()"))
@@ -86,8 +84,11 @@ class OpenlayersLayer(QgsPluginLayer):
 
     self.page.setViewportSize(rendererContext.painter().viewport().size())
 
-    extent = rendererContext.extent()
-    self.page.mainFrame().evaluateJavaScript("map.zoomToExtent(new OpenLayers.Bounds(%f, %f, %f, %f));" % (extent.xMinimum(), extent.yMinimum(), extent.xMaximum(), extent.yMaximum()))
+    if rendererContext.extent() != self.ext:
+      self.ext = rendererContext.extent()
+      self.page.mainFrame().evaluateJavaScript("map.zoomToExtent(new OpenLayers.Bounds(%f, %f, %f, %f));" % (self.ext.xMinimum(), self.ext.yMinimum(), self.ext.xMaximum(), self.ext.yMaximum()))
+      #Workaround: wait for images to be loaded. Maybe loadFinished of mainFrame could be used for repainting (>= QT 4.6)
+      QTimer.singleShot(1000, self, SIGNAL("repaintRequested()"))
 
     rendererContext.painter().save()
 

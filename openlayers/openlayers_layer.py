@@ -23,7 +23,6 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.QtWebKit import *
 from qgis.core import *
-import time
 
 import os.path
 import math
@@ -78,16 +77,16 @@ class OpenlayersLayer(QgsPluginLayer):
       self.emit(SIGNAL("repaintRequested()"))
 
   def render(self, rendererContext):
-    print "extent", rendererContext.extent().toString()
-    print "center", rendererContext.extent().center().x(), rendererContext.extent().center().y()
-    print "size", rendererContext.painter().viewport().size()
+    print " extent", rendererContext.extent().toString()
+    print " center", rendererContext.extent().center().x(), rendererContext.extent().center().y()
+    print " size", rendererContext.painter().viewport().size()
 
     self.page.setViewportSize(rendererContext.painter().viewport().size())
 
     if rendererContext.extent() != self.ext:
       self.ext = rendererContext.extent()
       self.page.mainFrame().evaluateJavaScript("map.zoomToExtent(new OpenLayers.Bounds(%f, %f, %f, %f));" % (self.ext.xMinimum(), self.ext.yMinimum(), self.ext.xMaximum(), self.ext.yMaximum()))
-      #Workaround: wait for images to be loaded. Maybe loadFinished of mainFrame could be used for repainting (>= QT 4.6)
+      #Workaround: wait for images to be loaded. Use OL event listener instead
       QTimer.singleShot(1000, self, SIGNAL("repaintRequested()"))
 
     rendererContext.painter().save()

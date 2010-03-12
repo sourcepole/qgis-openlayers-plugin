@@ -57,32 +57,8 @@ class OpenlayersPlugin:
     # Register plugin layer type
     QgsPluginLayerRegistry.instance().addPluginLayerType(OpenlayersPluginLayerType(self.iface))
 
-    # Add zoom level slider
-    layoutWidget = QWidget()
-    layout = QVBoxLayout(layoutWidget)
-
-    self.slider = QSlider(Qt.Horizontal, layoutWidget)
-    self.slider.setTickInterval(1)
-    self.slider.setTickPosition(QSlider.TicksAbove)
-    self.slider.setMinimum(0)
-    self.slider.setMaximum(OpenlayersLayer.MAX_ZOOM_LEVEL)
-    self.slider.setSingleStep(0)
-    self.slider.setPageStep(0)
-    self.slider.setTracking(False)
-    layout.addWidget(self.slider)
-
-    self.zoomLabel = QLabel(layoutWidget)
-    self.zoomLabel.setAlignment(Qt.AlignHCenter)
-    layout.addWidget(self.zoomLabel)
-
-    self.dw = QDockWidget("OpenLayers zoom level", None)
-    self.dw.setObjectName("OpenLayersZoomLevel")
-    self.dw.setAllowedAreas(Qt.LeftDockWidgetArea)
-    self.dw.setWidget(layoutWidget)
-    self.iface.addDockWidget(Qt.LeftDockWidgetArea, self.dw)
-
-    QObject.connect(self.slider, SIGNAL("valueChanged(int)"), self.zoomLevelChanged)
-    QObject.connect(self.slider, SIGNAL("sliderReleased()"), self.zoomSliderReleased)
+    # TODO: update reference layer on load/remove
+    self.layer = None
     QObject.connect(self.iface.mapCanvas(), SIGNAL("scaleChanged(double)"), self.scaleChanged)
 
     # find or create Spherical Mercator SRS
@@ -102,16 +78,7 @@ class OpenlayersPlugin:
     # Unregister plugin layer type
     QgsPluginLayerRegistry.instance().removePluginLayerType(OpenlayersLayer.LAYER_TYPE)
 
-    # Remove zoom level slider
-    QObject.disconnect(self.slider, SIGNAL("valueChanged(int)"), self.zoomLevelChanged)
-    QObject.disconnect(self.slider, SIGNAL("sliderReleased()"), self.zoomSliderReleased)
     QObject.disconnect(self.iface.mapCanvas(), SIGNAL("scaleChanged(double)"), self.scaleChanged)
-
-    self.iface.removeDockWidget(self.dw)
-    del self.dw
-    self.dw = None
-    del self.slider
-    self.slider = None
 
   def addLayer(self, layerName, layerType):
     # show instructions how to setup project
@@ -123,6 +90,11 @@ class OpenlayersPlugin:
     layer.setLayerType(layerType)
     if layer.isValid():
       QgsMapLayerRegistry.instance().addMapLayer(layer)
+
+      # last added layer is new reference
+      self.layer = layer
+
+      # TODO: update initial scale
 
   def addGooglePhysical(self):
     self.addLayer("Google Physical", OpenlayersLayer.LAYER_GOOGLE_PHYSICAL)
@@ -136,35 +108,14 @@ class OpenlayersPlugin:
   def addGoogleSatellite(self):
     self.addLayer("Google Satellite", OpenlayersLayer.LAYER_GOOGLE_SATELLITE)
 
-  def zoomLevelChanged(self, zoom):
-    scale = self.iface.mapCanvas().mapRenderer().scale()
-    if scale > 0:
-      # adjust QGIS scale
-      targetScale = OpenlayersLayer.scaleFromZoom(zoom, self.iface.mapCanvas().mapRenderer().outputDpi())
-      QObject.disconnect(self.iface.mapCanvas(), SIGNAL("scaleChanged(double)"), self.scaleChanged)
-      self.iface.mapCanvas().zoomByFactor(targetScale / scale)
-      QObject.connect(self.iface.mapCanvas(), SIGNAL("scaleChanged(double)"), self.scaleChanged)
-
-    # update zoom label
-    self.zoomLabel.setText("%d" % zoom)
-
-  def zoomSliderReleased(self):
-    if self.slider.value() == self.slider.sliderPosition():
-      # update scale when clicking on current slider position
-      self.zoomLevelChanged(self.slider.value())
-
   def scaleChanged(self, scale):
-    if scale > 0:
-      zoom = OpenlayersLayer.zoomFromScale(scale, self.iface.mapCanvas().mapRenderer().outputDpi())
-      zoomLevel = math.floor(zoom + 0.5)
-
-      # set zoom slider to nearest level
-      QObject.disconnect(self.slider, SIGNAL("valueChanged(int)"), self.zoomLevelChanged)
-      self.slider.setValue(zoomLevel)
-      QObject.connect(self.slider, SIGNAL("valueChanged(int)"), self.zoomLevelChanged)
-
-      # update zoom label
-      if math.fabs(zoom - zoomLevel) < 0.000001:
-        self.zoomLabel.setText("%d" % zoomLevel)
-      else:
-        self.zoomLabel.setText("%f" % zoom)
+    if scale > 0 and self.layer != None:
+      # get OpenLayers scale for this extent
+      olScale = self.layer.scaleFromExtent(self.iface.mapCanvas().extent())
+      # calculate QGIS scale
+      targetScale = olScale * self.iface.mapCanvas().mapRenderer().outputDpi() / 72.0
+      # NOTE: use a slightly smaller scale to avoid zoomout feedback loop
+      targetScale *= 0.99
+      if math.fabs(scale - targetScale)/scale > 0.01:
+        # override scale
+        self.iface.mapCanvas().zoomByFactor(targetScale / scale)

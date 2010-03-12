@@ -91,22 +91,7 @@ class OpenlayersLayer(QgsPluginLayer):
 
     rendererContext.painter().save()
 
-    # draw transparent on intermediate zoom levels
-    qgisScale = self.iface.mapCanvas().scale()
-    zoom = OpenlayersLayer.zoomFromScale(qgisScale, self.iface.mapCanvas().mapRenderer().outputDpi())
-    zoomLevel = math.floor(zoom + 0.5)
-    if math.fabs(zoom - zoomLevel) < 0.000001:
-      # draw normal
-      self.page.mainFrame().render(rendererContext.painter())
-    else:
-      # draw transparent
-      image = QImage(self.page.viewportSize(), QImage.Format_ARGB32)
-      imgPainter = QPainter(image)
-      self.page.mainFrame().render(imgPainter)
-      imgPainter.end()
-      rendererContext.painter().setOpacity(0.2)
-      rendererContext.painter().drawImage(QPoint(0,0), image)
-
+    self.page.mainFrame().render(rendererContext.painter())
     rendererContext.painter().restore()
 
   def readXml(self, node):
@@ -133,12 +118,10 @@ class OpenlayersLayer(QgsPluginLayer):
     }
     self.html = layerSelect.get(layerType, "google_physical.html")
 
-  def scaleFromZoom(zoom, dpi):
-    scale_on_max_zoom = OpenlayersLayer.SCALE_ON_MAX_ZOOM * dpi / 72.0
-    return math.pow(2, (OpenlayersLayer.MAX_ZOOM_LEVEL - zoom)) * scale_on_max_zoom
-  scaleFromZoom = staticmethod(scaleFromZoom)
-
-  def zoomFromScale(scale, dpi):
-    scale_on_max_zoom = OpenlayersLayer.SCALE_ON_MAX_ZOOM * dpi / 72.0
-    return OpenlayersLayer.MAX_ZOOM_LEVEL - math.log((scale / scale_on_max_zoom), 2)
-  zoomFromScale = staticmethod(zoomFromScale)
+  def scaleFromExtent(self, extent):
+    if self.page != None:
+      self.page.mainFrame().evaluateJavaScript("map.zoomToExtent(new OpenLayers.Bounds(%f, %f, %f, %f));" % (extent.xMinimum(), extent.yMinimum(), extent.xMaximum(), extent.yMaximum()))
+      scale = self.page.mainFrame().evaluateJavaScript("map.getScale()")
+      return float(scale.toString())
+    else:
+      return 0.0

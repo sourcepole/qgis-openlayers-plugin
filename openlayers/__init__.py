@@ -25,7 +25,7 @@ def name():
 def description():
   return "TMS, Google Maps, Yahoo Maps, Bing Maps layers and more"
 def version():
-  return "Version 0.21 PRERELEASE"
+  return "Version 0.25 PRERELEASE"
 def qgisMinimumVersion():
   return "1.5"
 def authorName():

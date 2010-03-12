@@ -96,7 +96,7 @@ class OpenlayersLayer(QgsPluginLayer):
 
   def readXml(self, node):
     # custom properties
-    self.setLayerType( node.toElement().attribute("ol_layer_type", "%d" % OpenlayersLayer.LAYER_GOOGLE_PHYSICAL) )
+    self.setLayerType( int(node.toElement().attribute("ol_layer_type", "%d" % OpenlayersLayer.LAYER_GOOGLE_PHYSICAL)) )
     return True
 
   def writeXml(self, node, doc):

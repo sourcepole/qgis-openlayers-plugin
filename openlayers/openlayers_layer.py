@@ -120,6 +120,7 @@ class OpenlayersLayer(QgsPluginLayer):
 
   def scaleFromExtent(self, extent):
     if self.page != None:
+      # get OpenLayers scale
       self.page.mainFrame().evaluateJavaScript("map.zoomToExtent(new OpenLayers.Bounds(%f, %f, %f, %f));" % (extent.xMinimum(), extent.yMinimum(), extent.xMaximum(), extent.yMaximum()))
       scale = self.page.mainFrame().evaluateJavaScript("map.getScale()")
       return float(scale.toString())

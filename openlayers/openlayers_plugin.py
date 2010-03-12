@@ -55,11 +55,11 @@ class OpenlayersPlugin:
     self.iface.addPluginToMenu("OpenLayers plugin", self.actionAddGoogleSatellite)
 
     # Register plugin layer type
-    QgsPluginLayerRegistry.instance().addPluginLayerType(OpenlayersPluginLayerType(self.iface))
+    QgsPluginLayerRegistry.instance().addPluginLayerType(OpenlayersPluginLayerType(self.iface, self.setReferenceLayer))
 
-    # TODO: update reference layer on load/remove
     self.layer = None
     QObject.connect(self.iface.mapCanvas(), SIGNAL("scaleChanged(double)"), self.scaleChanged)
+    QObject.connect(QgsMapLayerRegistry.instance(), SIGNAL("layerWillBeRemoved(QString)"), self.removeLayer)
 
     # find or create Spherical Mercator SRS
     crs = QgsCoordinateReferenceSystem()
@@ -79,6 +79,7 @@ class OpenlayersPlugin:
     QgsPluginLayerRegistry.instance().removePluginLayerType(OpenlayersLayer.LAYER_TYPE)
 
     QObject.disconnect(self.iface.mapCanvas(), SIGNAL("scaleChanged(double)"), self.scaleChanged)
+    QObject.disconnect(QgsMapLayerRegistry.instance(), SIGNAL("layerWillBeRemoved(QString)"), self.removeLayer)
 
   def addLayer(self, layerName, layerType):
     # show instructions how to setup project
@@ -92,9 +93,7 @@ class OpenlayersPlugin:
       QgsMapLayerRegistry.instance().addMapLayer(layer)
 
       # last added layer is new reference
-      self.layer = layer
-
-      # TODO: update initial scale
+      self.setReferenceLayer(layer)
 
   def addGooglePhysical(self):
     self.addLayer("Google Physical", OpenlayersLayer.LAYER_GOOGLE_PHYSICAL)
@@ -112,10 +111,21 @@ class OpenlayersPlugin:
     if scale > 0 and self.layer != None:
       # get OpenLayers scale for this extent
       olScale = self.layer.scaleFromExtent(self.iface.mapCanvas().extent())
-      # calculate QGIS scale
-      targetScale = olScale * self.iface.mapCanvas().mapRenderer().outputDpi() / 72.0
-      # NOTE: use a slightly smaller scale to avoid zoomout feedback loop
-      targetScale *= 0.99
-      if math.fabs(scale - targetScale)/scale > 0.01:
-        # override scale
-        self.iface.mapCanvas().zoomByFactor(targetScale / scale)
+      if olScale > 0.0:
+        # calculate QGIS scale
+        targetScale = olScale * self.iface.mapCanvas().mapRenderer().outputDpi() / 72.0
+        # NOTE: use a slightly smaller scale to avoid zoomout feedback loop
+        targetScale *= 0.99
+        if math.fabs(scale - targetScale)/scale > 0.01:
+          # override scale
+          self.iface.mapCanvas().zoomByFactor(targetScale / scale)
+
+  def setReferenceLayer(self, layer):
+    self.layer = layer
+    # TODO: update initial scale
+
+  def removeLayer(self, layerId):
+    layerToRemove = None
+    if self.layer != None and self.layer.getLayerID() == layerId:
+      self.layer = None
+      # TODO: switch to next available OpenLayers layer?

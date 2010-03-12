@@ -28,9 +28,12 @@ from openlayers_layer import OpenlayersLayer
 
 class OpenlayersPluginLayerType(QgsPluginLayerType):
 
-  def __init__(self, iface):
+  def __init__(self, iface, add_callback):
     QgsPluginLayerType.__init__(self, OpenlayersLayer.LAYER_TYPE)
     self.iface = iface
+    self.add_callback = add_callback
 
   def createLayer(self):
-    return OpenlayersLayer(self.iface)
+    layer = OpenlayersLayer(self.iface)
+    self.add_callback(layer)
+    return layer

@@ -122,8 +122,8 @@ class OpenlayersPlugin:
         # calculate QGIS scale
         targetScale = olScale * self.iface.mapCanvas().mapRenderer().outputDpi() / 72.0
         # NOTE: use a slightly smaller scale to avoid zoomout feedback loop
-        targetScale *= 0.99
-        if math.fabs(scale - targetScale)/scale > 0.01:
+        targetScale *= 0.999
+        if math.fabs(scale - targetScale)/scale > 0.001:
           # override scale
           self.iface.mapCanvas().zoomByFactor(targetScale / scale)
 

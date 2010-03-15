@@ -38,17 +38,20 @@ class OpenlayersPlugin:
 
   def initGui(self):
     # Create action that will start plugin configuration
+    self.actionAddOSM = QAction(QIcon(":/plugins/openlayers/osm_icon.png"), "Add OpenStreetMap layer", self.iface.mainWindow())
     self.actionAddGooglePhysical = QAction(QIcon(":/plugins/openlayers/google_icon.png"), "Add Google Physical layer", self.iface.mainWindow())
     self.actionAddGoogleStreets = QAction(QIcon(":/plugins/openlayers/google_icon.png"), "Add Google Streets layer", self.iface.mainWindow())
     self.actionAddGoogleHybrid = QAction(QIcon(":/plugins/openlayers/google_icon.png"), "Add Google Hybrid layer", self.iface.mainWindow())
     self.actionAddGoogleSatellite = QAction(QIcon(":/plugins/openlayers/google_icon.png"), "Add Google Satellite layer", self.iface.mainWindow())
     # connect the action to the run method
+    QObject.connect(self.actionAddOSM, SIGNAL("triggered()"), self.addOSM)
     QObject.connect(self.actionAddGooglePhysical, SIGNAL("triggered()"), self.addGooglePhysical)
     QObject.connect(self.actionAddGoogleStreets, SIGNAL("triggered()"), self.addGoogleStreets)
     QObject.connect(self.actionAddGoogleHybrid, SIGNAL("triggered()"), self.addGoogleHybrid)
     QObject.connect(self.actionAddGoogleSatellite, SIGNAL("triggered()"), self.addGoogleSatellite)
 
     # Add toolbar button and menu item
+    self.iface.addPluginToMenu("OpenLayers plugin", self.actionAddOSM)
     self.iface.addPluginToMenu("OpenLayers plugin", self.actionAddGooglePhysical)
     self.iface.addPluginToMenu("OpenLayers plugin", self.actionAddGoogleStreets)
     self.iface.addPluginToMenu("OpenLayers plugin", self.actionAddGoogleHybrid)
@@ -70,6 +73,7 @@ class OpenlayersPlugin:
 
   def unload(self):
     # Remove the plugin menu item and icon
+    self.iface.removePluginMenu("OpenLayers plugin",self.actionAddOSM)
     self.iface.removePluginMenu("OpenLayers plugin",self.actionAddGooglePhysical)
     self.iface.removePluginMenu("OpenLayers plugin",self.actionAddGoogleStreets)
     self.iface.removePluginMenu("OpenLayers plugin",self.actionAddGoogleHybrid)
@@ -94,6 +98,9 @@ class OpenlayersPlugin:
 
       # last added layer is new reference
       self.setReferenceLayer(layer)
+
+  def addOSM(self):
+    self.addLayer("OpenStreetMap", OpenlayersLayer.LAYER_OSM)
 
   def addGooglePhysical(self):
     self.addLayer("Google Physical", OpenlayersLayer.LAYER_GOOGLE_PHYSICAL)

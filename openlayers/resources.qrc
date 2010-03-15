@@ -1,6 +1,7 @@
-<RCC> 
-  <qresource prefix="/plugins/openlayers" > 
-    <file>google_icon.png</file> 
-  </qresource> 
-</RCC> 
+<RCC>
+  <qresource prefix="/plugins/openlayers" >
+    <file>osm_icon.png</file>
+    <file>google_icon.png</file>
+  </qresource>
+</RCC>
 

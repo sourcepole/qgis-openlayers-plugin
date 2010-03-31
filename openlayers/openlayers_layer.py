@@ -131,6 +131,10 @@ class OpenlayersLayer(QgsPluginLayer):
       # get OpenLayers scale
       self.page.mainFrame().evaluateJavaScript("map.zoomToExtent(new OpenLayers.Bounds(%f, %f, %f, %f));" % (extent.xMinimum(), extent.yMinimum(), extent.xMaximum(), extent.yMaximum()))
       scale = self.page.mainFrame().evaluateJavaScript("map.getScale()")
-      return float(scale.toString())
+      if scale.isNull():
+        print "OpenlayersLayer Warning: Could not get scale from OpenLayers map"
+        return 0.0
+      else:
+        return float(scale.toString())
     else:
       return 0.0

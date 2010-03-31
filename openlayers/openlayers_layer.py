@@ -38,9 +38,12 @@ class OpenlayersLayer(QgsPluginLayer):
   LAYER_GOOGLE_HYBRID =    2
   LAYER_GOOGLE_SATELLITE = 3
   LAYER_OSM =              4
+  LAYER_YAHOO_STREET =     5
+  LAYER_YAHOO_HYBRID =     6
+  LAYER_YAHOO_SATELLITE =  7
 
   # use Proj4 result of QGIS Google Mercator
-  SPHERICAL_MERCATOR_PROJ4 = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0+units=m +nadgrids=@null +no_defs"
+  SPHERICAL_MERCATOR_PROJ4 = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs"
 
   def __init__(self, iface):
     QgsPluginLayer.__init__(self, OpenlayersLayer.LAYER_TYPE, "OpenLayers plugin layer")
@@ -116,7 +119,10 @@ class OpenlayersLayer(QgsPluginLayer):
       OpenlayersLayer.LAYER_GOOGLE_STREETS : "google_streets.html",
       OpenlayersLayer.LAYER_GOOGLE_HYBRID : "google_hybrid.html",
       OpenlayersLayer.LAYER_GOOGLE_SATELLITE : "google_satellite.html",
-      OpenlayersLayer.LAYER_OSM : "osm.html"
+      OpenlayersLayer.LAYER_OSM : "osm.html",
+      OpenlayersLayer.LAYER_YAHOO_STREET : "yahoo_street.html",
+      OpenlayersLayer.LAYER_YAHOO_HYBRID : "yahoo_hybrid.html",
+      OpenlayersLayer.LAYER_YAHOO_SATELLITE : "yahoo_satellite.html"
     }
     self.html = layerSelect.get(layerType, "google_physical.html")
 

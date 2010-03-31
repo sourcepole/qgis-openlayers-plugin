@@ -2,6 +2,7 @@
   <qresource prefix="/plugins/openlayers" >
     <file>osm_icon.png</file>
     <file>google_icon.png</file>
+    <file>yahoo_icon.png</file>
   </qresource>
 </RCC>
 

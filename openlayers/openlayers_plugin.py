@@ -43,12 +43,19 @@ class OpenlayersPlugin:
     self.actionAddGoogleStreets = QAction(QIcon(":/plugins/openlayers/google_icon.png"), "Add Google Streets layer", self.iface.mainWindow())
     self.actionAddGoogleHybrid = QAction(QIcon(":/plugins/openlayers/google_icon.png"), "Add Google Hybrid layer", self.iface.mainWindow())
     self.actionAddGoogleSatellite = QAction(QIcon(":/plugins/openlayers/google_icon.png"), "Add Google Satellite layer", self.iface.mainWindow())
+    self.actionAddYahooStreet = QAction(QIcon(":/plugins/openlayers/yahoo_icon.png"), "Add Yahoo Street layer", self.iface.mainWindow())
+    self.actionAddYahooHybrid = QAction(QIcon(":/plugins/openlayers/yahoo_icon.png"), "Add Yahoo Hybrid layer", self.iface.mainWindow())
+    self.actionAddYahooSatellite = QAction(QIcon(":/plugins/openlayers/yahoo_icon.png"), "Add Yahoo Satellite layer", self.iface.mainWindow())
+
     # connect the action to the run method
     QObject.connect(self.actionAddOSM, SIGNAL("triggered()"), self.addOSM)
     QObject.connect(self.actionAddGooglePhysical, SIGNAL("triggered()"), self.addGooglePhysical)
     QObject.connect(self.actionAddGoogleStreets, SIGNAL("triggered()"), self.addGoogleStreets)
     QObject.connect(self.actionAddGoogleHybrid, SIGNAL("triggered()"), self.addGoogleHybrid)
     QObject.connect(self.actionAddGoogleSatellite, SIGNAL("triggered()"), self.addGoogleSatellite)
+    QObject.connect(self.actionAddYahooStreet, SIGNAL("triggered()"), self.addYahooStreet)
+    QObject.connect(self.actionAddYahooHybrid, SIGNAL("triggered()"), self.addYahooHybrid)
+    QObject.connect(self.actionAddYahooSatellite, SIGNAL("triggered()"), self.addYahooSatellite)
 
     # Add toolbar button and menu item
     self.iface.addPluginToMenu("OpenLayers plugin", self.actionAddOSM)
@@ -56,6 +63,9 @@ class OpenlayersPlugin:
     self.iface.addPluginToMenu("OpenLayers plugin", self.actionAddGoogleStreets)
     self.iface.addPluginToMenu("OpenLayers plugin", self.actionAddGoogleHybrid)
     self.iface.addPluginToMenu("OpenLayers plugin", self.actionAddGoogleSatellite)
+    self.iface.addPluginToMenu("OpenLayers plugin", self.actionAddYahooStreet)
+    self.iface.addPluginToMenu("OpenLayers plugin", self.actionAddYahooHybrid)
+    self.iface.addPluginToMenu("OpenLayers plugin", self.actionAddYahooSatellite)
 
     # Register plugin layer type
     QgsPluginLayerRegistry.instance().addPluginLayerType(OpenlayersPluginLayerType(self.iface, self.setReferenceLayer))
@@ -78,6 +88,9 @@ class OpenlayersPlugin:
     self.iface.removePluginMenu("OpenLayers plugin",self.actionAddGoogleStreets)
     self.iface.removePluginMenu("OpenLayers plugin",self.actionAddGoogleHybrid)
     self.iface.removePluginMenu("OpenLayers plugin",self.actionAddGoogleSatellite)
+    self.iface.removePluginMenu("OpenLayers plugin",self.actionAddYahooStreet)
+    self.iface.removePluginMenu("OpenLayers plugin",self.actionAddYahooHybrid)
+    self.iface.removePluginMenu("OpenLayers plugin",self.actionAddYahooSatellite)
 
     # Unregister plugin layer type
     QgsPluginLayerRegistry.instance().removePluginLayerType(OpenlayersLayer.LAYER_TYPE)
@@ -113,6 +126,15 @@ class OpenlayersPlugin:
 
   def addGoogleSatellite(self):
     self.addLayer("Google Satellite", OpenlayersLayer.LAYER_GOOGLE_SATELLITE)
+
+  def addYahooStreet(self):
+    self.addLayer("Yahoo Street", OpenlayersLayer.LAYER_YAHOO_STREET)
+
+  def addYahooHybrid(self):
+    self.addLayer("Yahoo Hybrid", OpenlayersLayer.LAYER_YAHOO_HYBRID)
+
+  def addYahooSatellite(self):
+    self.addLayer("Yahoo Satellite", OpenlayersLayer.LAYER_YAHOO_SATELLITE)
 
   def scaleChanged(self, scale):
     if scale > 0 and self.layer != None:

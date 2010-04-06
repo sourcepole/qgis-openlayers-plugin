@@ -20,6 +20,7 @@
     <script src="OpenLayers.js"></script>
     <script type="text/javascript">
         var map;
+        var loadEnd;
 
         function init() {
             map = new OpenLayers.Map('map', {
@@ -31,9 +32,25 @@
                 maxExtent: new OpenLayers.Bounds(-20037508.34, -20037508.34, 20037508.34, 20037508.34)
             });
 
+            loadEnd = false;
+            function layerLoadStart(event)
+            {
+              loadEnd = false;
+            }
+            function layerLoadEnd(event)
+            {
+              loadEnd = true;
+            }
+
             var osm = new OpenLayers.Layer.OSM(
               "OpenStreetMap",
-              "http://tile.openstreetmap.org/${z}/${x}/${y}.png"
+              "http://tile.openstreetmap.org/${z}/${x}/${y}.png",
+              {
+                eventListeners: {
+                  "loadstart": layerLoadStart,
+                  "loadend": layerLoadEnd
+                }
+              }
             );
             map.addLayer(osm);
             map.addControl(new OpenLayers.Control.Attribution());

@@ -99,11 +99,24 @@ class OpenlayersLayer(QgsPluginLayer):
     if rendererContext.extent() != self.ext:
       self.ext = rendererContext.extent()
       self.page.mainFrame().evaluateJavaScript("map.zoomToExtent(new OpenLayers.Bounds(%f, %f, %f, %f));" % (self.ext.xMinimum(), self.ext.yMinimum(), self.ext.xMaximum(), self.ext.yMaximum()))
-      #Workaround: wait for images to be loaded. Use OL event listener instead
-      QTimer.singleShot(1000, self, SIGNAL("repaintRequested()"))
+      if self.layerType != OpenlayersLayer.LAYER_OSM:
+        #Workaround: wait for images to be loaded. Use OL event listener instead
+        QTimer.singleShot(1000, self, SIGNAL("repaintRequested()"))
+
+    if self.layerType == OpenlayersLayer.LAYER_OSM:
+      # wait for OpenLayers to finish loading
+      # NOTE: does not work with Google and Yahoo layers as they do not emit loadstart and loadend events
+      loadEnd = False
+      while not loadEnd:
+        loadEndOL = self.page.mainFrame().evaluateJavaScript("loadEnd")
+        if not loadEndOL.isNull():
+          loadEnd = loadEndOL.toBool()
+        else:
+          qDebug("OpenlayersLayer Warning: Could not get loadEnd")
+          break
+        qApp.processEvents()
 
     rendererContext.painter().save()
-
     self.page.mainFrame().render(rendererContext.painter())
     rendererContext.painter().restore()
 

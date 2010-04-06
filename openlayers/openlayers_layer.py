@@ -27,6 +27,13 @@ from qgis.core import *
 import os.path
 import math
 
+class OLWebPage(QWebPage):
+  def __init__(self, parent = None):
+    QWebPage.__init__(self, parent)
+
+  def javaScriptConsoleMessage(self, message, lineNumber, sourceID):
+    qDebug( "%s[%d]: %s" % (sourceID, lineNumber, message) )
+
 class OpenlayersLayer(QgsPluginLayer):
 
   LAYER_TYPE = "openlayers"
@@ -63,11 +70,13 @@ class OpenlayersLayer(QgsPluginLayer):
     self.setLayerType(OpenlayersLayer.LAYER_GOOGLE_PHYSICAL)
 
   def draw(self, rendererContext):
-    print "OpenlayersLayer draw"
+    qDebug("OpenlayersLayer draw")
 
     if not self.loaded:
-      self.page = QWebPage()
-      self.page.mainFrame().load(QUrl(os.path.dirname( __file__ ) + "/html/" + self.html))
+      self.page = OLWebPage()
+      url = "file:///" + os.path.dirname( __file__ ).replace("\\", "/") + "/html/" + self.html
+      qDebug( "page file: %s" % url )
+      self.page.mainFrame().load(QUrl(url))
       QObject.connect(self.page, SIGNAL("loadFinished(bool)"), self.loadFinished)
     else:
       self.render(rendererContext)
@@ -75,15 +84,15 @@ class OpenlayersLayer(QgsPluginLayer):
     return True
 
   def loadFinished(self, ok):
-    print "OpenlayersLayer loadFinished ", ok
+    qDebug("OpenlayersLayer loadFinished %d" % ok)
     if ok:
       self.loaded = ok
       self.emit(SIGNAL("repaintRequested()"))
 
   def render(self, rendererContext):
-    print " extent", rendererContext.extent().toString()
-    print " center", rendererContext.extent().center().x(), rendererContext.extent().center().y()
-    print " size", rendererContext.painter().viewport().size()
+    qDebug(" extent: %s" % rendererContext.extent().toString() )
+    qDebug(" center: %lf, %lf" % (rendererContext.extent().center().x(), rendererContext.extent().center().y() ) )
+    qDebug(" size: %d, %d" % (rendererContext.painter().viewport().size().width(), rendererContext.painter().viewport().size().height() ) )
 
     self.page.setViewportSize(rendererContext.painter().viewport().size())
 

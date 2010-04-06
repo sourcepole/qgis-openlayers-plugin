@@ -12,11 +12,10 @@ qgis-openlayers-plugin is a QGIS[http://www.qgis.org/] plugin embedding OpenLaye
 
 - Use the following project properties for OpenLayers layers:
   - Enable on the fly projection
-  - Select custom CRS with PROJ4="+proj=merc +lon_0=0 +lat_ts=0 +x_0=0 +y_0=0 +a=6378137 +b=6378137 +units=m +no_defs"
-- Use zoom level slider to set scale
+  - Select Google Mercator SRS (EPSG:900913)
 
 ==License
 
 qgis-openlayers-plugin is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
 
-<em>Copyright (c) 2010 Pirmin Kalberer & Matthias Walker, Sourcepole AG</em>
+<em>Copyright (c) 2010 Pirmin Kalberer & Mathias Walker, Sourcepole AG</em>

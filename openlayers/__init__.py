@@ -23,9 +23,9 @@ email                : pka at sourcepole.ch
 def name():
   return "OpenLayers Plugin"
 def description():
-  return "TMS, Google Maps, Yahoo Maps, Bing Maps layers and more"
+  return "OpenStreetMap, Google Maps, Yahoo Maps layers and more"
 def version():
-  return "Version 0.25 PRERELEASE"
+  return "Version 0.3 PRERELEASE"
 def qgisMinimumVersion():
   return "1.5"
 def authorName():

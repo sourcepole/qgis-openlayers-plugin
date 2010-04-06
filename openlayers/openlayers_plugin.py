@@ -69,7 +69,7 @@ class OpenlayersPlugin:
     crs.createFromProj4(OpenlayersLayer.SPHERICAL_MERCATOR_PROJ4)
     self.sphericalMercatorSrsId = crs.srsid()
     self.sphericalMercatorEpsg = crs.epsg()
-    print "Spherical Mercator coordinate reference system is:\n  %s\n  EPSG:%d\n  SRS ID = %d" % (crs.description(), crs.epsg(), crs.srsid())
+    qDebug( "Spherical Mercator coordinate reference system is:\n  %s\n  EPSG:%d\n  SRS ID = %d" % (crs.description(), crs.epsg(), crs.srsid()))
 
   def unload(self):
     # Remove the plugin menu item and icon

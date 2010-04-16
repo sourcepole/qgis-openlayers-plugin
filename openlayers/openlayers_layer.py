@@ -67,6 +67,16 @@ class OpenlayersLayer(QgsPluginLayer):
     self.page = None
     self.ext = None
 
+    self.timer = QTimer()
+    self.timer.setSingleShot(True)
+    self.timer.setInterval(500)
+    QObject.connect(self.timer, SIGNAL("timeout()"), self.finalRepaint)
+
+    self.timerMax = QTimer()
+    self.timerMax.setSingleShot(True)
+    self.timerMax.setInterval(5000) # TODO: different timeouts for google/yahoo?
+    QObject.connect(self.timerMax, SIGNAL("timeout()"), self.finalRepaint)
+
     self.setLayerType(OpenlayersLayer.LAYER_GOOGLE_PHYSICAL)
 
   def draw(self, rendererContext):
@@ -78,10 +88,23 @@ class OpenlayersLayer(QgsPluginLayer):
       qDebug( "page file: %s" % url )
       self.page.mainFrame().load(QUrl(url))
       QObject.connect(self.page, SIGNAL("loadFinished(bool)"), self.loadFinished)
+      if self.layerType != OpenlayersLayer.LAYER_OSM:
+        QObject.connect(self.page, SIGNAL("repaintRequested(QRect)"), self.pageRepaintRequested)
     else:
       self.render(rendererContext)
 
     return True
+
+  def pageRepaintRequested(self, rect):
+    if self.loaded:
+      self.timer.stop()
+      self.repaintEnd = False
+      self.timer.start()
+    else:
+      self.repaintEnd = True
+
+  def finalRepaint(self):
+    self.repaintEnd = True
 
   def loadFinished(self, ok):
     qDebug("OpenlayersLayer loadFinished %d" % ok)
@@ -99,9 +122,6 @@ class OpenlayersLayer(QgsPluginLayer):
     if rendererContext.extent() != self.ext:
       self.ext = rendererContext.extent()
       self.page.mainFrame().evaluateJavaScript("map.zoomToExtent(new OpenLayers.Bounds(%f, %f, %f, %f));" % (self.ext.xMinimum(), self.ext.yMinimum(), self.ext.xMaximum(), self.ext.yMaximum()))
-      if self.layerType != OpenlayersLayer.LAYER_OSM:
-        #Workaround: wait for images to be loaded. Use OL event listener instead
-        QTimer.singleShot(1000, self, SIGNAL("repaintRequested()"))
 
     if self.layerType == OpenlayersLayer.LAYER_OSM:
       # wait for OpenLayers to finish loading
@@ -115,6 +135,13 @@ class OpenlayersLayer(QgsPluginLayer):
           qDebug("OpenlayersLayer Warning: Could not get loadEnd")
           break
         qApp.processEvents()
+    else:
+      # wait for timeout after pageRepaintRequested
+      self.repaintEnd = False
+      self.timerMax.start()
+      while not self.repaintEnd:
+        qApp.processEvents()
+      self.timerMax.stop()
 
     rendererContext.painter().save()
     self.page.mainFrame().render(rendererContext.painter())

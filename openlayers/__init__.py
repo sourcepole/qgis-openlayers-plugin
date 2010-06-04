@@ -20,6 +20,15 @@ email                : pka at sourcepole.ch
  ***************************************************************************/
  This script initializes the plugin, making it known to QGIS.
 """
+
+##lines for eclipse debug. Comment me when publishing.
+##Use DEBUG Perspective and Start the pydev server
+#import os, sys
+#sys.path.append(r"C:\Eclipse\plugins\org.python.pydev.debug_1.5.7.2010050621\pysrc")
+#import pydevd
+#pydevd.settrace()
+##end of eclipse debug
+
 def name():
   return "OpenLayers Plugin"
 def description():

@@ -22,6 +22,7 @@ email                : pka at sourcepole.ch
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.QtWebKit import *
+from PyQt4.QtNetwork import *
 from qgis.core import *
 
 import os.path
@@ -30,9 +31,38 @@ import math
 class OLWebPage(QWebPage):
   def __init__(self, parent = None):
     QWebPage.__init__(self, parent)
+    self.__manager = None # Need persist for PROXY
+    # Set Proxy in webpage
+    proxy = self.__getProxy()
+    if not proxy is None:
+      self.__manager = QNetworkAccessManager()
+      self.__manager.setProxy(proxy)
+      self.setNetworkAccessManager(self.__manager)    
 
   def javaScriptConsoleMessage(self, message, lineNumber, sourceID):
     qDebug( "%s[%d]: %s" % (sourceID, lineNumber, message) )
+
+  def __getProxy(self):
+    # Adaption by source of "Plugin Installer - Version 1.0.10" 
+    settings = QSettings()
+    settings.beginGroup("proxy")
+    if settings.value("/proxyEnabled").toBool():
+      proxy = QNetworkProxy()
+      proxyType = settings.value( "/proxyType", QVariant(0)).toString()
+      if proxyType in ["1","Socks5Proxy"]: proxy.setType(QNetworkProxy.Socks5Proxy)
+      elif proxyType in ["2","NoProxy"]: proxy.setType(QNetworkProxy.NoProxy)
+      elif proxyType in ["3","HttpProxy"]: proxy.setType(QNetworkProxy.HttpProxy)
+      elif proxyType in ["4","HttpCachingProxy"] and QT_VERSION >= 0X040400: proxy.setType(QNetworkProxy.HttpCachingProxy)
+      elif proxyType in ["5","FtpCachingProxy"] and QT_VERSION >= 0X040400: proxy.setType(QNetworkProxy.FtpCachingProxy)
+      else: proxy.setType(QNetworkProxy.DefaultProxy)
+      proxy.setHostName(settings.value("/proxyHost").toString())
+      proxy.setPort(settings.value("/proxyPort").toUInt()[0])
+      proxy.setUser(settings.value("/proxyUser").toString())
+      proxy.setPassword(settings.value("/proxyPassword").toString())
+      return proxy
+    else:
+      return None
+    settings.endGroup()
 
 class OpenlayersLayer(QgsPluginLayer):
 
@@ -49,22 +79,16 @@ class OpenlayersLayer(QgsPluginLayer):
   LAYER_YAHOO_HYBRID =     6
   LAYER_YAHOO_SATELLITE =  7
 
-  # use Proj4 result of QGIS Google Mercator
-  SPHERICAL_MERCATOR_PROJ4 = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs"
-
-  def __init__(self, iface):
+  def __init__(self, iface, coordRSGoogle):
     QgsPluginLayer.__init__(self, OpenlayersLayer.LAYER_TYPE, "OpenLayers plugin layer")
     self.setValid(True)
-
-    crs = QgsCoordinateReferenceSystem()
-    crs.createFromProj4(OpenlayersLayer.SPHERICAL_MERCATOR_PROJ4)
-    self.setCrs(crs)
+    self.setCrs(coordRSGoogle)
 
     self.setExtent(QgsRectangle(-20037508.34, -20037508.34, 20037508.34, 20037508.34))
 
     self.iface = iface
     self.loaded = False
-    self.page = None
+    self.page = OLWebPage()
     self.ext = None
 
     self.timer = QTimer()

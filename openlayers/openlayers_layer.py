@@ -40,7 +40,7 @@ class OLWebPage(QWebPage):
       self.setNetworkAccessManager(self.__manager)    
 
   def javaScriptConsoleMessage(self, message, lineNumber, sourceID):
-    qDebug( "%s[%d]: %s" % (sourceID, lineNumber, message) )
+    self.debugMessage( "%s[%d]: %s" % (sourceID, lineNumber, message) )
 
   def __getProxy(self):
     # Adaption by source of "Plugin Installer - Version 1.0.10" 
@@ -104,12 +104,12 @@ class OpenlayersLayer(QgsPluginLayer):
     self.setLayerType(OpenlayersLayer.LAYER_GOOGLE_PHYSICAL)
 
   def draw(self, rendererContext):
-    qDebug("OpenlayersLayer draw")
+    self.debugMessage("OpenlayersLayer draw")
 
     if not self.loaded:
       self.page = OLWebPage()
       url = "file:///" + os.path.dirname( __file__ ).replace("\\", "/") + "/html/" + self.html
-      qDebug( "page file: %s" % url )
+      self.debugMessage( "page file: %s" % url )
       self.page.mainFrame().load(QUrl(url))
       QObject.connect(self.page, SIGNAL("loadFinished(bool)"), self.loadFinished)
       if self.layerType != OpenlayersLayer.LAYER_OSM:
@@ -131,15 +131,15 @@ class OpenlayersLayer(QgsPluginLayer):
     self.repaintEnd = True
 
   def loadFinished(self, ok):
-    qDebug("OpenlayersLayer loadFinished %d" % ok)
+    self.debugMessage("OpenlayersLayer loadFinished %d" % ok)
     if ok:
       self.loaded = ok
       self.emit(SIGNAL("repaintRequested()"))
 
   def render(self, rendererContext):
-    qDebug(" extent: %s" % rendererContext.extent().toString() )
-    qDebug(" center: %lf, %lf" % (rendererContext.extent().center().x(), rendererContext.extent().center().y() ) )
-    qDebug(" size: %d, %d" % (rendererContext.painter().viewport().size().width(), rendererContext.painter().viewport().size().height() ) )
+    self.debugMessage(" extent: %s" % rendererContext.extent().toString() )
+    self.debugMessage(" center: %lf, %lf" % (rendererContext.extent().center().x(), rendererContext.extent().center().y() ) )
+    self.debugMessage(" size: %d, %d" % (rendererContext.painter().viewport().size().width(), rendererContext.painter().viewport().size().height() ) )
 
     self.page.setViewportSize(rendererContext.painter().viewport().size())
 
@@ -156,7 +156,7 @@ class OpenlayersLayer(QgsPluginLayer):
         if not loadEndOL.isNull():
           loadEnd = loadEndOL.toBool()
         else:
-          qDebug("OpenlayersLayer Warning: Could not get loadEnd")
+          self.debugMessage("OpenlayersLayer Warning: Could not get loadEnd")
           break
         qApp.processEvents()
     else:
@@ -205,9 +205,13 @@ class OpenlayersLayer(QgsPluginLayer):
       self.page.mainFrame().evaluateJavaScript("map.zoomToExtent(new OpenLayers.Bounds(%f, %f, %f, %f));" % (extent.xMinimum(), extent.yMinimum(), extent.xMaximum(), extent.yMaximum()))
       scale = self.page.mainFrame().evaluateJavaScript("map.getScale()")
       if scale.isNull():
-        print "OpenlayersLayer Warning: Could not get scale from OpenLayers map"
+        self.debugMessage("OpenlayersLayer Warning: Could not get scale from OpenLayers map")
         return 0.0
       else:
         return float(scale.toString())
     else:
       return 0.0
+
+  def debugMessage(self, msg):
+    #qDebug(msg)
+    pass

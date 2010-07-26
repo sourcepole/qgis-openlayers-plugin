@@ -64,6 +64,10 @@ class OLWebPage(QWebPage):
       return None
     settings.endGroup()
 
+  def debugMessage(self, msg):
+    #qDebug(msg)
+    pass
+
 class OpenlayersLayer(QgsPluginLayer):
 
   LAYER_TYPE = "openlayers"

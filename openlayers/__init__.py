@@ -34,11 +34,13 @@ def name():
 def description():
   return "OpenStreetMap, Google Maps, Yahoo Maps layers and more"
 def version():
-  return "Version 0.41 PRERELEASE"
+  return "0.42"
 def qgisMinimumVersion():
   return "1.5"
 def authorName():
   return "Sourcepole"
+def homepage():
+  return "http://github.com/sourcepole/qgis-openlayers-plugin"
 def classFactory(iface):
   from openlayers_plugin import OpenlayersPlugin
   return OpenlayersPlugin(iface)

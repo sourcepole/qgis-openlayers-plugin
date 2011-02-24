@@ -1,0 +1,18 @@
+body {
+    margin: 0;
+}
+#map {
+    width: 100%;
+    height: 100%;
+}
+.olControlAttribution {
+    font-size: smaller;
+    right: 3px;
+    bottom: 0.5em;
+    position: absolute;
+    display: block;
+}
+/* avoid pink tiles */
+.olImageLoadError {
+    background-color: transparent !important;
+}

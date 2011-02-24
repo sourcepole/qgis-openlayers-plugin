@@ -71,19 +71,11 @@ class OpenlayersLayer(QgsPluginLayer):
   MAX_ZOOM_LEVEL = 15
   SCALE_ON_MAX_ZOOM = 13540 # QGIS scale for 72 dpi
 
-  LAYER_GOOGLE_PHYSICAL =  0
-  LAYER_GOOGLE_STREETS =   1
-  LAYER_GOOGLE_HYBRID =    2
-  LAYER_GOOGLE_SATELLITE = 3
-  LAYER_OSM =              4
-  LAYER_YAHOO_STREET =     5
-  LAYER_YAHOO_HYBRID =     6
-  LAYER_YAHOO_SATELLITE =  7
-
-  def __init__(self, iface, coordRSGoogle):
+  def __init__(self, iface, coordRSGoogle, olLayerTypeRegistry):
     QgsPluginLayer.__init__(self, OpenlayersLayer.LAYER_TYPE, "OpenLayers plugin layer")
     self.setValid(True)
     self.setCrs(coordRSGoogle)
+    self.olLayerTypeRegistry = olLayerTypeRegistry
 
     self.setExtent(QgsRectangle(-20037508.34, -20037508.34, 20037508.34, 20037508.34))
 
@@ -102,18 +94,18 @@ class OpenlayersLayer(QgsPluginLayer):
     self.timerMax.setInterval(5000) # TODO: different timeouts for google/yahoo?
     QObject.connect(self.timerMax, SIGNAL("timeout()"), self.finalRepaint)
 
-    self.setLayerType(OpenlayersLayer.LAYER_GOOGLE_PHYSICAL)
+    self.setLayerType( self.olLayerTypeRegistry.getById(0) )
 
   def draw(self, rendererContext):
     qDebug("OpenlayersLayer draw")
 
     if not self.loaded:
       self.page = OLWebPage()
-      url = "file:///" + os.path.dirname( __file__ ).replace("\\", "/") + "/html/" + self.html
+      url = "file:///" + os.path.dirname( __file__ ).replace("\\", "/") + "/html/" + self.layerType.html
       qDebug( "page file: %s" % url )
       self.page.mainFrame().load(QUrl(url))
       QObject.connect(self.page, SIGNAL("loadFinished(bool)"), self.loadFinished)
-      if self.layerType != OpenlayersLayer.LAYER_OSM:
+      if not self.layerType.emitsLoadEnd:
         QObject.connect(self.page, SIGNAL("repaintRequested(QRect)"), self.pageRepaintRequested)
     else:
       self.render(rendererContext)
@@ -148,7 +140,7 @@ class OpenlayersLayer(QgsPluginLayer):
       self.ext = rendererContext.extent()
       self.page.mainFrame().evaluateJavaScript("map.zoomToExtent(new OpenLayers.Bounds(%f, %f, %f, %f));" % (self.ext.xMinimum(), self.ext.yMinimum(), self.ext.xMaximum(), self.ext.yMaximum()))
 
-    if self.layerType == OpenlayersLayer.LAYER_OSM:
+    if self.layerType.emitsLoadEnd:
       # wait for OpenLayers to finish loading
       # NOTE: does not work with Google and Yahoo layers as they do not emit loadstart and loadend events
       loadEnd = False
@@ -174,7 +166,7 @@ class OpenlayersLayer(QgsPluginLayer):
 
   def readXml(self, node):
     # custom properties
-    self.setLayerType( int(node.toElement().attribute("ol_layer_type", "%d" % OpenlayersLayer.LAYER_GOOGLE_PHYSICAL)) )
+    self.setLayerType( self.olLayerTypeRegistry.getById( int(node.toElement().attribute("ol_layer_type", 0)) ) )
     return True
 
   def writeXml(self, node, doc):
@@ -183,22 +175,11 @@ class OpenlayersLayer(QgsPluginLayer):
     element.setAttribute("type", "plugin")
     element.setAttribute("name", OpenlayersLayer.LAYER_TYPE);
     # custom properties
-    element.setAttribute("ol_layer_type", str(self.layerType))
+    element.setAttribute("ol_layer_type", str(self.layerType.id))
     return True
 
   def setLayerType(self, layerType):
     self.layerType = layerType
-    layerSelect = {
-      OpenlayersLayer.LAYER_GOOGLE_PHYSICAL : "google_physical.html",
-      OpenlayersLayer.LAYER_GOOGLE_STREETS : "google_streets.html",
-      OpenlayersLayer.LAYER_GOOGLE_HYBRID : "google_hybrid.html",
-      OpenlayersLayer.LAYER_GOOGLE_SATELLITE : "google_satellite.html",
-      OpenlayersLayer.LAYER_OSM : "osm.html",
-      OpenlayersLayer.LAYER_YAHOO_STREET : "yahoo_street.html",
-      OpenlayersLayer.LAYER_YAHOO_HYBRID : "yahoo_hybrid.html",
-      OpenlayersLayer.LAYER_YAHOO_SATELLITE : "yahoo_satellite.html"
-    }
-    self.html = layerSelect.get(layerType, "google_physical.html")
 
   def scaleFromExtent(self, extent):
     if self.page != None:

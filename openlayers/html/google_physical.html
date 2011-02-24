@@ -22,10 +22,7 @@
                 { type: google.maps.MapTypeId.TERRAIN }
             );
             map.addLayer(gmap);
-            map.setCenter(new OpenLayers.LonLat(0, 0).transform(
-                new OpenLayers.Projection("EPSG:4326"),
-                map.getProjectionObject()
-                ), 2);
+            map.setCenter(new OpenLayers.LonLat(0, 0), 2);
 
         }
     </script>

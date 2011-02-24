@@ -79,7 +79,7 @@ class OpenlayersPlugin:
     self.layerAddActions = []
     for layerType in self.olLayerTypeRegistry.types():
       # Create actions for adding layers
-      action = QAction(QIcon(":/plugins/openlayers/%s" % (layerType.icon)), "Add %s layer" % layerType.name, self.iface.mainWindow())
+      action = QAction(QIcon(":/plugins/openlayers/%s" % layerType.icon), "Add %s layer" % layerType.name, self.iface.mainWindow())
       self.layerAddActions.append(action)
       QObject.connect(action, SIGNAL("triggered()"), layerType.addLayer)
       # Add toolbar button and menu item

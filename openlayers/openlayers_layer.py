@@ -166,7 +166,7 @@ class OpenlayersLayer(QgsPluginLayer):
 
   def readXml(self, node):
     # custom properties
-    self.setLayerType( self.olLayerTypeRegistry.getById( int(node.toElement().attribute("ol_layer_type", 0)) ) )
+    self.setLayerType( self.olLayerTypeRegistry.getById( int(node.toElement().attribute("ol_layer_type", "0")) ) )
     return True
 
   def writeXml(self, node, doc):

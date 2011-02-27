@@ -5,14 +5,11 @@ qgis-openlayers-plugin is a QGIS[http://www.qgis.org/] plugin embedding OpenLaye
 
 ==Installation
 
+=== Bug tracker and Wiki
+ http://hub.qgis.org/projects/openlayers
+
 === Plugin repository
  http://build.sourcepole.ch/qgis/plugins.xml
-
-==Usage
-
-- Use the following project properties for OpenLayers layers:
-  - Enable on the fly projection
-  - Select Google Mercator SRS (EPSG:900913)
 
 ==License
 

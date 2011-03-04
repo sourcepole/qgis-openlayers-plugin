@@ -29,7 +29,7 @@ import math
 
 from openlayers_layer import OpenlayersLayer
 from openlayers_plugin_layer_type import OpenlayersPluginLayerType
-
+from openlayers_ovwidget import OpenLayersOverviewWidget
 
 class OlLayerType:
 
@@ -60,6 +60,28 @@ class OlLayerTypeRegistry:
     return self.olLayerTypes[id]
 
 
+class OLOverview(object):
+  def __init__(self, iface, olLayerTypeRegistry):
+    self.__iface = iface
+    self.__olLayerTypeRegistry = olLayerTypeRegistry
+    self.__dockwidget = None
+    self.__oloWidget = None
+  # Private
+  def __setDocWidget(self):
+    self.__dockwidget = QDockWidget("Openlayers Overview" , self.__iface.mainWindow() )
+    self.__dockwidget.setObjectName("dwOpenlayersOverview")
+    self.__oloWidget = OpenLayersOverviewWidget(self.__iface, self.__dockwidget, self.__olLayerTypeRegistry)
+    self.__dockwidget.setWidget(self.__oloWidget)
+  # Public
+  def initGui(self):
+    self.__setDocWidget()
+    self.__iface.addDockWidget( Qt.LeftDockWidgetArea, self.__dockwidget)
+  def unload(self):
+    self.__dockwidget.close()
+    self.__iface.removeDockWidget( self.__dockwidget )
+    del self.__oloWidget
+
+
 class OpenlayersPlugin:
 
   def __init__(self, iface):
@@ -74,6 +96,7 @@ class OpenlayersPlugin:
     self.olLayerTypeRegistry.add( OlLayerType(self, 5, 'Yahoo Street',     'yahoo_icon.png',  'yahoo_street.html') )
     self.olLayerTypeRegistry.add( OlLayerType(self, 6, 'Yahoo Hybrid',     'yahoo_icon.png',  'yahoo_hybrid.html') )
     self.olLayerTypeRegistry.add( OlLayerType(self, 7, 'Yahoo Satellite',  'yahoo_icon.png',  'yahoo_satellite.html') )
+    self.olOverview = OLOverview( iface, self.olLayerTypeRegistry )
 
   def initGui(self):
     self.layerAddActions = []
@@ -95,6 +118,8 @@ class OpenlayersPlugin:
     self.layer = None
     QObject.connect(self.iface.mapCanvas(), SIGNAL("scaleChanged(double)"), self.scaleChanged)
     QObject.connect(QgsMapLayerRegistry.instance(), SIGNAL("layerWillBeRemoved(QString)"), self.removeLayer)
+    
+    self.olOverview.initGui()
 
   def unload(self):
     # Remove the plugin menu item and icon
@@ -106,6 +131,9 @@ class OpenlayersPlugin:
 
     QObject.disconnect(self.iface.mapCanvas(), SIGNAL("scaleChanged(double)"), self.scaleChanged)
     QObject.disconnect(QgsMapLayerRegistry.instance(), SIGNAL("layerWillBeRemoved(QString)"), self.removeLayer)
+    
+    self.olOverview.unload()
+    del self.olOverview
 
   def addLayer(self, layerType):
 

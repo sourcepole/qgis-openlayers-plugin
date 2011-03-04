@@ -4,9 +4,10 @@
     <link rel="stylesheet" href="qgis.css" type="text/css">
     <script src="http://api.maps.yahoo.com/ajaxymap?v=3.0&appid=euzuro-openlayers"></script>
     <script src="OpenLayers-2.8.js"></script>
+    <script src="OlOverviewMarker.js"></script>
     <script type="text/javascript">
         var map;
-
+        var oloMarker; // OpenLayer Overview Marker
         function init() {
             map = new OpenLayers.Map('map', {
                 theme: null,
@@ -23,6 +24,7 @@
             );
             map.addLayer(yahoo);
             map.setCenter(new OpenLayers.LonLat(0, 0), 2);
+            oloMarker = new OlOverviewMarker(map, getPathUpper(document.URL) + '/x.png')
         }
     </script>
   </head>

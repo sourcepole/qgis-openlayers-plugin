@@ -3,10 +3,11 @@
     <title>OpenLayers OpenStreetMap Layer</title>
     <link rel="stylesheet" href="qgis.css" type="text/css">
     <script src="OpenLayers.js"></script>
+    <script src="OlOverviewMarker.js"></script>
     <script type="text/javascript">
         var map;
         var loadEnd;
-
+        var oloMarker; // OpenLayer Overview Marker
         function init() {
             map = new OpenLayers.Map('map', {
                 theme: null,
@@ -40,6 +41,7 @@
             map.addLayer(osm);
             map.addControl(new OpenLayers.Control.Attribution());
             map.setCenter(new OpenLayers.LonLat(0, 0), 2);
+            oloMarker = new OlOverviewMarker(map, getPathUpper(document.URL) + '/x.png')
         }
     </script>
   </head>

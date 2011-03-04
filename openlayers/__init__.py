@@ -30,7 +30,7 @@ email                : pka at sourcepole.ch
 ##end of eclipse debug
 
 def name():
-  return "OpenLayers Plugin"
+  return "OpenLayers Plugin  - Beta Integrating"
 def description():
   return "OpenStreetMap, Google Maps, Yahoo Maps layers and more"
 def version():
@@ -38,7 +38,10 @@ def version():
 def qgisMinimumVersion():
   return "1.5"
 def authorName():
-  return "Sourcepole"
+  return "Sourcepole & Luiz Motta"
+def icon():
+  return "openlayers.png"
+
 def homepage():
   return "http://hub.qgis.org/projects/openlayers/wiki"
 def classFactory(iface):

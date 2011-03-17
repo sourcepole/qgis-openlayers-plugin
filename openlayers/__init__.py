@@ -30,7 +30,7 @@ email                : pka at sourcepole.ch
 ##end of eclipse debug
 
 def name():
-  return "OpenLayers Plugin  - Beta Integrating"
+  return "OpenLayers Plugin"
 def description():
   return "OpenStreetMap, Google Maps, Yahoo Maps layers and more"
 def version():

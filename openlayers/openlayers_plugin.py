@@ -61,32 +61,46 @@ class OlLayerTypeRegistry:
 
 
 class OLOverview(object):
+
   def __init__(self, iface, olLayerTypeRegistry):
     self.__iface = iface
     self.__olLayerTypeRegistry = olLayerTypeRegistry
     self.__dockwidget = None
     self.__oloWidget = None
+
   # Private
   def __setDocWidget(self):
     self.__dockwidget = QDockWidget("Openlayers Overview" , self.__iface.mainWindow() )
     self.__dockwidget.setObjectName("dwOpenlayersOverview")
     self.__oloWidget = OpenLayersOverviewWidget(self.__iface, self.__dockwidget, self.__olLayerTypeRegistry)
     self.__dockwidget.setWidget(self.__oloWidget)
-  # Public
-  def initGui(self):
+
+  def __initGui(self):
     self.__setDocWidget()
     self.__iface.addDockWidget( Qt.LeftDockWidgetArea, self.__dockwidget)
-  def unload(self):
+
+  def __unload(self):
     self.__dockwidget.close()
     self.__iface.removeDockWidget( self.__dockwidget )
     del self.__oloWidget
+    self.__dockwidget = None
 
+  # Public
+  def setVisible(self, visible):
+    if visible:
+      if self.__dockwidget is None:
+        self.__initGui()
+    else:
+      if not self.__dockwidget is None:
+        self.__unload()
+ 
 
 class OpenlayersPlugin:
 
   def __init__(self, iface):
     # Save reference to the QGIS interface
     self.iface = iface
+    # Layers
     self.olLayerTypeRegistry = OlLayerTypeRegistry()
     self.olLayerTypeRegistry.add( OlLayerType(self, 0, 'Google Physical',  'google_icon.png', 'google_physical.html') )
     self.olLayerTypeRegistry.add( OlLayerType(self, 1, 'Google Streets',   'google_icon.png', 'google_streets.html') )
@@ -96,9 +110,17 @@ class OpenlayersPlugin:
     self.olLayerTypeRegistry.add( OlLayerType(self, 5, 'Yahoo Street',     'yahoo_icon.png',  'yahoo_street.html') )
     self.olLayerTypeRegistry.add( OlLayerType(self, 6, 'Yahoo Hybrid',     'yahoo_icon.png',  'yahoo_hybrid.html') )
     self.olLayerTypeRegistry.add( OlLayerType(self, 7, 'Yahoo Satellite',  'yahoo_icon.png',  'yahoo_satellite.html') )
+    # Overview
     self.olOverview = OLOverview( iface, self.olLayerTypeRegistry )
 
   def initGui(self):
+    # Overview
+    self.overviewAddAction = QAction("Openlayers Overview", self.iface.mainWindow())
+    self.overviewAddAction.setCheckable(True)
+    self.overviewAddAction.setChecked(False)
+    QObject.connect(self.overviewAddAction, SIGNAL(" toggled(bool)"), self.olOverview.setVisible )
+    self.iface.addPluginToMenu("OpenLayers plugin", self.overviewAddAction)
+    # Layers
     self.layerAddActions = []
     for layerType in self.olLayerTypeRegistry.types():
       # Create actions for adding layers
@@ -119,12 +141,12 @@ class OpenlayersPlugin:
     QObject.connect(self.iface.mapCanvas(), SIGNAL("scaleChanged(double)"), self.scaleChanged)
     QObject.connect(QgsMapLayerRegistry.instance(), SIGNAL("layerWillBeRemoved(QString)"), self.removeLayer)
     
-    self.olOverview.initGui()
-
   def unload(self):
     # Remove the plugin menu item and icon
     for action in self.layerAddActions:
       self.iface.removePluginMenu("OpenLayers plugin", action)
+
+    self.iface.removePluginMenu("OpenLayers plugin", self.overviewAddAction)  
 
     # Unregister plugin layer type
     QgsPluginLayerRegistry.instance().removePluginLayerType(OpenlayersLayer.LAYER_TYPE)
@@ -132,7 +154,7 @@ class OpenlayersPlugin:
     QObject.disconnect(self.iface.mapCanvas(), SIGNAL("scaleChanged(double)"), self.scaleChanged)
     QObject.disconnect(QgsMapLayerRegistry.instance(), SIGNAL("layerWillBeRemoved(QString)"), self.removeLayer)
     
-    self.olOverview.unload()
+    self.olOverview.setVisible( False )
     del self.olOverview
 
   def addLayer(self, layerType):

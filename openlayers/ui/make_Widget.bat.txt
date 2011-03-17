@@ -1,0 +1,5 @@
+Use the console of OSGEO4W
+C:\OSGeo4W\bin\pyuic4.bat -o openlayers_ovwidgetbase.py openlayers_ovwidgetbase.ui
+
+Linux
+python /usr/lib/pymodules/python2.6/PyQt4/uic/pyuic.py  -o openlayers_ovwidgetbase.py openlayers_ovwidgetbase.ui

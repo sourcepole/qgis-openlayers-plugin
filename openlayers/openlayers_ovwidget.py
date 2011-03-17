@@ -35,6 +35,7 @@ class MarkerCursor(QtCore.QObject):
     self.__srsOL = srsOL
     self.__canvas = mapCanvas
     self.__marker = None
+    self.__showMarker = True
   def __del__(self):
     self.reset()
   def __refresh(self, pointCenter):
@@ -44,12 +45,16 @@ class MarkerCursor(QtCore.QObject):
     self.__marker.setCenter(pointCenter)
     self.__marker.setIconType(gui.QgsVertexMarker.ICON_X )
     self.__marker.setPenWidth(4)
+  def setVisible(self, visible):
+    self.__showMarker = visible
   def reset(self):
     self.__canvas.scene().removeItem(self.__marker) 
     del self.__marker
     self.__marker = None
   @QtCore.pyqtSlot(str)    
   def changeMarker(self, strListExtent):
+    if not self.__showMarker:
+      return
     # left, bottom, right, top
     left, bottom, right, top = [ float(item) for item in strListExtent.split(',') ]
     pointCenter = core.QgsRectangle(core.QgsPoint(left, top), core.QgsPoint(right, bottom)).center() 
@@ -76,12 +81,11 @@ class OpenLayersOverviewWidget(QtGui.QWidget,Ui_Form):
     bindogr.initOgr()
     self.__init()
   def __init(self):
+    self.checkBoxHideCross.setEnabled(False)
     self.__populateTypeMapGUI()
     self.__populateButtonBox()
     self.__registerObjJS()
     self.lbStatusRead.setVisible( False )
-    # Disable map browser
-    self.__signal_checkBoxEnableMap_stateChanged(QtCore.Qt.Unchecked) 
     self.__setConnections()
     # Proxy
     proxy = getProxy()
@@ -117,8 +121,11 @@ class OpenLayersOverviewWidget(QtGui.QWidget,Ui_Form):
       icon  = QtGui.QIcon( pathPlugin % layer.icon )
       self.comboBoxTypeMap.addItem(icon, name, QtCore.QVariant(id))
   def __setConnections(self):
+    # Check Box
     self.connect(self.checkBoxEnableMap, QtCore.SIGNAL("stateChanged (int)"),
                  self.__signal_checkBoxEnableMap_stateChanged)
+    self.connect(self.checkBoxHideCross, QtCore.SIGNAL("stateChanged (int)"),
+                 self.__signal_checkBoxHideCross_stateChanged)
     # comboBoxTypeMap
     self.connect(self.comboBoxTypeMap, QtCore.SIGNAL(" currentIndexChanged (int)"),
                  self.__signal_comboBoxTypeMap_currentIndexChanged)
@@ -171,6 +178,14 @@ class OpenLayersOverviewWidget(QtGui.QWidget,Ui_Form):
     self.pbAddRaster.setEnabled(enable)
     self.pbCopyKml.setEnabled(enable)
     self.pbSaveImg.setEnabled(enable)
+    self.checkBoxHideCross.setEnabled(enable)
+  def __signal_checkBoxHideCross_stateChanged(self, state):
+    if state == QtCore.Qt.Checked:
+      self.__marker.reset()
+      self.__marker.setVisible(False)
+    else:
+      self.__marker.setVisible(True)
+      self.__refreshMapOL()
   def __signal_DocWidget_visibilityChanged(self, visible):
     if self.__canvas.layerCount() == 0:
       return

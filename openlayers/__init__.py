@@ -38,7 +38,7 @@ def version():
 def qgisMinimumVersion():
   return "1.5"
 def authorName():
-  return "Sourcepole & Luiz Motta"
+  return "Sourcepole &amp; Luiz Motta"
 def icon():
   return "openlayers.png"
 

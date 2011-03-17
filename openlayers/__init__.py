@@ -24,7 +24,7 @@ email                : pka at sourcepole.ch
 ##lines for eclipse debug. Comment me when publishing.
 ##Use DEBUG Perspective and Start the pydev server
 #import os, sys
-#sys.path.append(r"C:\Eclipse\plugins\org.python.pydev.debug_1.5.7.2010050621\pysrc")
+#sys.path.append(r"C:\eclipse\plugins\org.python.pydev.debug_1.6.5.2011022818\pysrc")
 #import pydevd
 #pydevd.settrace()
 ##end of eclipse debug

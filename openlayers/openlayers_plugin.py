@@ -19,6 +19,9 @@ email                : pka at sourcepole.ch
  *                                                                         *
  ***************************************************************************/
 """
+
+import os.path
+
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.QtWebKit import *
@@ -102,14 +105,28 @@ class OpenlayersPlugin:
     self.iface = iface
     # Layers
     self.olLayerTypeRegistry = OlLayerTypeRegistry()
-    self.olLayerTypeRegistry.add( OlLayerType(self, 0, 'Google Physical',  'google_icon.png', 'google_physical.html') )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 1, 'Google Streets',   'google_icon.png', 'google_streets.html') )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 2, 'Google Hybrid',    'google_icon.png', 'google_hybrid.html') )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 3, 'Google Satellite', 'google_icon.png', 'google_satellite.html') )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 4, 'OpenStreetMap',    'osm_icon.png',    'osm.html', True) )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 5, 'Yahoo Street',     'yahoo_icon.png',  'yahoo_street.html') )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 6, 'Yahoo Hybrid',     'yahoo_icon.png',  'yahoo_hybrid.html') )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 7, 'Yahoo Satellite',  'yahoo_icon.png',  'yahoo_satellite.html') )
+    id = 0
+    self.olLayerTypeRegistry.add( OlLayerType(self, id, 'Google Physical',  'google_icon.png', 'google_physical.html') )
+    id += 1
+    self.olLayerTypeRegistry.add( OlLayerType(self, id, 'Google Streets',   'google_icon.png', 'google_streets.html') )
+    id += 1
+    self.olLayerTypeRegistry.add( OlLayerType(self, id, 'Google Hybrid',    'google_icon.png', 'google_hybrid.html') )
+    id += 1
+    self.olLayerTypeRegistry.add( OlLayerType(self, id, 'Google Satellite', 'google_icon.png', 'google_satellite.html') )
+    id += 1
+    self.olLayerTypeRegistry.add( OlLayerType(self, id, 'OpenStreetMap',    'osm_icon.png',    'osm.html', True) )
+    id += 1
+    self.olLayerTypeRegistry.add( OlLayerType(self, id, 'Yahoo Street',     'yahoo_icon.png',  'yahoo_street.html') )
+    id += 1
+    self.olLayerTypeRegistry.add( OlLayerType(self, id, 'Yahoo Hybrid',     'yahoo_icon.png',  'yahoo_hybrid.html') )
+    id += 1
+    self.olLayerTypeRegistry.add( OlLayerType(self, id, 'Yahoo Satellite',  'yahoo_icon.png',  'yahoo_satellite.html') )
+    id += 1
+    self.olLayerTypeRegistry.add( OlLayerType(self, id, 'Road',  'bing_icon.png',  'bing_road.html') )
+    id += 1
+    self.olLayerTypeRegistry.add( OlLayerType(self, id, 'Bing Aerial',  'bing_icon.png',  'bing_aerial.html') )
+    id += 1
+    self.olLayerTypeRegistry.add( OlLayerType(self, id, 'Bing Aerial with labels',  'bing_icon.png',  'bing_aerial-labels.html') )
     # Overview
     self.olOverview = OLOverview( iface, self.olLayerTypeRegistry )
 
@@ -122,9 +139,10 @@ class OpenlayersPlugin:
     self.iface.addPluginToMenu("OpenLayers plugin", self.overviewAddAction)
     # Layers
     self.layerAddActions = []
+    pathPlugin = "%s%s%%s" % ( os.path.dirname( __file__ ), os.path.sep )
     for layerType in self.olLayerTypeRegistry.types():
       # Create actions for adding layers
-      action = QAction(QIcon(":/plugins/openlayers/%s" % layerType.icon), "Add %s layer" % layerType.name, self.iface.mainWindow())
+      action = QAction(QIcon(pathPlugin % layerType.icon), "Add %s layer" % layerType.name, self.iface.mainWindow())
       self.layerAddActions.append(action)
       QObject.connect(action, SIGNAL("triggered()"), layerType.addLayer)
       # Add toolbar button and menu item

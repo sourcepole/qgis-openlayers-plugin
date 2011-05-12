@@ -17,28 +17,29 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
- This script initializes the plugin, making it known to QGIS.
 """
-from PyQt4 import QtCore, QtNetwork
+from PyQt4.QtCore import *
+from PyQt4.QtNetwork import *
 
 def getProxy():
   # Adaption by source of "Plugin Installer - Version 1.0.10" 
-  settings = QtCore.QSettings()
+  proxy = None
+  settings = QSettings()
   settings.beginGroup("proxy")
   if settings.value("/proxyEnabled").toBool():
-    proxy = QtNetwork.QNetworkProxy()
-    proxyType = settings.value( "/proxyType", QtCore.QVariant(0)).toString()
-    if proxyType in ["1","Socks5Proxy"]: proxy.setType(QtNetwork.QNetworkProxy.Socks5Proxy)
-    elif proxyType in ["2","NoProxy"]: proxy.setType(QtNetwork.QNetworkProxy.NoProxy)
-    elif proxyType in ["3","HttpProxy"]: proxy.setType(QtNetwork.QNetworkProxy.HttpProxy)
-    elif proxyType in ["4","HttpCachingProxy"] and QT_VERSION >= 0X040400: proxy.setType(QtNetwork.QNetworkProxy.HttpCachingProxy)
-    elif proxyType in ["5","FtpCachingProxy"] and QT_VERSION >= 0X040400: proxy.setType(QtNetwork.QNetworkProxy.FtpCachingProxy)
-    else: proxy.setType(QtNetwork.QNetworkProxy.DefaultProxy)
+    proxy = QNetworkProxy()
+    proxyType = settings.value( "/proxyType", QVariant(0)).toString()
+    #if len(args)>0 and settings.value("/proxyExcludedUrls").toString().contains(args[0]):
+    #  proxyType = "NoProxy"
+    if proxyType in ["1","Socks5Proxy"]: proxy.setType(QNetworkProxy.Socks5Proxy)
+    elif proxyType in ["2","NoProxy"]: proxy.setType(QNetworkProxy.NoProxy)
+    elif proxyType in ["3","HttpProxy"]: proxy.setType(QNetworkProxy.HttpProxy)
+    elif proxyType in ["4","HttpCachingProxy"] and QT_VERSION >= 0X040400: proxy.setType(QNetworkProxy.HttpCachingProxy)
+    elif proxyType in ["5","FtpCachingProxy"] and QT_VERSION >= 0X040400: proxy.setType(QNetworkProxy.FtpCachingProxy)
+    else: proxy.setType(QNetworkProxy.DefaultProxy)
     proxy.setHostName(settings.value("/proxyHost").toString())
     proxy.setPort(settings.value("/proxyPort").toUInt()[0])
     proxy.setUser(settings.value("/proxyUser").toString())
     proxy.setPassword(settings.value("/proxyPassword").toString())
-    return proxy
-  else:
-    return None
   settings.endGroup()
+  return proxy

@@ -27,7 +27,7 @@ from PyQt4.QtGui import *
 from PyQt4.QtWebKit import *
 from qgis.core import *
 
-import resources
+import resources_rc
 import math
 
 from openlayers_layer import OpenlayersLayer

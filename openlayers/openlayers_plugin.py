@@ -36,31 +36,34 @@ from openlayers_ovwidget import OpenLayersOverviewWidget
 
 class OlLayerType:
 
-  def __init__(self, plugin, id, name, icon, html, emitsLoadEnd = False):
-    self.plugin = plugin
-    self.id = id
+  def __init__(self, plugin, name, icon, html, emitsLoadEnd = False):
+    self.__plugin = plugin
     self.name = name
     self.icon = icon
     self.html = html
     self.emitsLoadEnd = emitsLoadEnd
+    self.id = None
 
   def addLayer(self):
-    self.plugin.addLayer(self)
+    self.__plugin.addLayer(self)
 
 
 class OlLayerTypeRegistry:
 
   def __init__(self):
-    self.olLayerTypes = {}
+    self.__olLayerTypes = {}
+    self.__layerTypeId = 0
 
   def add(self, layerType):
-    self.olLayerTypes[layerType.id] = layerType
+    layerType.id = self.__layerTypeId
+    self.__olLayerTypes[self.__layerTypeId] = layerType
+    self.__layerTypeId += 1
 
   def types(self):
-    return self.olLayerTypes.values()
+    return self.__olLayerTypes.values()
 
   def getById(self, id):
-    return self.olLayerTypes[id]
+    return self.__olLayerTypes[id]
 
 
 class OLOverview(object):
@@ -105,28 +108,17 @@ class OpenlayersPlugin:
     self.iface = iface
     # Layers
     self.olLayerTypeRegistry = OlLayerTypeRegistry()
-    id = 0
-    self.olLayerTypeRegistry.add( OlLayerType(self, id, 'Google Physical',  'google_icon.png', 'google_physical.html') )
-    id += 1
-    self.olLayerTypeRegistry.add( OlLayerType(self, id, 'Google Streets',   'google_icon.png', 'google_streets.html') )
-    id += 1
-    self.olLayerTypeRegistry.add( OlLayerType(self, id, 'Google Hybrid',    'google_icon.png', 'google_hybrid.html') )
-    id += 1
-    self.olLayerTypeRegistry.add( OlLayerType(self, id, 'Google Satellite', 'google_icon.png', 'google_satellite.html') )
-    id += 1
-    self.olLayerTypeRegistry.add( OlLayerType(self, id, 'OpenStreetMap',    'osm_icon.png',    'osm.html', True) )
-    id += 1
-    self.olLayerTypeRegistry.add( OlLayerType(self, id, 'Yahoo Street',     'yahoo_icon.png',  'yahoo_street.html') )
-    id += 1
-    self.olLayerTypeRegistry.add( OlLayerType(self, id, 'Yahoo Hybrid',     'yahoo_icon.png',  'yahoo_hybrid.html') )
-    id += 1
-    self.olLayerTypeRegistry.add( OlLayerType(self, id, 'Yahoo Satellite',  'yahoo_icon.png',  'yahoo_satellite.html') )
-    id += 1
-    self.olLayerTypeRegistry.add( OlLayerType(self, id, 'Road',  'bing_icon.png',  'bing_road.html') )
-    id += 1
-    self.olLayerTypeRegistry.add( OlLayerType(self, id, 'Bing Aerial',  'bing_icon.png',  'bing_aerial.html') )
-    id += 1
-    self.olLayerTypeRegistry.add( OlLayerType(self, id, 'Bing Aerial with labels',  'bing_icon.png',  'bing_aerial-labels.html') )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'Google Physical',  'google_icon.png', 'google_physical.html') )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'Google Streets',   'google_icon.png', 'google_streets.html') )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'Google Hybrid',    'google_icon.png', 'google_hybrid.html') )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'Google Satellite', 'google_icon.png', 'google_satellite.html') )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'OpenStreetMap',    'osm_icon.png',    'osm.html', True) )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'Yahoo Street',     'yahoo_icon.png',  'yahoo_street.html') )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'Yahoo Hybrid',     'yahoo_icon.png',  'yahoo_hybrid.html') )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'Yahoo Satellite',  'yahoo_icon.png',  'yahoo_satellite.html') )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'Road',  'bing_icon.png',  'bing_road.html') )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'Bing Aerial',  'bing_icon.png',  'bing_aerial.html') )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'Bing Aerial with labels',  'bing_icon.png',  'bing_aerial-labels.html') )
     # Overview
     self.olOverview = OLOverview( iface, self.olLayerTypeRegistry )
 

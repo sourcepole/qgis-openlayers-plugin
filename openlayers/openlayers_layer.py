@@ -114,22 +114,26 @@ class OpenlayersLayer(QgsPluginLayer):
     qDebug(" center: %lf, %lf" % (rendererContext.extent().center().x(), rendererContext.extent().center().y() ) )
     qDebug(" size: %d, %d" % (rendererContext.painter().viewport().size().width(), rendererContext.painter().viewport().size().height() ) )
     qDebug(" logicalDpiX: %d" % rendererContext.painter().device().logicalDpiX() )
+    qDebug(" outputDpi: %lf" % self.iface.mapCanvas().mapRenderer().outputDpi() )
     qDebug(" mapUnitsPerPixel: %d" % rendererContext.mapToPixel().mapUnitsPerPixel() )
     #qDebug(" rasterScaleFactor: %s" % str(rendererContext.rasterScaleFactor()) )
+    #qDebug(" outputSize: %d, %d" % (self.iface.mapCanvas().mapRenderer().outputSize().width(), self.iface.mapCanvas().mapRenderer().outputSize().height() ) )
+    #qDebug(" scale: %lf" % self.iface.mapCanvas().mapRenderer().scale() )
 
     olSize = rendererContext.painter().viewport().size()
-    if rendererContext.painter().device().logicalDpiX() != 85:
+    if rendererContext.painter().device().logicalDpiX() != int(self.iface.mapCanvas().mapRenderer().outputDpi()):
       #use calculated size when printing
-      sizeFact = 88 / 25.4 / rendererContext.mapToPixel().mapUnitsPerPixel() #OL DPI is 72!?
+      sizeFact = 72 / 25.4 / rendererContext.mapToPixel().mapUnitsPerPixel() #OL DPI is 72
       olSize.setWidth(rendererContext.extent().width() * sizeFact)
       olSize.setHeight(rendererContext.extent().height() * sizeFact)
     qDebug(" olSize: %d, %d" % (olSize.width(), olSize.height()) )
     self.page.setViewportSize(olSize)
 
     if rendererContext.extent() != self.ext:
-      qDebug(" updating OpenLayers extent" )
+      qDebug("updating OpenLayers extent" )
       self.ext = rendererContext.extent() #FIXME: store seperate for each rendererContext
       self.page.mainFrame().evaluateJavaScript("map.zoomToExtent(new OpenLayers.Bounds(%f, %f, %f, %f));" % (self.ext.xMinimum(), self.ext.yMinimum(), self.ext.xMaximum(), self.ext.yMaximum()))
+      #FIXME: OL extent/scale loopback does not work in print preview and print mode
 
     if self.layerType.emitsLoadEnd:
       # wait for OpenLayers to finish loading
@@ -153,8 +157,8 @@ class OpenlayersLayer(QgsPluginLayer):
 
     #Render WebKit page into rendererContext
     rendererContext.painter().save()
-    if rendererContext.painter().device().logicalDpiX() != 85:
-      printScale = 25.4 / 88 # OL DPI to printer pixels
+    if rendererContext.painter().device().logicalDpiX() != int(self.iface.mapCanvas().mapRenderer().outputDpi()):
+      printScale = 25.4 / 72 # OL DPI to printer pixels
       rendererContext.painter().scale(printScale, printScale)
     self.page.mainFrame().render(rendererContext.painter())
     rendererContext.painter().restore()

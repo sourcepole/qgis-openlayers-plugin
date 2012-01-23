@@ -104,7 +104,7 @@ class OpenlayersLayer(QgsPluginLayer):
     self.repaintEnd = True
 
   def loadFinished(self, ok):
-    qDebug("OpenlayersLayer loadFinished %d" % ok)
+    #qDebug("OpenlayersLayer loadFinished %d" % ok)
     if ok:
       self.loaded = ok
       self.emit(SIGNAL("repaintRequested()"))
@@ -113,11 +113,22 @@ class OpenlayersLayer(QgsPluginLayer):
     qDebug(" extent: %s" % rendererContext.extent().toString() )
     qDebug(" center: %lf, %lf" % (rendererContext.extent().center().x(), rendererContext.extent().center().y() ) )
     qDebug(" size: %d, %d" % (rendererContext.painter().viewport().size().width(), rendererContext.painter().viewport().size().height() ) )
+    qDebug(" logicalDpiX: %d" % rendererContext.painter().device().logicalDpiX() )
+    qDebug(" mapUnitsPerPixel: %d" % rendererContext.mapToPixel().mapUnitsPerPixel() )
+    #qDebug(" rasterScaleFactor: %s" % str(rendererContext.rasterScaleFactor()) )
 
-    self.page.setViewportSize(rendererContext.painter().viewport().size())
+    olSize = rendererContext.painter().viewport().size()
+    if rendererContext.painter().device().logicalDpiX() != 85:
+      #use calculated size when printing
+      sizeFact = 88 / 25.4 / rendererContext.mapToPixel().mapUnitsPerPixel() #OL DPI is 72!?
+      olSize.setWidth(rendererContext.extent().width() * sizeFact)
+      olSize.setHeight(rendererContext.extent().height() * sizeFact)
+    qDebug(" olSize: %d, %d" % (olSize.width(), olSize.height()) )
+    self.page.setViewportSize(olSize)
 
     if rendererContext.extent() != self.ext:
-      self.ext = rendererContext.extent()
+      qDebug(" updating OpenLayers extent" )
+      self.ext = rendererContext.extent() #FIXME: store seperate for each rendererContext
       self.page.mainFrame().evaluateJavaScript("map.zoomToExtent(new OpenLayers.Bounds(%f, %f, %f, %f));" % (self.ext.xMinimum(), self.ext.yMinimum(), self.ext.xMaximum(), self.ext.yMaximum()))
 
     if self.layerType.emitsLoadEnd:
@@ -140,7 +151,11 @@ class OpenlayersLayer(QgsPluginLayer):
         qApp.processEvents()
       self.timerMax.stop()
 
+    #Render WebKit page into rendererContext
     rendererContext.painter().save()
+    if rendererContext.painter().device().logicalDpiX() != 85:
+      printScale = 25.4 / 88 # OL DPI to printer pixels
+      rendererContext.painter().scale(printScale, printScale)
     self.page.mainFrame().render(rendererContext.painter())
     rendererContext.painter().restore()
 

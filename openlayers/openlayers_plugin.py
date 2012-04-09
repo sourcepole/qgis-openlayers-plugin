@@ -112,7 +112,7 @@ class OpenlayersPlugin:
     self.olLayerTypeRegistry.add( OlLayerType(self, 'Google Streets',   'google_icon.png', 'google_streets.html') )
     self.olLayerTypeRegistry.add( OlLayerType(self, 'Google Hybrid',    'google_icon.png', 'google_hybrid.html') )
     self.olLayerTypeRegistry.add( OlLayerType(self, 'Google Satellite', 'google_icon.png', 'google_satellite.html') )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'OpenStreetMap',    'osm_icon.png',    'osm.html', True) )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'OpenStreetMap',    'osm_icon.png',    'osm.html') ) #OL LoadEnd disabled, see http://hub.qgis.org/issues/5037
     self.olLayerTypeRegistry.add( OlLayerType(self, 'Yahoo Street',     'yahoo_icon.png',  'yahoo_street.html') )
     self.olLayerTypeRegistry.add( OlLayerType(self, 'Yahoo Hybrid',     'yahoo_icon.png',  'yahoo_hybrid.html') )
     self.olLayerTypeRegistry.add( OlLayerType(self, 'Yahoo Satellite',  'yahoo_icon.png',  'yahoo_satellite.html') )

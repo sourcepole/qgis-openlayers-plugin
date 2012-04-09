@@ -108,17 +108,20 @@ class OpenlayersPlugin:
     self.iface = iface
     # Layers
     self.olLayerTypeRegistry = OlLayerTypeRegistry()
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'Google Physical',  'google_icon.png', 'google_physical.html') )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'Google Streets',   'google_icon.png', 'google_streets.html') )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'Google Hybrid',    'google_icon.png', 'google_hybrid.html') )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'Google Physical', 'google_icon.png', 'google_physical.html') )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'Google Streets', 'google_icon.png', 'google_streets.html') )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'Google Hybrid', 'google_icon.png', 'google_hybrid.html') )
     self.olLayerTypeRegistry.add( OlLayerType(self, 'Google Satellite', 'google_icon.png', 'google_satellite.html') )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'OpenStreetMap',    'osm_icon.png',    'osm.html') ) #OL LoadEnd disabled, see http://hub.qgis.org/issues/5037
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'Yahoo Street',     'yahoo_icon.png',  'yahoo_street.html') )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'Yahoo Hybrid',     'yahoo_icon.png',  'yahoo_hybrid.html') )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'Yahoo Satellite',  'yahoo_icon.png',  'yahoo_satellite.html') )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'Road',  'bing_icon.png',  'bing_road.html') )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'Bing Aerial',  'bing_icon.png',  'bing_aerial.html') )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'Bing Aerial with labels',  'bing_icon.png',  'bing_aerial-labels.html') )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'OpenStreetMap', 'osm_icon.png', 'osm.html') ) #OL LoadEnd disabled, see http://hub.qgis.org/issues/5037
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'OpenCycleMap', 'osm_icon.png', 'ocm.html') )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'OCM Landscape', 'osm_icon.png', 'ocm_landscape.html') )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'OCM Public Transport', 'osm_icon.png', 'ocm_transport.html') )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'Yahoo Street', 'yahoo_icon.png', 'yahoo_street.html') )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'Yahoo Hybrid', 'yahoo_icon.png', 'yahoo_hybrid.html') )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'Yahoo Satellite', 'yahoo_icon.png',  'yahoo_satellite.html') )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'Road', 'bing_icon.png',   'bing_road.html') )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'Bing Aerial', 'bing_icon.png',  'bing_aerial.html') )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'Bing Aerial with labels', 'bing_icon.png',  'bing_aerial-labels.html') )
     # Overview
     self.olOverview = OLOverview( iface, self.olLayerTypeRegistry )
 

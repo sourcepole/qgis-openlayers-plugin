@@ -88,8 +88,12 @@ class OpenlayersLayer(QgsPluginLayer):
       QObject.connect(self.page, SIGNAL("loadFinished(bool)"), self.loadFinished)
       if not self.layerType.emitsLoadEnd:
         QObject.connect(self.page, SIGNAL("repaintRequested(QRect)"), self.pageRepaintRequested)
-    else:
-      self.render(rendererContext)
+
+      # wait for page to finish loading
+      while not self.loaded:
+        qApp.processEvents()
+
+    self.render(rendererContext)
 
     return True
 

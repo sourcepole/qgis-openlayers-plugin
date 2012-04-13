@@ -127,8 +127,8 @@ class OpenlayersLayer(QgsPluginLayer):
 
     olSize = rendererContext.painter().viewport().size()
     if rendererContext.painter().device().logicalDpiX() != int(self.iface.mapCanvas().mapRenderer().outputDpi()):
-      #use calculated size when printing
-      sizeFact = 72 / 25.4 / rendererContext.mapToPixel().mapUnitsPerPixel() #OL DPI is 72
+      # use screen dpi for printing
+      sizeFact = self.iface.mapCanvas().mapRenderer().outputDpi() / 25.4 / rendererContext.mapToPixel().mapUnitsPerPixel()
       olSize.setWidth(rendererContext.extent().width() * sizeFact)
       olSize.setHeight(rendererContext.extent().height() * sizeFact)
     qDebug(" olSize: %d, %d" % (olSize.width(), olSize.height()) )
@@ -177,7 +177,7 @@ class OpenlayersLayer(QgsPluginLayer):
     #Render WebKit page into rendererContext
     rendererContext.painter().save()
     if rendererContext.painter().device().logicalDpiX() != int(self.iface.mapCanvas().mapRenderer().outputDpi()):
-      printScale = 25.4 / 72 # OL DPI to printer pixels
+      printScale = 25.4 / self.iface.mapCanvas().mapRenderer().outputDpi() # OL DPI to printer pixels
       rendererContext.painter().scale(printScale, printScale)
 
     # render OpenLayers to image

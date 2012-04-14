@@ -108,10 +108,10 @@ class OpenlayersPlugin:
     self.iface = iface
     # Layers
     self.olLayerTypeRegistry = OlLayerTypeRegistry()
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'Google Physical', 'google_icon.png', 'google_physical.html') )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'Google Streets', 'google_icon.png', 'google_streets.html') )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'Google Hybrid', 'google_icon.png', 'google_hybrid.html') )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'Google Satellite', 'google_icon.png', 'google_satellite.html') )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'Google Physical', 'google_icon.png', 'google_physical.html', True) )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'Google Streets', 'google_icon.png', 'google_streets.html', True) )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'Google Hybrid', 'google_icon.png', 'google_hybrid.html', True) )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'Google Satellite', 'google_icon.png', 'google_satellite.html', True) )
     self.olLayerTypeRegistry.add( OlLayerType(self, 'OpenStreetMap', 'osm_icon.png', 'osm.html', True) )
     self.olLayerTypeRegistry.add( OlLayerType(self, 'OpenCycleMap', 'osm_icon.png', 'ocm.html', True) )
     self.olLayerTypeRegistry.add( OlLayerType(self, 'OCM Landscape', 'osm_icon.png', 'ocm_landscape.html', True) )

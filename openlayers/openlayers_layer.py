@@ -63,6 +63,7 @@ class OpenlayersLayer(QgsPluginLayer):
     self.loaded = False
     self.page = OLWebPage()
     self.ext = None
+    self.olResolutions = None
 
     self.timer = QTimer()
     self.timer.setSingleShot(True)
@@ -87,8 +88,12 @@ class OpenlayersLayer(QgsPluginLayer):
       QObject.connect(self.page, SIGNAL("loadFinished(bool)"), self.loadFinished)
       if not self.layerType.emitsLoadEnd:
         QObject.connect(self.page, SIGNAL("repaintRequested(QRect)"), self.pageRepaintRequested)
-    else:
-      self.render(rendererContext)
+
+      # wait for page to finish loading
+      while not self.loaded:
+        qApp.processEvents()
+
+    self.render(rendererContext)
 
     return True
 
@@ -122,18 +127,32 @@ class OpenlayersLayer(QgsPluginLayer):
 
     olSize = rendererContext.painter().viewport().size()
     if rendererContext.painter().device().logicalDpiX() != int(self.iface.mapCanvas().mapRenderer().outputDpi()):
-      #use calculated size when printing
-      sizeFact = 72 / 25.4 / rendererContext.mapToPixel().mapUnitsPerPixel() #OL DPI is 72
+      # use screen dpi for printing
+      sizeFact = self.iface.mapCanvas().mapRenderer().outputDpi() / 25.4 / rendererContext.mapToPixel().mapUnitsPerPixel()
       olSize.setWidth(rendererContext.extent().width() * sizeFact)
       olSize.setHeight(rendererContext.extent().height() * sizeFact)
     qDebug(" olSize: %d, %d" % (olSize.width(), olSize.height()) )
     self.page.setViewportSize(olSize)
+    targetWidth = olSize.width()
+    targetHeight = olSize.height()
+
+    # find best resolution or use last
+    qgisRes = rendererContext.extent().width() / targetWidth
+    for res in self.resolutions():
+      olRes = res
+      if qgisRes >= res:
+        break
+
+    # adjust OpenLayers viewport to match QGIS extent
+    olWidth = rendererContext.extent().width() / olRes
+    olHeight = rendererContext.extent().height() / olRes
+    qDebug("  adjust viewport: %f -> %f: %f x %f" % (qgisRes, olRes, olWidth, olHeight))
+    self.page.setViewportSize(QSize(olWidth, olHeight))
 
     if rendererContext.extent() != self.ext:
       qDebug("updating OpenLayers extent" )
       self.ext = rendererContext.extent() #FIXME: store seperate for each rendererContext
-      self.page.mainFrame().evaluateJavaScript("map.zoomToExtent(new OpenLayers.Bounds(%f, %f, %f, %f));" % (self.ext.xMinimum(), self.ext.yMinimum(), self.ext.xMaximum(), self.ext.yMaximum()))
-      #FIXME: OL extent/scale loopback does not work in print preview and print mode
+      self.page.mainFrame().evaluateJavaScript("map.zoomToExtent(new OpenLayers.Bounds(%f, %f, %f, %f), true);" % (self.ext.xMinimum(), self.ext.yMinimum(), self.ext.xMaximum(), self.ext.yMaximum()))
 
     if self.layerType.emitsLoadEnd:
       # wait for OpenLayers to finish loading
@@ -158,9 +177,22 @@ class OpenlayersLayer(QgsPluginLayer):
     #Render WebKit page into rendererContext
     rendererContext.painter().save()
     if rendererContext.painter().device().logicalDpiX() != int(self.iface.mapCanvas().mapRenderer().outputDpi()):
-      printScale = 25.4 / 72 # OL DPI to printer pixels
+      printScale = 25.4 / self.iface.mapCanvas().mapRenderer().outputDpi() # OL DPI to printer pixels
       rendererContext.painter().scale(printScale, printScale)
-    self.page.mainFrame().render(rendererContext.painter())
+
+    # render OpenLayers to image
+    img = QImage(olWidth, olHeight, QImage.Format_ARGB32_Premultiplied)
+    painter = QPainter(img)
+    self.page.mainFrame().render(painter)
+    painter.end()
+
+    if olWidth != targetWidth or olHeight != targetHeight:
+      # scale using QImage for better quality
+      img = img.scaled(targetWidth, targetHeight, Qt.KeepAspectRatio, Qt.SmoothTransformation )
+      qDebug("  scale image: %i x %i -> %i x %i" % (olWidth, olHeight, targetWidth, targetHeight,))
+
+    # draw to rendererContext
+    rendererContext.painter().drawImage(0, 0, img)
     rendererContext.painter().restore()
 
   def readXml(self, node):
@@ -195,3 +227,11 @@ class OpenlayersLayer(QgsPluginLayer):
     else:
       return 0.0
 
+  def resolutions(self):
+    if self.olResolutions == None:
+      # get OpenLayers resolutions
+      resVariant = self.page.mainFrame().evaluateJavaScript("map.layers[0].resolutions")
+      self.olResolutions = []
+      for res in resVariant.toList():
+        self.olResolutions.append(res.toDouble()[0])
+    return self.olResolutions

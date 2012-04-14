@@ -21,6 +21,7 @@
             var bing = new OpenLayers.Layer.Bing(
                 { name: "Aerial with labels", key: apiKey, type: "AerialWithLabels", sphericalMercator: true } );
             map.addLayer(bing);
+            map.addControl(new OpenLayers.Control.Attribution());
             map.setCenter(new OpenLayers.LonLat(0, 0), 2);
             oloMarker = new OlOverviewMarker(map, getPathUpper(document.URL) + '/x.png');
         }

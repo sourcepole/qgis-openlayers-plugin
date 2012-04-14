@@ -122,6 +122,7 @@ class OpenlayersPlugin:
     self.olLayerTypeRegistry.add( OlLayerType(self, 'Road', 'bing_icon.png',   'bing_road.html') )
     self.olLayerTypeRegistry.add( OlLayerType(self, 'Bing Aerial', 'bing_icon.png',  'bing_aerial.html') )
     self.olLayerTypeRegistry.add( OlLayerType(self, 'Bing Aerial with labels', 'bing_icon.png',  'bing_aerial-labels.html') )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'Apple iPhoto map', 'apple_icon.png', 'apple.html') )
     # Overview
     self.olOverview = OLOverview( iface, self.olLayerTypeRegistry )
 
@@ -151,7 +152,6 @@ class OpenlayersPlugin:
     QgsPluginLayerRegistry.instance().addPluginLayerType(OpenlayersPluginLayerType(self.iface, self.setReferenceLayer, self.__coordRSGoogle, self.olLayerTypeRegistry))
 
     self.layer = None
-    QObject.connect(self.iface.mapCanvas(), SIGNAL("scaleChanged(double)"), self.scaleChanged)
     QObject.connect(QgsMapLayerRegistry.instance(), SIGNAL("layerWillBeRemoved(QString)"), self.removeLayer)
     
   def unload(self):
@@ -164,7 +164,6 @@ class OpenlayersPlugin:
     # Unregister plugin layer type
     QgsPluginLayerRegistry.instance().removePluginLayerType(OpenlayersLayer.LAYER_TYPE)
 
-    QObject.disconnect(self.iface.mapCanvas(), SIGNAL("scaleChanged(double)"), self.scaleChanged)
     QObject.disconnect(QgsMapLayerRegistry.instance(), SIGNAL("layerWillBeRemoved(QString)"), self.removeLayer)
     
     self.olOverview.setVisible( False )
@@ -182,20 +181,6 @@ class OpenlayersPlugin:
 
       # last added layer is new reference
       self.setReferenceLayer(layer)
-
-  def scaleChanged(self, scale):
-    if scale > 0 and self.layer != None:
-      # get OpenLayers scale for this extent
-      olScale = self.layer.scaleFromExtent(self.iface.mapCanvas().extent())
-      if olScale > 0.0:
-        # calculate QGIS scale
-        targetScale = olScale * self.iface.mapCanvas().mapRenderer().outputDpi() / 72.0
-        qDebug("scaleChanged: %f - olScale: %f -> Canvas scale: %f" % (scale, olScale, targetScale) )
-        # NOTE: use a slightly smaller scale to avoid zoomout feedback loop
-        targetScale *= 0.999
-        if math.fabs(scale - targetScale)/scale > 0.001:
-          # override scale
-          self.iface.mapCanvas().zoomByFactor(targetScale / scale)
 
   def setReferenceLayer(self, layer):
     self.layer = layer

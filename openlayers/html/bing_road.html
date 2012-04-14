@@ -22,6 +22,7 @@
             var bing = new OpenLayers.Layer.Bing(
                 { name: "Road", key: apiKey, type: "Road", sphericalMercator: true } );
             map.addLayer(bing);
+            map.addControl(new OpenLayers.Control.Attribution());
             map.setCenter(new OpenLayers.LonLat(0, 0), 2);
             oloMarker = new OlOverviewMarker(map, getPathUpper(document.URL) + '/x.png');
         }

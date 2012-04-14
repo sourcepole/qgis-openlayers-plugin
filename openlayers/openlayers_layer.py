@@ -75,6 +75,12 @@ class OpenlayersLayer(QgsPluginLayer):
     self.timerMax.setInterval(5000) # TODO: different timeouts for google/yahoo?
     QObject.connect(self.timerMax, SIGNAL("timeout()"), self.finalRepaint)
 
+    # timeout for loadEnd event
+    self.timerLoadEnd = QTimer()
+    self.timerLoadEnd.setSingleShot(True)
+    self.timerLoadEnd.setInterval(5000)
+    QObject.connect(self.timerLoadEnd, SIGNAL("timeout()"), self.loadEndTimeout)
+
     self.setLayerType( self.olLayerTypeRegistry.getById(0) )
 
   def draw(self, rendererContext):
@@ -113,6 +119,9 @@ class OpenlayersLayer(QgsPluginLayer):
     if ok:
       self.loaded = ok
       self.emit(SIGNAL("repaintRequested()"))
+
+  def loadEndTimeout(self):
+    self.loadEnd = True
 
   def render(self, rendererContext):
     qDebug(" extent: %s" % rendererContext.extent().toString() )
@@ -157,15 +166,17 @@ class OpenlayersLayer(QgsPluginLayer):
     if self.layerType.emitsLoadEnd:
       # wait for OpenLayers to finish loading
       # NOTE: does not work with Google and Yahoo layers as they do not emit loadstart and loadend events
-      loadEnd = False
-      while not loadEnd:
+      self.loadEnd = False
+      self.timerLoadEnd.start()
+      while not self.loadEnd:
         loadEndOL = self.page.mainFrame().evaluateJavaScript("loadEnd")
         if not loadEndOL.isNull():
-          loadEnd = loadEndOL.toBool()
+          self.loadEnd = loadEndOL.toBool()
         else:
           qDebug("OpenlayersLayer Warning: Could not get loadEnd")
           break
         qApp.processEvents()
+      self.timerLoadEnd.stop()
     else:
       # wait for timeout after pageRepaintRequested
       self.repaintEnd = False

@@ -136,6 +136,9 @@ class OpenlayersPlugin:
     self.olLayerTypeRegistry.add( OlLayerType(self, 'Bing Aerial', 'bing_icon.png',  'bing_aerial.html', True) )
     self.olLayerTypeRegistry.add( OlLayerType(self, 'Bing Aerial with labels', 'bing_icon.png',  'bing_aerial-labels.html', True) )
     self.olLayerTypeRegistry.add( OlLayerType(self, 'Apple iPhoto map', 'apple_icon.png', 'apple.html', True) )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'Stamen Toner/OSM', 'stamen_icon.png', 'stamen_toner.html', True) )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'Stamen Watercolor/OSM', 'stamen_icon.png', 'stamen_watercolor.html', True) )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'Stamen Terrain-USA/OSM', 'stamen_icon.png', 'stamen_terrain.html', True) )
     # Overview
     self.olOverview = OLOverview( iface, self.olLayerTypeRegistry )
 

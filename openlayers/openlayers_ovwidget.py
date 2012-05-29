@@ -75,7 +75,7 @@ class OpenLayersOverviewWidget(QtGui.QWidget,Ui_Form):
     self.__pathUrl = "file:///%s/html/%%s" % os.path.dirname( __file__ ).replace("\\", "/") 
     self.__initLayerOL = False
     self.__fileNameImg = ''
-    self.__srsOL = core.QgsCoordinateReferenceSystem(900913, core.QgsCoordinateReferenceSystem.EpsgCrsId)
+    self.__srsOL = core.QgsCoordinateReferenceSystem(3857, core.QgsCoordinateReferenceSystem.EpsgCrsId)
     self.__marker = MarkerCursor(self.__canvas, self.__srsOL)
     self.__manager = None # Need persist for PROXY
     bindogr.initOgr()

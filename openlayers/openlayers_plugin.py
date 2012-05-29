@@ -193,10 +193,10 @@ class OpenlayersPlugin:
       # TODO: switch to next available OpenLayers layer?
 
   def __setCoordRSGoogle(self):
-    idEpsgRSGoogle = 900913
+    idEpsgRSGoogle = 3857
     self.__coordRSGoogle = QgsCoordinateReferenceSystem()
     if not self.__coordRSGoogle.createFromEpsg(idEpsgRSGoogle):
-      google_proj_def = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1 "
+      google_proj_def = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 "
       google_proj_def += "+units=m +nadgrids=@null +wktext +no_defs"
       isOk = self.__coordRSGoogle.createFromProj4(google_proj_def)
       if isOk:

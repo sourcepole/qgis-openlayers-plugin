@@ -76,7 +76,7 @@ class OLOverview(object):
 
   # Private
   def __setDocWidget(self):
-    self.__dockwidget = QDockWidget("Openlayers Overview" , self.__iface.mainWindow() )
+    self.__dockwidget = QDockWidget(QApplication.translate("OpenLayersOverviewWidget", "OpenLayers Overview"), self.__iface.mainWindow() )
     self.__dockwidget.setObjectName("dwOpenlayersOverview")
     self.__oloWidget = OpenLayersOverviewWidget(self.__iface, self.__dockwidget, self.__olLayerTypeRegistry)
     self.__dockwidget.setWidget(self.__oloWidget)
@@ -106,6 +106,19 @@ class OpenlayersPlugin:
   def __init__(self, iface):
     # Save reference to the QGIS interface
     self.iface = iface
+
+    # setup locale
+    pluginDir = os.path.dirname( __file__ )
+    localePath = ""
+    locale = QSettings().value("locale/userLocale").toString()[0:2]
+    if QFileInfo(pluginDir).exists():
+      localePath = pluginDir + "/i18n/openlayers_" + locale + ".qm"
+    if QFileInfo(localePath).exists():
+      self.translator = QTranslator()
+      self.translator.load(localePath)
+      if qVersion() > '4.3.3':
+        QCoreApplication.installTranslator(self.translator)
+
     # Layers
     self.olLayerTypeRegistry = OlLayerTypeRegistry()
     self.olLayerTypeRegistry.add( OlLayerType(self, 'Google Physical', 'google_icon.png', 'google_physical.html', True) )
@@ -128,24 +141,24 @@ class OpenlayersPlugin:
 
   def initGui(self):
     # Overview
-    self.overviewAddAction = QAction("Openlayers Overview", self.iface.mainWindow())
+    self.overviewAddAction = QAction(QApplication.translate("OpenlayersPlugin", "OpenLayers Overview"), self.iface.mainWindow())
     self.overviewAddAction.setCheckable(True)
     self.overviewAddAction.setChecked(False)
-    QObject.connect(self.overviewAddAction, SIGNAL(" toggled(bool)"), self.olOverview.setVisible )
+    QObject.connect(self.overviewAddAction, SIGNAL("toggled(bool)"), self.olOverview.setVisible )
     self.iface.addPluginToMenu("OpenLayers plugin", self.overviewAddAction)
     # Layers
     self.layerAddActions = []
     pathPlugin = "%s%s%%s" % ( os.path.dirname( __file__ ), os.path.sep )
     for layerType in self.olLayerTypeRegistry.types():
       # Create actions for adding layers
-      action = QAction(QIcon(pathPlugin % layerType.icon), "Add %s layer" % layerType.name, self.iface.mainWindow())
+      action = QAction(QIcon(pathPlugin % layerType.icon), QApplication.translate("OpenlayersPlugin", "Add %1 layer").arg(layerType.name), self.iface.mainWindow())
       self.layerAddActions.append(action)
       QObject.connect(action, SIGNAL("triggered()"), layerType.addLayer)
       # Add toolbar button and menu item
       self.iface.addPluginToMenu("OpenLayers plugin", action)
 
     if not self.__setCoordRSGoogle():
-      QMessageBox.critical(self.iface.mainWindow(), "OpenLayers Plugin", "Could not set Google projection!")
+      QMessageBox.critical(self.iface.mainWindow(), "OpenLayers Plugin", QApplication.translate("OpenlayersPlugin", "Could not set Google projection!"))
       return
 
     # Register plugin layer type

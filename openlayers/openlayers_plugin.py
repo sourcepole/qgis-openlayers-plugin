@@ -76,7 +76,7 @@ class OLOverview(object):
 
   # Private
   def __setDocWidget(self):
-    self.__dockwidget = QDockWidget("Openlayers Overview" , self.__iface.mainWindow() )
+    self.__dockwidget = QDockWidget(QApplication.translate("OpenLayersOverviewWidget", "OpenLayers Overview"), self.__iface.mainWindow() )
     self.__dockwidget.setObjectName("dwOpenlayersOverview")
     self.__oloWidget = OpenLayersOverviewWidget(self.__iface, self.__dockwidget, self.__olLayerTypeRegistry)
     self.__dockwidget.setWidget(self.__oloWidget)
@@ -106,46 +106,59 @@ class OpenlayersPlugin:
   def __init__(self, iface):
     # Save reference to the QGIS interface
     self.iface = iface
+
+    # setup locale
+    pluginDir = os.path.dirname( __file__ )
+    localePath = ""
+    locale = QSettings().value("locale/userLocale").toString()[0:2]
+    if QFileInfo(pluginDir).exists():
+      localePath = pluginDir + "/i18n/openlayers_" + locale + ".qm"
+    if QFileInfo(localePath).exists():
+      self.translator = QTranslator()
+      self.translator.load(localePath)
+      if qVersion() > '4.3.3':
+        QCoreApplication.installTranslator(self.translator)
+
     # Layers
     self.olLayerTypeRegistry = OlLayerTypeRegistry()
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'Google Physical', 'google_icon.png', 'google_physical.html') )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'Google Streets', 'google_icon.png', 'google_streets.html') )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'Google Hybrid', 'google_icon.png', 'google_hybrid.html') )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'Google Satellite', 'google_icon.png', 'google_satellite.html') )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'OpenStreetMap', 'osm_icon.png', 'osm.html') ) #OL LoadEnd disabled, see http://hub.qgis.org/issues/5037
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'OpenCycleMap', 'osm_icon.png', 'ocm.html') )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'OCM Landscape', 'osm_icon.png', 'ocm_landscape.html') )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'OCM Public Transport', 'osm_icon.png', 'ocm_transport.html') )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'Google Physical', 'google_icon.png', 'google_physical.html', True) )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'Google Streets', 'google_icon.png', 'google_streets.html', True) )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'Google Hybrid', 'google_icon.png', 'google_hybrid.html', True) )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'Google Satellite', 'google_icon.png', 'google_satellite.html', True) )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'OpenStreetMap', 'osm_icon.png', 'osm.html', True) )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'OpenCycleMap', 'osm_icon.png', 'ocm.html', True) )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'OCM Landscape', 'osm_icon.png', 'ocm_landscape.html', True) )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'OCM Public Transport', 'osm_icon.png', 'ocm_transport.html', True) )
     self.olLayerTypeRegistry.add( OlLayerType(self, 'Yahoo Street', 'yahoo_icon.png', 'yahoo_street.html') )
     self.olLayerTypeRegistry.add( OlLayerType(self, 'Yahoo Hybrid', 'yahoo_icon.png', 'yahoo_hybrid.html') )
     self.olLayerTypeRegistry.add( OlLayerType(self, 'Yahoo Satellite', 'yahoo_icon.png',  'yahoo_satellite.html') )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'Road', 'bing_icon.png',   'bing_road.html') )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'Bing Aerial', 'bing_icon.png',  'bing_aerial.html') )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'Bing Aerial with labels', 'bing_icon.png',  'bing_aerial-labels.html') )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'Apple iPhoto map', 'apple_icon.png', 'apple.html') )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'Road', 'bing_icon.png',   'bing_road.html', True) )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'Bing Aerial', 'bing_icon.png',  'bing_aerial.html', True) )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'Bing Aerial with labels', 'bing_icon.png',  'bing_aerial-labels.html', True) )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'Apple iPhoto map', 'apple_icon.png', 'apple.html', True) )
     # Overview
     self.olOverview = OLOverview( iface, self.olLayerTypeRegistry )
 
   def initGui(self):
     # Overview
-    self.overviewAddAction = QAction("Openlayers Overview", self.iface.mainWindow())
+    self.overviewAddAction = QAction(QApplication.translate("OpenlayersPlugin", "OpenLayers Overview"), self.iface.mainWindow())
     self.overviewAddAction.setCheckable(True)
     self.overviewAddAction.setChecked(False)
-    QObject.connect(self.overviewAddAction, SIGNAL(" toggled(bool)"), self.olOverview.setVisible )
+    QObject.connect(self.overviewAddAction, SIGNAL("toggled(bool)"), self.olOverview.setVisible )
     self.iface.addPluginToMenu("OpenLayers plugin", self.overviewAddAction)
     # Layers
     self.layerAddActions = []
     pathPlugin = "%s%s%%s" % ( os.path.dirname( __file__ ), os.path.sep )
     for layerType in self.olLayerTypeRegistry.types():
       # Create actions for adding layers
-      action = QAction(QIcon(pathPlugin % layerType.icon), "Add %s layer" % layerType.name, self.iface.mainWindow())
+      action = QAction(QIcon(pathPlugin % layerType.icon), QApplication.translate("OpenlayersPlugin", "Add %1 layer").arg(layerType.name), self.iface.mainWindow())
       self.layerAddActions.append(action)
       QObject.connect(action, SIGNAL("triggered()"), layerType.addLayer)
       # Add toolbar button and menu item
       self.iface.addPluginToMenu("OpenLayers plugin", action)
 
     if not self.__setCoordRSGoogle():
-      QMessageBox.critical(self.iface.mainWindow(), "OpenLayers Plugin", "Could not set Google projection!")
+      QMessageBox.critical(self.iface.mainWindow(), "OpenLayers Plugin", QApplication.translate("OpenlayersPlugin", "Could not set Google projection!"))
       return
 
     # Register plugin layer type
@@ -193,10 +206,10 @@ class OpenlayersPlugin:
       # TODO: switch to next available OpenLayers layer?
 
   def __setCoordRSGoogle(self):
-    idEpsgRSGoogle = 900913
+    idEpsgRSGoogle = 3857
     self.__coordRSGoogle = QgsCoordinateReferenceSystem()
     if not self.__coordRSGoogle.createFromEpsg(idEpsgRSGoogle):
-      google_proj_def = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1 "
+      google_proj_def = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 "
       google_proj_def += "+units=m +nadgrids=@null +wktext +no_defs"
       isOk = self.__coordRSGoogle.createFromProj4(google_proj_def)
       if isOk:

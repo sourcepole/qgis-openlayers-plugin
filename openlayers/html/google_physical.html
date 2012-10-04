@@ -8,6 +8,7 @@
     <script src="OlOverviewMarker.js"></script>
     <script type="text/javascript">
         var map;
+        var loadEnd;
         var oloMarker; // OpenLayer Overview Marker
         function init() {
             map = new OpenLayers.Map('map', {
@@ -23,6 +24,19 @@
                 { type: google.maps.MapTypeId.TERRAIN }
             );
             map.addLayer(gmap);
+
+            loadEnd = false;
+            map.events.register('movestart', map, function() {
+                loadEnd = false;
+            });
+            google.maps.event.addListener(gmap.mapObject, "tilesloaded", function() {
+                // wait for tiles to fade in completely
+                setTimeout(function() {
+                  loadEnd = true;
+                },
+                150);
+            });
+
             map.setCenter(new OpenLayers.LonLat(0, 0), 2);
             oloMarker = new OlOverviewMarker(map, getPathUpper(document.URL) + '/x.png');
         }

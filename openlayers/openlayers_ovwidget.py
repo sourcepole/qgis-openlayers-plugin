@@ -75,7 +75,7 @@ class OpenLayersOverviewWidget(QtGui.QWidget,Ui_Form):
     self.__pathUrl = "file:///%s/html/%%s" % os.path.dirname( __file__ ).replace("\\", "/") 
     self.__initLayerOL = False
     self.__fileNameImg = ''
-    self.__srsOL = core.QgsCoordinateReferenceSystem(900913, core.QgsCoordinateReferenceSystem.EpsgCrsId)
+    self.__srsOL = core.QgsCoordinateReferenceSystem(3857, core.QgsCoordinateReferenceSystem.EpsgCrsId)
     self.__marker = MarkerCursor(self.__canvas, self.__srsOL)
     self.__manager = None # Need persist for PROXY
     bindogr.initOgr()
@@ -155,7 +155,7 @@ class OpenLayersOverviewWidget(QtGui.QWidget,Ui_Form):
       self.__marker.reset()
     else:
       if self.__canvas.layerCount() == 0:
-        QtGui.QMessageBox.warning(self, "Openlayers Overview", u"Need have any layer in map canvas")
+        QtGui.QMessageBox.warning(self, QtGui.QApplication.translate("OpenLayersOverviewWidget", "OpenLayers Overview"), QtGui.QApplication.translate("OpenLayersOverviewWidget", "At least one layer in map canvas required"))
         self.checkBoxEnableMap.setCheckState (QtCore.Qt.Unchecked)
       else:
         enable = True
@@ -232,7 +232,7 @@ class OpenLayersOverviewWidget(QtGui.QWidget,Ui_Form):
     clipBoard = QtGui.QApplication.clipboard()
     clipBoard.setText(kml)
   def __signal_pbSaveImg_clicked(self, cheked):
-    fileName = QtGui.QFileDialog.getSaveFileName(self, "Save image", self.__fileNameImg, "Image(*.jpg)")
+    fileName = QtGui.QFileDialog.getSaveFileName(self, QtGui.QApplication.translate("OpenLayersOverviewWidget", "Save image"), self.__fileNameImg, QtGui.QApplication.translate("OpenLayersOverviewWidget", "Image(*.jpg)"))
     if not fileName == '':
       self.__fileNameImg = fileName
     else:
@@ -245,7 +245,7 @@ class OpenLayersOverviewWidget(QtGui.QWidget,Ui_Form):
     img.save( fileName, "JPEG")
   def __signal_webViewMap_loadFinished(self, ok):
     if ok == False:
-      QtGui.QMessageBox.warning(self, "Openlayers Overview", u"Error read page!")
+      QtGui.QMessageBox.warning(self, QtGui.QApplication.translate("OpenLayersOverviewWidget", "OpenLayers Overview"), QtGui.QApplication.translate("OpenLayersOverviewWidget", "Error loading page!"))
     else:
       self.__refreshMapOL()
     self.lbStatusRead.setVisible( False )
@@ -255,7 +255,7 @@ class OpenLayersOverviewWidget(QtGui.QWidget,Ui_Form):
   def __setWebViewMap(self, idComboTypMap):
     ( id,isOk ) = self.comboBoxTypeMap.itemData( idComboTypMap ).toInt()
     layer = self.__olLayerTypeRegistry.getById( id )
-    self.lbStatusRead.setText( self.tr("Reading %1...").arg( layer.name ) )
+    self.lbStatusRead.setText( QtGui.QApplication.translate("OpenLayersOverviewWidget", "Loading %1...").arg( layer.name ) )
     self.lbStatusRead.setVisible( True )
     self.webViewMap.setVisible( False )
     self.connect(self.webViewMap.page().mainFrame(), QtCore.SIGNAL("loadFinished (bool)"),

@@ -34,7 +34,7 @@ def name():
 def description():
   return "OpenStreetMap, Google Maps, Bing Maps layers and more"
 def version():
-  return "0.93"
+  return "1.0.0"
 def qgisMinimumVersion():
   return "1.5"
 def authorName():

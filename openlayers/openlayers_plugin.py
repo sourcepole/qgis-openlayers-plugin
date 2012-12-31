@@ -190,7 +190,10 @@ class OpenlayersPlugin:
     layer.setLayerName(layerType.name)
     layer.setLayerType(layerType)
     if layer.isValid():
-      QgsMapLayerRegistry.instance().addMapLayer(layer)
+      if QGis.QGIS_VERSION_INT >= 10900:
+        QgsMapLayerRegistry.instance().addMapLayers([layer])
+      else:
+        QgsMapLayerRegistry.instance().addMapLayer(layer)
 
       # last added layer is new reference
       self.setReferenceLayer(layer)
@@ -201,14 +204,24 @@ class OpenlayersPlugin:
 
   def removeLayer(self, layerId):
     layerToRemove = None
-    if self.layer != None and self.layer.getLayerID() == layerId:
-      self.layer = None
+    if QGis.QGIS_VERSION_INT >= 10900:
+      if self.layer != None and self.layer.id() == layerId:
+        self.layer = None
+    else:
+      if self.layer != None and self.layer.getLayerID() == layerId:
+        self.layer = None
+    
       # TODO: switch to next available OpenLayers layer?
 
   def __setCoordRSGoogle(self):
-    idEpsgRSGoogle = 3857
     self.__coordRSGoogle = QgsCoordinateReferenceSystem()
-    if not self.__coordRSGoogle.createFromEpsg(idEpsgRSGoogle):
+    if QGis.QGIS_VERSION_INT >= 10900:
+      idEpsgRSGoogle = 'EPSG:3857'
+      createCrs = self.__coordRSGoogle.createFromOgcWmsCrs(idEpsgRSGoogle)
+    else:
+      idEpsgRSGoogle = 3857
+      createCrs = self.__coordRSGoogle.createFromEpsg(idEpsgRSGoogle)
+    if not createCrs:
       google_proj_def = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 "
       google_proj_def += "+units=m +nadgrids=@null +wktext +no_defs"
       isOk = self.__coordRSGoogle.createFromProj4(google_proj_def)
@@ -223,12 +236,18 @@ class OpenlayersPlugin:
     mapCanvas = self.iface.mapCanvas()
     # On the fly
     mapCanvas.mapRenderer().setProjectionsEnabled(True) 
-    theCoodRS = mapCanvas.mapRenderer().destinationSrs()
+    if QGis.QGIS_VERSION_INT >= 10900:
+      theCoodRS = mapCanvas.mapRenderer().destinationCrs()
+    else:
+      theCoodRS = mapCanvas.mapRenderer().destinationSrs()
     if theCoodRS != self.__coordRSGoogle:
       coodTrans = QgsCoordinateTransform(theCoodRS, self.__coordRSGoogle)
       extMap = mapCanvas.extent()
       extMap = coodTrans.transform(extMap, QgsCoordinateTransform.ForwardTransform)
-      mapCanvas.mapRenderer().setDestinationSrs(self.__coordRSGoogle)
+      if QGis.QGIS_VERSION_INT >= 10900:
+        mapCanvas.mapRenderer().setDestinationCrs(self.__coordRSGoogle)
+      else:
+        mapCanvas.mapRenderer().setDestinationSrs(self.__coordRSGoogle)
       mapCanvas.freeze(False)
       mapCanvas.setMapUnits(self.__coordRSGoogle.mapUnits())
       mapCanvas.setExtent(extMap)

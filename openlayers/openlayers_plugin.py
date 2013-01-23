@@ -132,7 +132,7 @@ class OpenlayersPlugin:
     self.olLayerTypeRegistry.add( OlLayerType(self, 'Yahoo Street', 'yahoo_icon.png', 'yahoo_street.html') )
     self.olLayerTypeRegistry.add( OlLayerType(self, 'Yahoo Hybrid', 'yahoo_icon.png', 'yahoo_hybrid.html') )
     self.olLayerTypeRegistry.add( OlLayerType(self, 'Yahoo Satellite', 'yahoo_icon.png',  'yahoo_satellite.html') )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'Road', 'bing_icon.png',   'bing_road.html', True) )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'Bing Road', 'bing_icon.png',   'bing_road.html', True) )
     self.olLayerTypeRegistry.add( OlLayerType(self, 'Bing Aerial', 'bing_icon.png',  'bing_aerial.html', True) )
     self.olLayerTypeRegistry.add( OlLayerType(self, 'Bing Aerial with labels', 'bing_icon.png',  'bing_aerial-labels.html', True) )
     self.olLayerTypeRegistry.add( OlLayerType(self, 'Apple iPhoto map', 'apple_icon.png', 'apple.html', True) )

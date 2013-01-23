@@ -34,11 +34,13 @@ def name():
 def description():
   return "OpenStreetMap, Google Maps, Bing Maps layers and more"
 def version():
-  return "1.0.0"
+  return "1.1.0"
 def qgisMinimumVersion():
-  return "1.5"
-def authorName():
-  return "Sourcepole &amp; Luiz Motta"
+  return "1.7.4"
+def author():
+  return "Sourcepole, Luiz Motta &amp; other contributors"
+def email():
+  return "pka@sourcepole.ch"
 def icon():
   return "openlayers.png"
 

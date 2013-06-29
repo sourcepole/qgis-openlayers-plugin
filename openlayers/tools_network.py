@@ -26,9 +26,9 @@ def getProxy():
   proxy = None
   settings = QSettings()
   settings.beginGroup("proxy")
-  if settings.value("/proxyEnabled").toBool():
+  if not settings.value("/proxyEnabled") == None and settings.value("/proxyEnabled", True, type=bool):
     proxy = QNetworkProxy()
-    proxyType = settings.value( "/proxyType", QVariant(0)).toString()
+    proxyType = settings.value( "/proxyType")
     #if len(args)>0 and settings.value("/proxyExcludedUrls").toString().contains(args[0]):
     #  proxyType = "NoProxy"
     if proxyType in ["1","Socks5Proxy"]: proxy.setType(QNetworkProxy.Socks5Proxy)
@@ -37,9 +37,10 @@ def getProxy():
     elif proxyType in ["4","HttpCachingProxy"] and QT_VERSION >= 0X040400: proxy.setType(QNetworkProxy.HttpCachingProxy)
     elif proxyType in ["5","FtpCachingProxy"] and QT_VERSION >= 0X040400: proxy.setType(QNetworkProxy.FtpCachingProxy)
     else: proxy.setType(QNetworkProxy.DefaultProxy)
-    proxy.setHostName(settings.value("/proxyHost").toString())
-    proxy.setPort(settings.value("/proxyPort").toUInt()[0])
-    proxy.setUser(settings.value("/proxyUser").toString())
-    proxy.setPassword(settings.value("/proxyPassword").toString())
+    proxy.setHostName(settings.value("/proxyHost"))
+    # TODO
+    proxy.setPort(settings.value("/proxyPort", 10, type=int))
+    proxy.setUser(settings.value("/proxyUser"))
+    proxy.setPassword(settings.value("/proxyPassword"))
   settings.endGroup()
   return proxy

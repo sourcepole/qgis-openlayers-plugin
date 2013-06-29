@@ -58,7 +58,7 @@ class MarkerCursor(QtCore.QObject):
     # left, bottom, right, top
     left, bottom, right, top = [ float(item) for item in strListExtent.split(',') ]
     pointCenter = core.QgsRectangle(core.QgsPoint(left, top), core.QgsPoint(right, bottom)).center() 
-    srsCanvas = self.__canvas.mapRenderer().destinationSrs() 
+    srsCanvas = self.__canvas.mapRenderer().destinationCrs() 
     if self.__srsOL != srsCanvas:
       coodTrans = core.QgsCoordinateTransform(self.__srsOL, srsCanvas)
       pointCenter = coodTrans.transform(pointCenter, core.QgsCoordinateTransform.ForwardTransform)
@@ -117,9 +117,11 @@ class OpenLayersOverviewWidget(QtGui.QWidget,Ui_Form):
     totalLayers = len( self.__olLayerTypeRegistry.types() )
     for id in range( totalLayers ):
       layer = self.__olLayerTypeRegistry.getById( id )
-      name  = QtCore.QString( layer.name )
+      #name  = QtCore.QString( layer.name )
+      #icon  = QtGui.QIcon( pathPlugin % layer.icon )
+      #self.comboBoxTypeMap.addItem(icon, name, QtCore.QVariant(id))
       icon  = QtGui.QIcon( pathPlugin % layer.icon )
-      self.comboBoxTypeMap.addItem(icon, name, QtCore.QVariant(id))
+      self.comboBoxTypeMap.addItem(icon, layer.name, id)
   def __setConnections(self):
     # Check Box
     self.connect(self.checkBoxEnableMap, QtCore.SIGNAL("stateChanged (int)"),
@@ -203,14 +205,14 @@ class OpenLayersOverviewWidget(QtGui.QWidget,Ui_Form):
     self.__setWebViewMap( index )
   def __signal_pbAddRaster_clicked(self, checked):
     index = self.comboBoxTypeMap.currentIndex()
-    ( id,isOk ) = self.comboBoxTypeMap.itemData(index).toInt()
+    id = self.comboBoxTypeMap.itemData(index)
     layer = self.__olLayerTypeRegistry.getById( id )
     layer.addLayer()
   def __signal_pbCopyKml_clicked(self, cheked):
     # Extent Openlayers
     action = "map.getExtent().toGeometry().toString();" 
-    wkt = self.webViewMap.page().mainFrame().evaluateJavaScript(action).toString()
-    rect = core.QgsGeometry.fromWkt(wkt).boundingBox()
+    wkt = self.webViewMap.page().mainFrame().evaluateJavaScript(action)
+    rect = core.QgsGeometry.fromWkt(QtCore.QString(wkt)).boundingBox()
     srsGE = core.QgsCoordinateReferenceSystem(4326, core.QgsCoordinateReferenceSystem.EpsgCrsId) 
     coodTrans = core.QgsCoordinateTransform(self.__srsOL, srsGE)
     rect = coodTrans.transform(rect, core.QgsCoordinateTransform.ForwardTransform)
@@ -253,9 +255,11 @@ class OpenLayersOverviewWidget(QtGui.QWidget,Ui_Form):
     self.disconnect(self.webViewMap.page().mainFrame(), QtCore.SIGNAL("loadFinished (bool)"),
                  self.__signal_webViewMap_loadFinished)
   def __setWebViewMap(self, idComboTypMap):
-    ( id,isOk ) = self.comboBoxTypeMap.itemData( idComboTypMap ).toInt()
+    id = self.comboBoxTypeMap.itemData( idComboTypMap )
     layer = self.__olLayerTypeRegistry.getById( id )
-    self.lbStatusRead.setText( QtGui.QApplication.translate("OpenLayersOverviewWidget", "Loading %1...").arg( layer.name ) )
+    #self.lbStatusRead.setText( QtGui.QApplication.translate("OpenLayersOverviewWidget", "Loading %1...").arg( layer.name ) )
+    # TODO
+    self.lbStatusRead.setText( u"Loading " + layer.name + u"..." )
     self.lbStatusRead.setVisible( True )
     self.webViewMap.setVisible( False )
     self.connect(self.webViewMap.page().mainFrame(), QtCore.SIGNAL("loadFinished (bool)"),
@@ -269,7 +273,7 @@ class OpenLayersOverviewWidget(QtGui.QWidget,Ui_Form):
     self.webViewMap.page().mainFrame().evaluateJavaScript("oloMarker.changeMarker();")
   def __getCenterLongLat2OL(self):
     pntCenter = self.__canvas.extent().center()
-    srsCanvas = self.__canvas.mapRenderer().destinationSrs()
+    srsCanvas = self.__canvas.mapRenderer().destinationCrs()
     if srsCanvas != self.__srsOL:
       coodTrans = core.QgsCoordinateTransform(srsCanvas, self.__srsOL)
       pntCenter = coodTrans.transform(pntCenter, core.QgsCoordinateTransform.ForwardTransform)

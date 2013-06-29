@@ -29,23 +29,6 @@ email                : pka at sourcepole.ch
 #pydevd.settrace()
 ##end of eclipse debug
 
-def name():
-  return "OpenLayers Plugin"
-def description():
-  return "OpenStreetMap, Google Maps, Bing Maps layers and more"
-def version():
-  return "1.1.0"
-def qgisMinimumVersion():
-  return "1.7.4"
-def author():
-  return "Sourcepole, Luiz Motta &amp; other contributors"
-def email():
-  return "pka@sourcepole.ch"
-def icon():
-  return "openlayers.png"
-
-def homepage():
-  return "http://hub.qgis.org/projects/openlayers/wiki"
 def classFactory(iface):
   from openlayers_plugin import OpenlayersPlugin
   return OpenlayersPlugin(iface)

@@ -178,8 +178,9 @@ class OpenlayersLayer(QgsPluginLayer):
         self.timerLoadEnd.start()
         while not self.loadEnd:
           loadEndOL = self.page.mainFrame().evaluateJavaScript("loadEnd")
-          if not loadEndOL.isNull():
-            self.loadEnd = loadEndOL.toBool()
+          #if not loadEndOL.isNull():
+          if not loadEndOL == None:
+            self.loadEnd = loadEndOL
           else:
             qDebug("OpenlayersLayer Warning: Could not get loadEnd")
             break
@@ -259,7 +260,8 @@ class OpenlayersLayer(QgsPluginLayer):
     if self.olResolutions == None:
       # get OpenLayers resolutions
       resVariant = self.page.mainFrame().evaluateJavaScript("map.layers[0].resolutions")
-      self.olResolutions = []
-      for res in resVariant.toList():
-        self.olResolutions.append(res.toDouble()[0])
+      print resVariant
+      self.olResolutions = resVariant
+      #for res in resVariant.toList():
+      #  self.olResolutions.append(res.toDouble()[0])
     return self.olResolutions

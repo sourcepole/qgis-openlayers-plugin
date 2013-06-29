@@ -110,7 +110,7 @@ class OpenlayersPlugin:
     # setup locale
     pluginDir = os.path.dirname( __file__ )
     localePath = ""
-    locale = QSettings().value("locale/userLocale").toString()[0:2]
+    locale = QSettings().value("locale/userLocale")[0:2]
     if QFileInfo(pluginDir).exists():
       localePath = pluginDir + "/i18n/openlayers_" + locale + ".qm"
     if QFileInfo(localePath).exists():
@@ -154,7 +154,9 @@ class OpenlayersPlugin:
     pathPlugin = "%s%s%%s" % ( os.path.dirname( __file__ ), os.path.sep )
     for layerType in self.olLayerTypeRegistry.types():
       # Create actions for adding layers
-      action = QAction(QIcon(pathPlugin % layerType.icon), QApplication.translate("OpenlayersPlugin", "Add %1 layer").arg(layerType.name), self.iface.mainWindow())
+      #action = QAction(QIcon(pathPlugin % layerType.icon), QApplication.translate("OpenlayersPlugin", "Add %1 layer").arg(layerType.name), self.iface.mainWindow())
+      # TODO
+      action = QAction(QIcon(pathPlugin % layerType.icon), u"Add "+layerType.name+u" layer", self.iface.mainWindow())
       self.layerAddActions.append(action)
       QObject.connect(action, SIGNAL("triggered()"), layerType.addLayer)
       # Add toolbar button and menu item

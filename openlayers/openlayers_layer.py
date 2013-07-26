@@ -95,7 +95,7 @@ class OpenlayersLayer(QgsPluginLayer):
 
     if not self.loaded:
       self.page = OLWebPage()
-      url = "file:///" + os.path.dirname( __file__ ).replace("\\", "/") + "/html/" + self.layerType.html
+      url = self.layerType.fileUrl()
       qDebug( "page file: %s" % url )
       self.page.mainFrame().load(QUrl(url))
       QObject.connect(self.page, SIGNAL("loadFinished(bool)"), self.loadFinished)
@@ -225,7 +225,11 @@ class OpenlayersLayer(QgsPluginLayer):
 
   def readXml(self, node):
     # custom properties
-    self.setLayerType( self.olLayerTypeRegistry.getById( int(node.toElement().attribute("ol_layer_type", "0")) ) )
+    ol_layer_type_name = str(node.toElement().attribute("ol_layer_type_name"))
+    if ol_layer_type_name != "":
+      self.setLayerType( self.olLayerTypeRegistry.getByName(ol_layer_type_name) )
+    else:
+      self.setLayerType( self.olLayerTypeRegistry.getById( int(node.toElement().attribute("ol_layer_type", "0")) ) )
     return True
 
   def writeXml(self, node, doc):
@@ -234,7 +238,8 @@ class OpenlayersLayer(QgsPluginLayer):
     element.setAttribute("type", "plugin")
     element.setAttribute("name", OpenlayersLayer.LAYER_TYPE);
     # custom properties
-    element.setAttribute("ol_layer_type", str(self.layerType.id))
+    element.setAttribute("ol_layer_type", str(self.layerType.id)) #Deprecated
+    element.setAttribute("ol_layer_type_name", self.layerType.name) #self.setCustomProperty in setLayerType would be cleaner, but custom properties are read after readXml
     return True
 
   def setLayerType(self, layerType):

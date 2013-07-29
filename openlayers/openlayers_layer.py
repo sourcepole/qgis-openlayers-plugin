@@ -61,6 +61,7 @@ class OpenlayersLayer(QgsPluginLayer):
 
     self.iface = iface
     self.loaded = False
+    self.layerType = None
     self.page = OLWebPage()
     self.ext = None
     self.olResolutions = None
@@ -88,12 +89,18 @@ class OpenlayersLayer(QgsPluginLayer):
     self.timerLoadEnd.setInterval(5000)
     QObject.connect(self.timerLoadEnd, SIGNAL("timeout()"), self.loadEndTimeout)
 
-    self.setLayerType( self.olLayerTypeRegistry.getById(0) )
-
   def draw(self, rendererContext):
     qDebug("OpenlayersLayer draw")
 
     if not self.loaded:
+      ol_layer_type_name = str(self.customProperty("ol_layer_type", "").toString())
+      if ol_layer_type_name != "":
+          self.setLayerType( self.olLayerTypeRegistry.getByName(ol_layer_type_name) )
+      elif self.layerType != None: #Set from layer type ID from old project files
+          self.setLayerType( self.layerType )
+      if self.layerType == None:
+          return True
+
       self.page = OLWebPage()
       url = self.layerType.fileUrl()
       qDebug( "page file: %s" % url )
@@ -170,6 +177,7 @@ class OpenlayersLayer(QgsPluginLayer):
         qDebug("updating OpenLayers extent" )
         self.ext = rendererContext.extent() #FIXME: store seperate for each rendererContext
         self.page.mainFrame().evaluateJavaScript("map.zoomToExtent(new OpenLayers.Bounds(%f, %f, %f, %f), true);" % (self.ext.xMinimum(), self.ext.yMinimum(), self.ext.xMaximum(), self.ext.yMaximum()))
+        qDebug("OpenLayers extent updated" ) #FIXME: evaluateJavaScript logs "undefined[0]: TypeError: 'null' is not an object" when loading a project. JS var 'map' not initialized yet? 
 
       if self.layerType.emitsLoadEnd:
         # wait for OpenLayers to finish loading
@@ -224,12 +232,11 @@ class OpenlayersLayer(QgsPluginLayer):
     self.lastMapUnitsPerPixel = rendererContext.mapToPixel().mapUnitsPerPixel()
 
   def readXml(self, node):
-    # custom properties
-    ol_layer_type_name = str(node.toElement().attribute("ol_layer_type_name"))
-    if ol_layer_type_name != "":
-      self.setLayerType( self.olLayerTypeRegistry.getByName(ol_layer_type_name) )
-    else:
-      self.setLayerType( self.olLayerTypeRegistry.getById( int(node.toElement().attribute("ol_layer_type", "0")) ) )
+    # handle ol_layer_type idx stored in layer node (OL plugin <= 1.1.0)
+    ol_layer_type_idx = int(node.toElement().attribute("ol_layer_type", "-1"))
+    if ol_layer_type_idx != -1:
+      ol_layer_type = self.olLayerTypeRegistry.getByIdx(ol_layer_type_idx)
+      self.layerType = ol_layer_type
     return True
 
   def writeXml(self, node, doc):
@@ -237,13 +244,12 @@ class OpenlayersLayer(QgsPluginLayer):
     # write plugin layer type to project (essential to be read from project)
     element.setAttribute("type", "plugin")
     element.setAttribute("name", OpenlayersLayer.LAYER_TYPE);
-    # custom properties
-    element.setAttribute("ol_layer_type", str(self.layerType.id)) #Deprecated
-    element.setAttribute("ol_layer_type_name", self.layerType.name) #self.setCustomProperty in setLayerType would be cleaner, but custom properties are read after readXml
     return True
 
   def setLayerType(self, layerType):
+    qDebug(" setLayerType: %s" % layerType.name )
     self.layerType = layerType
+    self.setCustomProperty("ol_layer_type", layerType.name)
 
   def scaleFromExtent(self, extent):
     if self.page != None:

@@ -72,7 +72,6 @@ class OpenLayersOverviewWidget(QtGui.QWidget,Ui_Form):
     self.__canvas = iface.mapCanvas()
     self.__dockwidget = dockwidget
     self.__olLayerTypeRegistry = olLayerTypeRegistry
-    self.__pathUrl = "file:///%s/html/%%s" % os.path.dirname( __file__ ).replace("\\", "/") 
     self.__initLayerOL = False
     self.__fileNameImg = ''
     self.__srsOL = core.QgsCoordinateReferenceSystem(3857, core.QgsCoordinateReferenceSystem.EpsgCrsId)
@@ -115,11 +114,11 @@ class OpenLayersOverviewWidget(QtGui.QWidget,Ui_Form):
   def __populateTypeMapGUI(self):
     pathPlugin = "%s%s%%s" % ( os.path.dirname( __file__ ), os.path.sep )
     totalLayers = len( self.__olLayerTypeRegistry.types() )
-    for id in range( totalLayers ):
-      layer = self.__olLayerTypeRegistry.getById( id )
-      name  = QtCore.QString( layer.name )
+    for idx in range( totalLayers ):
+      layer = self.__olLayerTypeRegistry.getByIdx( idx )
+      title  = QtCore.QString( layer.title )
       icon  = QtGui.QIcon( pathPlugin % layer.icon )
-      self.comboBoxTypeMap.addItem(icon, name, QtCore.QVariant(id))
+      self.comboBoxTypeMap.addItem(icon, title, layer.name)
   def __setConnections(self):
     # Check Box
     self.connect(self.checkBoxEnableMap, QtCore.SIGNAL("stateChanged (int)"),
@@ -203,8 +202,7 @@ class OpenLayersOverviewWidget(QtGui.QWidget,Ui_Form):
     self.__setWebViewMap( index )
   def __signal_pbAddRaster_clicked(self, checked):
     index = self.comboBoxTypeMap.currentIndex()
-    ( id,isOk ) = self.comboBoxTypeMap.itemData(index).toInt()
-    layer = self.__olLayerTypeRegistry.getById( id )
+    layer = self.__olLayerTypeRegistry.getByIdx( index )
     layer.addLayer()
   def __signal_pbCopyKml_clicked(self, cheked):
     # Extent Openlayers
@@ -253,14 +251,13 @@ class OpenLayersOverviewWidget(QtGui.QWidget,Ui_Form):
     self.disconnect(self.webViewMap.page().mainFrame(), QtCore.SIGNAL("loadFinished (bool)"),
                  self.__signal_webViewMap_loadFinished)
   def __setWebViewMap(self, idComboTypMap):
-    ( id,isOk ) = self.comboBoxTypeMap.itemData( idComboTypMap ).toInt()
-    layer = self.__olLayerTypeRegistry.getById( id )
+    layer = self.__olLayerTypeRegistry.getByIdx( idComboTypMap )
     self.lbStatusRead.setText( QtGui.QApplication.translate("OpenLayersOverviewWidget", "Loading %1...").arg( layer.name ) )
     self.lbStatusRead.setVisible( True )
     self.webViewMap.setVisible( False )
     self.connect(self.webViewMap.page().mainFrame(), QtCore.SIGNAL("loadFinished (bool)"),
                  self.__signal_webViewMap_loadFinished)
-    self.webViewMap.page().mainFrame().load( QtCore.QUrl( self.__pathUrl % layer.html ) )
+    self.webViewMap.page().mainFrame().load( QtCore.QUrl( layer.fileUrl() ) )
   def __refreshMapOL(self):
     action = "map.setCenter(new OpenLayers.LonLat(%f, %f));" % self.__getCenterLongLat2OL()
     self.webViewMap.page().mainFrame().evaluateJavaScript(action)

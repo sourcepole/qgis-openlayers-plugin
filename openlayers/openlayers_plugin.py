@@ -43,7 +43,6 @@ class OlLayerType:
     self.group = group
     self.icon = icon
     self.emitsLoadEnd = emitsLoadEnd
-    self.id = None
 
   def fileUrl(self):
     return "file:///" + os.path.dirname( __file__ ).replace("\\", "/") + "/html/" + self.name + ".html"
@@ -55,24 +54,21 @@ class OlLayerType:
 class OlLayerTypeRegistry:
 
   def __init__(self):
+    self.__olLayerTypesList = []
     self.__olLayerTypes = {}
-    self.__olLayerTypeIds = {} #Deprecated
-    self.__layerTypeId = 0 #Deprecated
 
   def add(self, layerType):
-    layerType.id = self.__layerTypeId
+    self.__olLayerTypesList.append(layerType)
     self.__olLayerTypes[layerType.name] = layerType
-    self.__olLayerTypeIds[self.__layerTypeId] = layerType
-    self.__layerTypeId += 1
 
   def types(self):
-    return self.__olLayerTypeIds.values()
+    return self.__olLayerTypesList
 
   def getByName(self, name):
     return self.__olLayerTypes[name]
 
-  def getById(self, id):
-    return self.__olLayerTypeIds[id]
+  def getByIdx(self, idx):
+    return self.__olLayerTypesList[idx]
 
 
 class OLOverview(object):

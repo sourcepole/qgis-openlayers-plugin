@@ -21,14 +21,6 @@ email                : pka at sourcepole.ch
  This script initializes the plugin, making it known to QGIS.
 """
 
-##lines for eclipse debug. Comment me when publishing.
-##Use DEBUG Perspective and Start the pydev server
-#import os, sys
-#sys.path.append(r"C:\eclipse\plugins\org.python.pydev.debug_1.6.5.2011022818\pysrc")
-#import pydevd
-#pydevd.settrace()
-##end of eclipse debug
-
 def classFactory(iface):
   from openlayers_plugin import OpenlayersPlugin
   return OpenlayersPlugin(iface)

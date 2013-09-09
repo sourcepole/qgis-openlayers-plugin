@@ -260,7 +260,6 @@ class OpenlayersLayer(QgsPluginLayer):
     if self.olResolutions == None:
       # get OpenLayers resolutions
       resVariant = self.page.mainFrame().evaluateJavaScript("map.layers[0].resolutions")
-      print resVariant
       self.olResolutions = resVariant
       #for res in resVariant.toList():
       #  self.olResolutions.append(res.toDouble()[0])

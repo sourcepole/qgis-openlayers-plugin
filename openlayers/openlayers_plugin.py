@@ -167,7 +167,8 @@ class OpenlayersPlugin:
       return
 
     # Register plugin layer type
-    QgsPluginLayerRegistry.instance().addPluginLayerType(OpenlayersPluginLayerType(self.iface, self.setReferenceLayer, self.__coordRSGoogle, self.olLayerTypeRegistry))
+    self.pluginLayerType = OpenlayersPluginLayerType(self.iface, self.setReferenceLayer, self.__coordRSGoogle, self.olLayerTypeRegistry)
+    QgsPluginLayerRegistry.instance().addPluginLayerType(self.pluginLayerType)
 
     self.layer = None
     QObject.connect(QgsMapLayerRegistry.instance(), SIGNAL("layerWillBeRemoved(QString)"), self.removeLayer)

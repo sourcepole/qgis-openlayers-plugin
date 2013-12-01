@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_about_dialog.ui'
 #
-# Created: Sun Dec  1 22:11:45 2013
+# Created: Sun Dec  1 22:28:12 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -62,7 +62,7 @@ class Ui_dlgAbout(object):
         self.verticalLayout_3.addWidget(self.buttonBox)
 
         self.retranslateUi(dlgAbout)
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(0)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), dlgAbout.accept)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("rejected()")), dlgAbout.reject)
         QtCore.QMetaObject.connectSlotsByName(dlgAbout)

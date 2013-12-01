@@ -2,11 +2,14 @@
 name=OpenLayers Plugin
 qgisMinimumVersion=2.0
 description=OpenStreetMap, Google Maps, Bing Maps layers and more
-version=1.1.1
+version=1.1.2
 author=Sourcepole, Luiz Motta and other contributors
 email=pka@sourcepole.ch
 
-changelog=1.1.1
+changelog=1.1.2
+    - Fix saving/loading on OSGeo4W 64bit and OS X. Thanks to Minoru Akagi!
+    - Terms of Service/About dialog
+  1.1.1
     - Basic port to 2.0 API by Richard Duivenvoorde and Minpa Lee
   1.1.0
     -Added Stamen OSM layers. Thanks to Nathaniel V. KELSO!

@@ -143,7 +143,7 @@ class OpenlayersPlugin:
     self.olLayerTypeRegistry.add( OlLayerType(self, 'Stamen Terrain-USA/OSM', 'stamen_icon.png', 'stamen_terrain.html', True) )
     # Overview
     self.olOverview = OLOverview( iface, self.olLayerTypeRegistry )
-    self.dlgAbout = AboutDialog(iface)
+    self.dlgAbout = AboutDialog()
 
   def initGui(self):
     # Overview

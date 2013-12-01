@@ -3,7 +3,7 @@ from ui_about_dialog import Ui_dlgAbout
 
 
 class AboutDialog(QtGui.QDialog):
-    def __init__(self, topics):
+    def __init__(self):
         QtGui.QDialog.__init__(self)
         # Set up the user interface from Designer.
         self.ui = Ui_dlgAbout()

@@ -33,6 +33,8 @@ import math
 from openlayers_layer import OpenlayersLayer
 from openlayers_plugin_layer_type import OpenlayersPluginLayerType
 from openlayers_ovwidget import OpenLayersOverviewWidget
+from about_dialog import AboutDialog
+
 
 class OlLayerType:
 
@@ -141,6 +143,7 @@ class OpenlayersPlugin:
     self.olLayerTypeRegistry.add( OlLayerType(self, 'Stamen Terrain-USA/OSM', 'stamen_icon.png', 'stamen_terrain.html', True) )
     # Overview
     self.olOverview = OLOverview( iface, self.olLayerTypeRegistry )
+    self.dlgAbout = AboutDialog(iface)
 
   def initGui(self):
     # Overview
@@ -149,6 +152,11 @@ class OpenlayersPlugin:
     self.overviewAddAction.setChecked(False)
     QObject.connect(self.overviewAddAction, SIGNAL("toggled(bool)"), self.olOverview.setVisible )
     self.iface.addPluginToMenu("OpenLayers plugin", self.overviewAddAction)
+
+    self.actionAbout = QAction("Terms of Service / About", self.iface.mainWindow())
+    QObject.connect(self.actionAbout, SIGNAL("triggered()"), self.dlgAbout, SLOT("show()"))
+    self.iface.addPluginToMenu("OpenLayers plugin", self.actionAbout)
+
     # Layers
     self.layerAddActions = []
     pathPlugin = "%s%s%%s" % ( os.path.dirname( __file__ ), os.path.sep )
@@ -178,6 +186,7 @@ class OpenlayersPlugin:
     for action in self.layerAddActions:
       self.iface.removePluginMenu("OpenLayers plugin", action)
 
+    self.iface.removePluginMenu("OpenLayers plugin", self.actionAbout)  
     self.iface.removePluginMenu("OpenLayers plugin", self.overviewAddAction)  
 
     # Unregister plugin layer type

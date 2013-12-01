@@ -35,7 +35,7 @@ except ImportError:
 from tools_network import getProxy
 import bindogr
 
-from openlayers_ovwidgetbase import Ui_Form
+from ui_openlayers_ovwidget import Ui_Form
 
 class MarkerCursor(QObject):
   def __init__(self, mapCanvas, srsOL):

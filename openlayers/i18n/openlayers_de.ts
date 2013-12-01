@@ -3,37 +3,37 @@
 <context>
     <name>Form</name>
     <message>
-        <location filename="openlayers_ovwidgetbase.py" line="72"/>
+        <location filename="ui_openlayers_ovwidget.py" line="72"/>
         <source>Form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="openlayers_ovwidgetbase.py" line="73"/>
+        <location filename="ui_openlayers_ovwidget.py" line="73"/>
         <source>Enable map</source>
         <translation>Karte anzeigen</translation>
     </message>
     <message>
-        <location filename="openlayers_ovwidgetbase.py" line="74"/>
+        <location filename="ui_openlayers_ovwidget.py" line="74"/>
         <source>Add map</source>
         <translation>Zur Karte hinzufügen</translation>
     </message>
     <message>
-        <location filename="openlayers_ovwidgetbase.py" line="75"/>
+        <location filename="ui_openlayers_ovwidget.py" line="75"/>
         <source>Hide cross in map</source>
         <translation>Kreuz nicht in Karte anzeigen</translation>
     </message>
     <message>
-        <location filename="openlayers_ovwidgetbase.py" line="76"/>
+        <location filename="ui_openlayers_ovwidget.py" line="76"/>
         <source>Refresh map</source>
         <translation>Karte neu laden</translation>
     </message>
     <message>
-        <location filename="openlayers_ovwidgetbase.py" line="77"/>
+        <location filename="ui_openlayers_ovwidget.py" line="77"/>
         <source>Save this image</source>
         <translation>Als Bild speichern</translation>
     </message>
     <message>
-        <location filename="openlayers_ovwidgetbase.py" line="78"/>
+        <location filename="ui_openlayers_ovwidget.py" line="78"/>
         <source>Copy rectangle (KML) of map to clipboard</source>
         <translation>Ausdehnung als KML in Zwischenablage kopieren</translation>
     </message>

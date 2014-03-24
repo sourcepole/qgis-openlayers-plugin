@@ -250,8 +250,14 @@ class OpenlayersPlugin:
   def __setMapSrsGoogle(self):
     mapCanvas = self.iface.mapCanvas()
     # On the fly
-    mapCanvas.mapRenderer().setProjectionsEnabled(True) 
-    if QGis.QGIS_VERSION_INT >= 10900:
+    if QGis.QGIS_VERSION_INT >= 20300:
+      mapCanvas.mapSettings().setCrsTransformEnabled(True) 
+    else:
+      mapCanvas.mapRenderer().setProjectionsEnabled(True) 
+    if QGis.QGIS_VERSION_INT >= 20300:
+      #theCoodRS = mapCanvas.mapRenderer().destinationCrs()
+      theCoodRS = mapCanvas.mapSettings().destinationCrs()
+    elif QGis.QGIS_VERSION_INT >= 10900:
       theCoodRS = mapCanvas.mapRenderer().destinationCrs()
     else:
       theCoodRS = mapCanvas.mapRenderer().destinationSrs()
@@ -259,7 +265,11 @@ class OpenlayersPlugin:
       coodTrans = QgsCoordinateTransform(theCoodRS, self.__coordRSGoogle)
       extMap = mapCanvas.extent()
       extMap = coodTrans.transform(extMap, QgsCoordinateTransform.ForwardTransform)
-      if QGis.QGIS_VERSION_INT >= 10900:
+      if QGis.QGIS_VERSION_INT >= 20300:
+        #mapCanvas.mapRenderer().setDestinationCrs(self.__coordRSGoogle)
+        #mapCanvas.mapSettings().setDestinationCrs(self.__coordRSGoogle)
+        mapCanvas.setDestinationCrs(self.__coordRSGoogle)
+      elif QGis.QGIS_VERSION_INT >= 10900:
         mapCanvas.mapRenderer().setDestinationCrs(self.__coordRSGoogle)
       else:
         mapCanvas.mapRenderer().setDestinationSrs(self.__coordRSGoogle)

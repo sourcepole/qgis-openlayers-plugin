@@ -38,13 +38,16 @@ from about_dialog import AboutDialog
 
 class OlLayerType:
 
-  def __init__(self, plugin, name, icon, html, emitsLoadEnd = False):
+  def __init__(self, plugin, name, title, group, icon, emitsLoadEnd = False):
     self.__plugin = plugin
     self.name = name
+    self.title = title
+    self.group = group
     self.icon = icon
-    self.html = html
     self.emitsLoadEnd = emitsLoadEnd
-    self.id = None
+
+  def fileUrl(self):
+    return "file:///" + os.path.dirname( __file__ ).replace("\\", "/") + "/html/" + self.name + ".html"
 
   def addLayer(self):
     self.__plugin.addLayer(self)
@@ -53,19 +56,21 @@ class OlLayerType:
 class OlLayerTypeRegistry:
 
   def __init__(self):
+    self.__olLayerTypesList = []
     self.__olLayerTypes = {}
-    self.__layerTypeId = 0
 
   def add(self, layerType):
-    layerType.id = self.__layerTypeId
-    self.__olLayerTypes[self.__layerTypeId] = layerType
-    self.__layerTypeId += 1
+    self.__olLayerTypesList.append(layerType)
+    self.__olLayerTypes[layerType.name] = layerType
 
   def types(self):
-    return self.__olLayerTypes.values()
+    return self.__olLayerTypesList
 
-  def getById(self, id):
-    return self.__olLayerTypes[id]
+  def getByName(self, name):
+    return self.__olLayerTypes[name]
+
+  def getByIdx(self, idx):
+    return self.__olLayerTypesList[idx]
 
 
 class OLOverview(object):
@@ -123,24 +128,25 @@ class OpenlayersPlugin:
 
     # Layers
     self.olLayerTypeRegistry = OlLayerTypeRegistry()
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'Google Physical', 'google_icon.png', 'google_physical.html', True) )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'Google Streets', 'google_icon.png', 'google_streets.html', True) )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'Google Hybrid', 'google_icon.png', 'google_hybrid.html', True) )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'Google Satellite', 'google_icon.png', 'google_satellite.html', True) )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'OpenStreetMap', 'osm_icon.png', 'osm.html', True) )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'OpenCycleMap', 'osm_icon.png', 'ocm.html', True) )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'OCM Landscape', 'osm_icon.png', 'ocm_landscape.html', True) )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'OCM Public Transport', 'osm_icon.png', 'ocm_transport.html', True) )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'Yahoo Street', 'yahoo_icon.png', 'yahoo_street.html') )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'Yahoo Hybrid', 'yahoo_icon.png', 'yahoo_hybrid.html') )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'Yahoo Satellite', 'yahoo_icon.png',  'yahoo_satellite.html') )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'Bing Road', 'bing_icon.png',   'bing_road.html', True) )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'Bing Aerial', 'bing_icon.png',  'bing_aerial.html', True) )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'Bing Aerial with labels', 'bing_icon.png',  'bing_aerial-labels.html', True) )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'Apple iPhoto map', 'apple_icon.png', 'apple.html', True) )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'Stamen Toner/OSM', 'stamen_icon.png', 'stamen_toner.html', True) )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'Stamen Watercolor/OSM', 'stamen_icon.png', 'stamen_watercolor.html', True) )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'Stamen Terrain-USA/OSM', 'stamen_icon.png', 'stamen_terrain.html', True) )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'google_physical', 'Google Physical', 'Google', 'google_icon.png', True) )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'google_streets', 'Google Streets', 'Google', 'google_icon.png', True) )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'google_hybrid', 'Google Hybrid', 'Google', 'google_icon.png', True) )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'google_satellite', 'Google Satellite', 'Google', 'google_icon.png', True) )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'osm', 'OpenStreetMap', 'OpenStreetMap', 'osm_icon.png', True) )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'ocm', 'OpenCycleMap', 'OpenStreetMap', 'osm_icon.png', True) )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'ocm_landscape', 'OCM Landscape', 'OpenStreetMap', 'osm_icon.png', True) )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'ocm_transport', 'OCM Public Transport', 'OpenStreetMap', 'osm_icon.png', True) )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'yahoo_street', 'Yahoo Street', 'Yahoo', 'yahoo_icon.png') )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'yahoo_hybrid', 'Yahoo Hybrid', 'Yahoo', 'yahoo_icon.png') )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'yahoo_satellite', 'Yahoo Satellite', 'Yahoo', 'yahoo_icon.png') )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'bing_road', 'Bing Road', 'Bing', 'bing_icon.png', True) )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'bing_aerial', 'Bing Aerial', 'Bing', 'bing_icon.png', True) )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'bing_aerial-labels', 'Bing Aerial with labels', 'Bing', 'bing_icon.png', True) )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'apple', 'Apple iPhoto map', 'Various', 'apple_icon.png', True) )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'stamen_toner', 'Stamen Toner/OSM', 'Stamen', 'stamen_icon.png', True) )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'stamen_watercolor', 'Stamen Watercolor/OSM', 'Stamen', 'stamen_icon.png', True) )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'stamen_terrain', 'Stamen Terrain-USA/OSM', 'Stamen', 'stamen_icon.png', True) )
+    self.olLayerTypeRegistry.add( OlLayerType(self, 'tomtom_base', 'TomTom Base', 'Various', 'tomtom_icon.png', True) )
     # Overview
     self.olOverview = OLOverview( iface, self.olLayerTypeRegistry )
     self.dlgAbout = AboutDialog()
@@ -168,7 +174,10 @@ class OpenlayersPlugin:
       self.layerAddActions.append(action)
       QObject.connect(action, SIGNAL("triggered()"), layerType.addLayer)
       # Add toolbar button and menu item
-      self.iface.addPluginToMenu("OpenLayers plugin", action)
+      if hasattr(self.iface, "addPluginToWebMenu"):
+        self.iface.addPluginToWebMenu("OpenLayers plugin", action)
+      else:
+        self.iface.addPluginToMenu("OpenLayers plugin", action)
 
     if not self.__setCoordRSGoogle():
       QMessageBox.critical(self.iface.mainWindow(), "OpenLayers Plugin", QApplication.translate("OpenlayersPlugin", "Could not set Google projection!"))
@@ -184,7 +193,10 @@ class OpenlayersPlugin:
   def unload(self):
     # Remove the plugin menu item and icon
     for action in self.layerAddActions:
-      self.iface.removePluginMenu("OpenLayers plugin", action)
+      if hasattr(self.iface, "addPluginToWebMenu"):
+        self.iface.removePluginWebMenu("OpenLayers plugin", action)
+      else:
+        self.iface.removePluginMenu("OpenLayers plugin", action)
 
     self.iface.removePluginMenu("OpenLayers plugin", self.actionAbout)  
     self.iface.removePluginMenu("OpenLayers plugin", self.overviewAddAction)  
@@ -202,13 +214,10 @@ class OpenlayersPlugin:
     self.__setMapSrsGoogle()
 
     layer = OpenlayersLayer(self.iface, self.__coordRSGoogle, self.olLayerTypeRegistry)
-    layer.setLayerName(layerType.name)
+    layer.setLayerName(layerType.title)
     layer.setLayerType(layerType)
     if layer.isValid():
-      if QGis.QGIS_VERSION_INT >= 10900:
-        QgsMapLayerRegistry.instance().addMapLayers([layer])
-      else:
-        QgsMapLayerRegistry.instance().addMapLayer(layer)
+      QgsMapLayerRegistry.instance().addMapLayer(layer)
 
       # last added layer is new reference
       self.setReferenceLayer(layer)
@@ -240,10 +249,7 @@ class OpenlayersPlugin:
       google_proj_def = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 "
       google_proj_def += "+units=m +nadgrids=@null +wktext +no_defs"
       isOk = self.__coordRSGoogle.createFromProj4(google_proj_def)
-      if isOk:
-        return True
-      else:
-        return False
+      return isOk
     else:
       return True
 

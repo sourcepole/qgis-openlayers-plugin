@@ -67,6 +67,7 @@ class OpenlayersWorker(QObject):
     self.layerType = layerType
 
     self.loaded = False
+    self.layerType = None
     self.page = OLWebPage()
     self.ext = None
     self.olResolutions = None
@@ -109,7 +110,6 @@ class OpenlayersWorker(QObject):
     self.doneSignal.emit()
     if debug > 1:
       qDebug('OpenlayersWorker startRender done')
-
 
 #  def doneRender(self):
 #    if debug > 1:
@@ -226,6 +226,7 @@ class OpenlayersWorker(QObject):
         if debug > 2:
           qDebug("updating OpenLayers extent (%f, %f, %f, %f)"  % (self.ext.xMinimum(), self.ext.yMinimum(), self.ext.xMaximum(), self.ext.yMaximum()))
         self.page.mainFrame().evaluateJavaScript("map.zoomToExtent(new OpenLayers.Bounds(%f, %f, %f, %f), true);" % (self.ext.xMinimum(), self.ext.yMinimum(), self.ext.xMaximum(), self.ext.yMaximum()))
+        qDebug("OpenLayers extent updated" ) #FIXME: evaluateJavaScript logs "undefined[0]: TypeError: 'null' is not an object" when loading a project. JS var 'map' not initialized yet? 
 
       if self.layerType.emitsLoadEnd:
       #if False:
@@ -424,8 +425,11 @@ class OpenlayersLayer(QgsPluginLayer):
   #  return True
 
   def readXml(self, node):
-    # custom properties
-    self.setLayerType( self.olLayerTypeRegistry.getById( int(node.toElement().attribute("ol_layer_type", "0")) ) )
+    # handle ol_layer_type idx stored in layer node (OL plugin <= 1.1.0)
+    ol_layer_type_idx = int(node.toElement().attribute("ol_layer_type", "-1"))
+    if ol_layer_type_idx != -1:
+      ol_layer_type = self.olLayerTypeRegistry.getByIdx(ol_layer_type_idx)
+      self.layerType = ol_layer_type
     return True
 
   def writeXml(self, node, doc):
@@ -433,11 +437,10 @@ class OpenlayersLayer(QgsPluginLayer):
     # write plugin layer type to project (essential to be read from project)
     element.setAttribute("type", "plugin")
     element.setAttribute("name", OpenlayersLayer.LAYER_TYPE);
-    # custom properties
-    element.setAttribute("ol_layer_type", str(self.layerType.id))
     return True
 
   def setLayerType(self, layerType):
+    qDebug(" setLayerType: %s" % layerType.name )
     self.layerType = layerType
 #    if self.worker:
 #      self.worker.layerType = layerType

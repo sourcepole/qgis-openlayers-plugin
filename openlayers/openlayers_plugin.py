@@ -19,266 +19,169 @@ email                : pka at sourcepole.ch
  *                                                                         *
  ***************************************************************************/
 """
-
-import os.path
-
+# Import the PyQt and QGIS libraries
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from PyQt4.QtWebKit import *
 from qgis.core import *
-
 import resources_rc
-import math
-
+from about_dialog import AboutDialog
+from openlayers_overview import OLOverview
 from openlayers_layer import OpenlayersLayer
 from openlayers_plugin_layer_type import OpenlayersPluginLayerType
-from openlayers_ovwidget import OpenLayersOverviewWidget
-from about_dialog import AboutDialog
+from weblayers.weblayer_registry import WebLayerTypeRegistry
+from weblayers.google_maps import OlGooglePhysicalLayer, OlGoogleStreetsLayer, OlGoogleHybridLayer, OlGoogleSatelliteLayer
+from weblayers.osm import OlOpenStreetMapLayer, OlOpenCycleMapLayer, OlOCMLandscapeLayer, OlOCMPublicTransportLayer
+from weblayers.yahoo_maps import OlYahooStreetLayer, OlYahooHybridLayer, OlYahooSatelliteLayer
+from weblayers.bing_maps import OlBingRoadLayer, OlBingAerialLayer, OlBingAerialLabelledLayer
+from weblayers.apple_maps import OlAppleiPhotoMapLayer
+from weblayers.osm_stamen import OlOSMStamenTonerLayer, OlOSMStamenWatercolorLayer, OlOSMStamenTerrainLayer
+import os.path
 
-
-class OlLayerType:
-
-  def __init__(self, plugin, name, title, group, icon, emitsLoadEnd = False):
-    self.__plugin = plugin
-    self.name = name
-    self.title = title
-    self.group = group
-    self.icon = icon
-    self.emitsLoadEnd = emitsLoadEnd
-
-  def fileUrl(self):
-    return "file:///" + os.path.dirname( __file__ ).replace("\\", "/") + "/html/" + self.name + ".html"
-
-  def addLayer(self):
-    self.__plugin.addLayer(self)
-
-
-class OlLayerTypeRegistry:
-
-  def __init__(self):
-    self.__olLayerTypesList = []
-    self.__olLayerTypes = {}
-
-  def add(self, layerType):
-    self.__olLayerTypesList.append(layerType)
-    self.__olLayerTypes[layerType.name] = layerType
-
-  def types(self):
-    return self.__olLayerTypesList
-
-  def getByName(self, name):
-    return self.__olLayerTypes[name]
-
-  def getByIdx(self, idx):
-    return self.__olLayerTypesList[idx]
-
-
-class OLOverview(object):
-
-  def __init__(self, iface, olLayerTypeRegistry):
-    self.__iface = iface
-    self.__olLayerTypeRegistry = olLayerTypeRegistry
-    self.__dockwidget = None
-    self.__oloWidget = None
-
-  # Private
-  def __setDocWidget(self):
-    self.__dockwidget = QDockWidget(QApplication.translate("OpenLayersOverviewWidget", "OpenLayers Overview"), self.__iface.mainWindow() )
-    self.__dockwidget.setObjectName("dwOpenlayersOverview")
-    self.__oloWidget = OpenLayersOverviewWidget(self.__iface, self.__dockwidget, self.__olLayerTypeRegistry)
-    self.__dockwidget.setWidget(self.__oloWidget)
-
-  def __initGui(self):
-    self.__setDocWidget()
-    self.__iface.addDockWidget( Qt.LeftDockWidgetArea, self.__dockwidget)
-
-  def __unload(self):
-    self.__dockwidget.close()
-    self.__iface.removeDockWidget( self.__dockwidget )
-    del self.__oloWidget
-    self.__dockwidget = None
-
-  # Public
-  def setVisible(self, visible):
-    if visible:
-      if self.__dockwidget is None:
-        self.__initGui()
-    else:
-      if not self.__dockwidget is None:
-        self.__unload()
- 
 
 class OpenlayersPlugin:
 
-  def __init__(self, iface):
-    # Save reference to the QGIS interface
-    self.iface = iface
+    def __init__(self, iface):
+        # Save reference to the QGIS interface
+        self.iface = iface
+        # initialize plugin directory
+        self.plugin_dir = os.path.dirname(__file__)
+        # initialize locale
+        locale = QSettings().value("locale/userLocale")[0:2]
+        localePath = os.path.join(self.plugin_dir, 'i18n', 'openlayers_{}.qm'.format(locale))
 
-    # setup locale
-    pluginDir = os.path.dirname( __file__ )
-    localePath = ""
-    locale = QSettings().value("locale/userLocale")[0:2]
-    if QFileInfo(pluginDir).exists():
-      localePath = pluginDir + "/i18n/openlayers_" + locale + ".qm"
-    if QFileInfo(localePath).exists():
-      self.translator = QTranslator()
-      self.translator.load(localePath)
-      if qVersion() > '4.3.3':
-        QCoreApplication.installTranslator(self.translator)
+        if os.path.exists(localePath):
+            self.translator = QTranslator()
+            self.translator.load(localePath)
 
-    # Layers
-    self.olLayerTypeRegistry = OlLayerTypeRegistry()
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'google_physical', 'Google Physical', 'Google', 'google_icon.png', True) )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'google_streets', 'Google Streets', 'Google', 'google_icon.png', True) )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'google_hybrid', 'Google Hybrid', 'Google', 'google_icon.png', True) )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'google_satellite', 'Google Satellite', 'Google', 'google_icon.png', True) )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'osm', 'OpenStreetMap', 'OpenStreetMap', 'osm_icon.png', True) )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'ocm', 'OpenCycleMap', 'OpenStreetMap', 'osm_icon.png', True) )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'ocm_landscape', 'OCM Landscape', 'OpenStreetMap', 'osm_icon.png', True) )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'ocm_transport', 'OCM Public Transport', 'OpenStreetMap', 'osm_icon.png', True) )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'yahoo_street', 'Yahoo Street', 'Yahoo', 'yahoo_icon.png') )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'yahoo_hybrid', 'Yahoo Hybrid', 'Yahoo', 'yahoo_icon.png') )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'yahoo_satellite', 'Yahoo Satellite', 'Yahoo', 'yahoo_icon.png') )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'bing_road', 'Bing Road', 'Bing', 'bing_icon.png', True) )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'bing_aerial', 'Bing Aerial', 'Bing', 'bing_icon.png', True) )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'bing_aerial-labels', 'Bing Aerial with labels', 'Bing', 'bing_icon.png', True) )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'apple', 'Apple iPhoto map', 'Various', 'apple_icon.png', True) )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'stamen_toner', 'Stamen Toner/OSM', 'Stamen', 'stamen_icon.png', True) )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'stamen_watercolor', 'Stamen Watercolor/OSM', 'Stamen', 'stamen_icon.png', True) )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'stamen_terrain', 'Stamen Terrain-USA/OSM', 'Stamen', 'stamen_icon.png', True) )
-    self.olLayerTypeRegistry.add( OlLayerType(self, 'tomtom_base', 'TomTom Base', 'Various', 'tomtom_icon.png', True) )
-    # Overview
-    self.olOverview = OLOverview( iface, self.olLayerTypeRegistry )
-    self.dlgAbout = AboutDialog()
+            if qVersion() > '4.3.3':
+                QCoreApplication.installTranslator(self.translator)
 
-  def initGui(self):
-    # Overview
-    self.overviewAddAction = QAction(QApplication.translate("OpenlayersPlugin", "OpenLayers Overview"), self.iface.mainWindow())
-    self.overviewAddAction.setCheckable(True)
-    self.overviewAddAction.setChecked(False)
-    QObject.connect(self.overviewAddAction, SIGNAL("toggled(bool)"), self.olOverview.setVisible )
-    self.iface.addPluginToMenu("OpenLayers plugin", self.overviewAddAction)
+        self._olLayerTypeRegistry = WebLayerTypeRegistry(self)
+        self.olOverview = OLOverview(iface, self._olLayerTypeRegistry)
+        self.dlgAbout = AboutDialog()
 
-    self.actionAbout = QAction("Terms of Service / About", self.iface.mainWindow())
-    QObject.connect(self.actionAbout, SIGNAL("triggered()"), self.dlgAbout, SLOT("show()"))
-    self.iface.addPluginToMenu("OpenLayers plugin", self.actionAbout)
+    def initGui(self):
+        self._olMenu = QMenu("OpenLayers plugin")
+        self._olMenu.setIcon(QIcon(":/plugins/openlayers/openlayers.png"))
 
-    # Layers
-    self.layerAddActions = []
-    pathPlugin = "%s%s%%s" % ( os.path.dirname( __file__ ), os.path.sep )
-    for layerType in self.olLayerTypeRegistry.types():
-      # Create actions for adding layers
-      #action = QAction(QIcon(pathPlugin % layerType.icon), QApplication.translate("OpenlayersPlugin", "Add %1 layer").arg(layerType.name), self.iface.mainWindow())
-      # TODO
-      action = QAction(QIcon(pathPlugin % layerType.icon), u"Add "+layerType.name+u" layer", self.iface.mainWindow())
-      self.layerAddActions.append(action)
-      QObject.connect(action, SIGNAL("triggered()"), layerType.addLayer)
-      # Add toolbar button and menu item
-      if hasattr(self.iface, "addPluginToWebMenu"):
-        self.iface.addPluginToWebMenu("OpenLayers plugin", action)
-      else:
-        self.iface.addPluginToMenu("OpenLayers plugin", action)
+        # Overview
+        self.overviewAddAction = QAction(QApplication.translate("OpenlayersPlugin", "OpenLayers Overview"), self.iface.mainWindow())
+        self.overviewAddAction.setCheckable(True)
+        self.overviewAddAction.setChecked(False)
+        QObject.connect(self.overviewAddAction, SIGNAL("toggled(bool)"), self.olOverview.setVisible)
+        self._olMenu.addAction(self.overviewAddAction)
 
-    if not self.__setCoordRSGoogle():
-      QMessageBox.critical(self.iface.mainWindow(), "OpenLayers Plugin", QApplication.translate("OpenlayersPlugin", "Could not set Google projection!"))
-      return
+        self._actionAbout = QAction("Terms of Service / About", self.iface.mainWindow())
+        QObject.connect(self._actionAbout, SIGNAL("triggered()"), self.dlgAbout, SLOT("show()"))
+        #? self._actionAbout.triggered.connect(self.dlgAbout, SLOT("show()"))
+        self._olMenu.addAction(self._actionAbout)
 
-    # Register plugin layer type
-    self.pluginLayerType = OpenlayersPluginLayerType(self.iface, self.setReferenceLayer, self.__coordRSGoogle, self.olLayerTypeRegistry)
-    QgsPluginLayerRegistry.instance().addPluginLayerType(self.pluginLayerType)
+        self._olLayerTypeRegistry.register(OlGooglePhysicalLayer())
+        self._olLayerTypeRegistry.register(OlGoogleStreetsLayer())
+        self._olLayerTypeRegistry.register(OlGoogleHybridLayer())
+        self._olLayerTypeRegistry.register(OlGoogleSatelliteLayer())
 
-    self.layer = None
-    QObject.connect(QgsMapLayerRegistry.instance(), SIGNAL("layerWillBeRemoved(QString)"), self.removeLayer)
-    
-  def unload(self):
-    # Remove the plugin menu item and icon
-    for action in self.layerAddActions:
-      if hasattr(self.iface, "addPluginToWebMenu"):
-        self.iface.removePluginWebMenu("OpenLayers plugin", action)
-      else:
-        self.iface.removePluginMenu("OpenLayers plugin", action)
+        self._olLayerTypeRegistry.register(OlOpenStreetMapLayer())
+        self._olLayerTypeRegistry.register(OlOpenCycleMapLayer())
+        self._olLayerTypeRegistry.register(OlOCMLandscapeLayer())
+        self._olLayerTypeRegistry.register(OlOCMPublicTransportLayer())
 
-    self.iface.removePluginMenu("OpenLayers plugin", self.actionAbout)  
-    self.iface.removePluginMenu("OpenLayers plugin", self.overviewAddAction)  
+        self._olLayerTypeRegistry.register(OlYahooStreetLayer())
+        self._olLayerTypeRegistry.register(OlYahooHybridLayer())
+        self._olLayerTypeRegistry.register(OlYahooSatelliteLayer())
 
-    # Unregister plugin layer type
-    QgsPluginLayerRegistry.instance().removePluginLayerType(OpenlayersLayer.LAYER_TYPE)
+        self._olLayerTypeRegistry.register(OlBingRoadLayer())
+        self._olLayerTypeRegistry.register(OlBingAerialLayer())
+        self._olLayerTypeRegistry.register(OlBingAerialLabelledLayer())
 
-    QObject.disconnect(QgsMapLayerRegistry.instance(), SIGNAL("layerWillBeRemoved(QString)"), self.removeLayer)
-    
-    self.olOverview.setVisible( False )
-    del self.olOverview
+        self._olLayerTypeRegistry.register(OlOSMStamenTonerLayer())
+        self._olLayerTypeRegistry.register(OlOSMStamenWatercolorLayer())
+        self._olLayerTypeRegistry.register(OlOSMStamenTerrainLayer())
 
-  def addLayer(self, layerType):
+        self._olLayerTypeRegistry.register(OlAppleiPhotoMapLayer())
 
-    self.__setMapSrsGoogle()
+        for group in self._olLayerTypeRegistry.groups():
+            groupMenu = group.menu()
+            for layer in self._olLayerTypeRegistry.groupLayerTypes(group):
+                layer.addMenuEntry(groupMenu, self.iface.mainWindow())
+            self._olMenu.addMenu(groupMenu)
 
-    layer = OpenlayersLayer(self.iface, self.__coordRSGoogle, self.olLayerTypeRegistry)
-    layer.setLayerName(layerType.title)
-    layer.setLayerType(layerType)
-    if layer.isValid():
-      QgsMapLayerRegistry.instance().addMapLayer(layer)
+        #Create Web menu, if it doesn't exist yet
+        self.iface.addPluginToWebMenu("_tmp", self._actionAbout)
+        self._menu = self.iface.webMenu()
+        self._menu.addMenu(self._olMenu)
+        self.iface.removePluginWebMenu("_tmp", self._actionAbout)
 
-      # last added layer is new reference
-      self.setReferenceLayer(layer)
+        # Register plugin layer type
+        pluginLayerType = OpenlayersPluginLayerType(self.iface, self.setReferenceLayer,
+                                                    self._olLayerTypeRegistry)
+        QgsPluginLayerRegistry.instance().addPluginLayerType(pluginLayerType)
 
-  def setReferenceLayer(self, layer):
-    self.layer = layer
-    # TODO: update initial scale
+    def unload(self):
+        self.iface.webMenu().removeAction(self._olMenu.menuAction())
 
-  def removeLayer(self, layerId):
-    layerToRemove = None
-    if QGis.QGIS_VERSION_INT >= 10900:
-      if self.layer != None and self.layer.id() == layerId:
-        self.layer = None
-    else:
-      if self.layer != None and self.layer.getLayerID() == layerId:
-        self.layer = None
-    
-      # TODO: switch to next available OpenLayers layer?
+        self.olOverview.setVisible(False)
+        del self.olOverview
 
-  def __setCoordRSGoogle(self):
-    self.__coordRSGoogle = QgsCoordinateReferenceSystem()
-    if QGis.QGIS_VERSION_INT >= 10900:
-      idEpsgRSGoogle = 'EPSG:3857'
-      createCrs = self.__coordRSGoogle.createFromOgcWmsCrs(idEpsgRSGoogle)
-    else:
-      idEpsgRSGoogle = 3857
-      createCrs = self.__coordRSGoogle.createFromEpsg(idEpsgRSGoogle)
-    if not createCrs:
-      google_proj_def = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 "
-      google_proj_def += "+units=m +nadgrids=@null +wktext +no_defs"
-      isOk = self.__coordRSGoogle.createFromProj4(google_proj_def)
-      return isOk
-    else:
-      return True
+        # Unregister plugin layer type
+        QgsPluginLayerRegistry.instance().removePluginLayerType(OpenlayersLayer.LAYER_TYPE)
 
-  def __setMapSrsGoogle(self):
-    mapCanvas = self.iface.mapCanvas()
-    # On the fly
-    if QGis.QGIS_VERSION_INT >= 20300:
-      mapCanvas.mapSettings().setCrsTransformEnabled(True) 
-    else:
-      mapCanvas.mapRenderer().setProjectionsEnabled(True) 
-    if QGis.QGIS_VERSION_INT >= 20300:
-      #theCoodRS = mapCanvas.mapRenderer().destinationCrs()
-      theCoodRS = mapCanvas.mapSettings().destinationCrs()
-    elif QGis.QGIS_VERSION_INT >= 10900:
-      theCoodRS = mapCanvas.mapRenderer().destinationCrs()
-    else:
-      theCoodRS = mapCanvas.mapRenderer().destinationSrs()
-    if theCoodRS != self.__coordRSGoogle:
-      coodTrans = QgsCoordinateTransform(theCoodRS, self.__coordRSGoogle)
-      extMap = mapCanvas.extent()
-      extMap = coodTrans.transform(extMap, QgsCoordinateTransform.ForwardTransform)
-      if QGis.QGIS_VERSION_INT >= 20300:
-        #mapCanvas.mapRenderer().setDestinationCrs(self.__coordRSGoogle)
-        #mapCanvas.mapSettings().setDestinationCrs(self.__coordRSGoogle)
-        mapCanvas.setDestinationCrs(self.__coordRSGoogle)
-      elif QGis.QGIS_VERSION_INT >= 10900:
-        mapCanvas.mapRenderer().setDestinationCrs(self.__coordRSGoogle)
-      else:
-        mapCanvas.mapRenderer().setDestinationSrs(self.__coordRSGoogle)
-      mapCanvas.freeze(False)
-      mapCanvas.setMapUnits(self.__coordRSGoogle.mapUnits())
-      mapCanvas.setExtent(extMap)
+    def addLayer(self, layerType):
+        layer = OpenlayersLayer(self.iface, self._olLayerTypeRegistry)
+        layer.setLayerName(layerType.displayName)
+        layer.setLayerType(layerType)
+        if layer.isValid():
+            coordRefSys = layerType.coordRefSys(self.canvasCrs())
+            self.setMapCrs(coordRefSys)
+            QgsMapLayerRegistry.instance().addMapLayer(layer)
+
+            # last added layer is new reference
+            self.setReferenceLayer(layer)
+
+    def setReferenceLayer(self, layer):
+        self.layer = layer
+
+    def removeLayer(self, layerId):
+        if self.layer is not None:
+            if QGis.QGIS_VERSION_INT >= 10900:
+                if self.layer.id() == layerId:
+                    self.layer = None
+            else:
+                if self.layer.getLayerID() == layerId:
+                    self.layer = None
+            # TODO: switch to next available OpenLayers layer?
+
+    def canvasCrs(self):
+        mapCanvas = self.iface.mapCanvas()
+        if QGis.QGIS_VERSION_INT >= 20300:
+            #crs = mapCanvas.mapRenderer().destinationCrs()
+            crs = mapCanvas.mapSettings().destinationCrs()
+        elif QGis.QGIS_VERSION_INT >= 10900:
+            crs = mapCanvas.mapRenderer().destinationCrs()
+        else:
+            crs = mapCanvas.mapRenderer().destinationSrs()
+        return crs
+
+    def setMapCrs(self, coordRefSys):
+        mapCanvas = self.iface.mapCanvas()
+        # On the fly
+        if QGis.QGIS_VERSION_INT >= 20300:
+            mapCanvas.mapSettings().setCrsTransformEnabled(True)
+        else:
+            mapCanvas.mapRenderer().setProjectionsEnabled(True)
+        canvasCrs = self.canvasCrs()
+        if canvasCrs != coordRefSys:
+            coodTrans = QgsCoordinateTransform(canvasCrs, coordRefSys)
+            extMap = mapCanvas.extent()
+            extMap = coodTrans.transform(extMap, QgsCoordinateTransform.ForwardTransform)
+            if QGis.QGIS_VERSION_INT >= 20300:
+                #mapCanvas.mapRenderer().setDestinationCrs(coordRefSys)
+                #mapCanvas.mapSettings().setDestinationCrs(coordRefSys)
+                mapCanvas.setDestinationCrs(coordRefSys)
+            elif QGis.QGIS_VERSION_INT >= 10900:
+                mapCanvas.mapRenderer().setDestinationCrs(coordRefSys)
+            else:
+                mapCanvas.mapRenderer().setDestinationSrs(coordRefSys)
+            mapCanvas.freeze(False)
+            mapCanvas.setMapUnits(coordRefSys.mapUnits())
+            mapCanvas.setExtent(extMap)

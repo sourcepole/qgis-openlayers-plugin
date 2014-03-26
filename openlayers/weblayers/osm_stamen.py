@@ -5,8 +5,8 @@ OpenLayers Plugin
 A QGIS plugin
 
                              -------------------
-begin                : 2010-02-03
-copyright            : (C) 2010 by Pirmin Kalberer, Sourcepole
+begin                : 2009-11-30
+copyright            : (C) 2009 by Pirmin Kalberer, Sourcepole
 email                : pka at sourcepole.ch
  ***************************************************************************/
 
@@ -19,19 +19,32 @@ email                : pka at sourcepole.ch
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.core import QgsPluginLayerType
-from openlayers_layer import OpenlayersLayer
+
+from weblayer import WebLayer3857
 
 
-class OpenlayersPluginLayerType(QgsPluginLayerType):
+class OlOSMStamenLayer(WebLayer3857):
 
-    def __init__(self, iface, add_callback, olLayerTypeRegistry):
-        QgsPluginLayerType.__init__(self, OpenlayersLayer.LAYER_TYPE)
-        self.iface = iface
-        self.add_callback = add_callback
-        self.olLayerTypeRegistry = olLayerTypeRegistry
+    emitsLoadEnd = True
 
-    def createLayer(self):
-        layer = OpenlayersLayer(self.iface, self.olLayerTypeRegistry)
-        self.add_callback(layer)
-        return layer
+    def __init__(self, name, html):
+        WebLayer3857.__init__(self, groupName="OSM/Stamen", groupIcon="stamen_icon.png",
+                              name=name, html=html)
+
+
+class OlOSMStamenTonerLayer(OlOSMStamenLayer):
+
+    def __init__(self):
+        OlOSMStamenLayer.__init__(self, name='Stamen Toner/OSM', html='stamen_toner.html')
+
+
+class OlOSMStamenWatercolorLayer(OlOSMStamenLayer):
+
+    def __init__(self):
+        OlOSMStamenLayer.__init__(self, name='Stamen Watercolor/OSM', html='stamen_watercolor.html')
+
+
+class OlOSMStamenTerrainLayer(OlOSMStamenLayer):
+
+    def __init__(self):
+        OlOSMStamenLayer.__init__(self, name='Stamen Terrain-USA/OSM', html='stamen_terrain.html')

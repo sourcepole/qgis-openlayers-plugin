@@ -5,8 +5,8 @@ OpenLayers Plugin
 A QGIS plugin
 
                              -------------------
-begin                : 2010-02-03
-copyright            : (C) 2010 by Pirmin Kalberer, Sourcepole
+begin                : 2009-11-30
+copyright            : (C) 2009 by Pirmin Kalberer, Sourcepole
 email                : pka at sourcepole.ch
  ***************************************************************************/
 
@@ -19,19 +19,32 @@ email                : pka at sourcepole.ch
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.core import QgsPluginLayerType
-from openlayers_layer import OpenlayersLayer
+
+from weblayer import WebLayer3857
 
 
-class OpenlayersPluginLayerType(QgsPluginLayerType):
+class OlYahooMapsLayer(WebLayer3857):
 
-    def __init__(self, iface, add_callback, olLayerTypeRegistry):
-        QgsPluginLayerType.__init__(self, OpenlayersLayer.LAYER_TYPE)
-        self.iface = iface
-        self.add_callback = add_callback
-        self.olLayerTypeRegistry = olLayerTypeRegistry
+    emitsLoadEnd = False
 
-    def createLayer(self):
-        layer = OpenlayersLayer(self.iface, self.olLayerTypeRegistry)
-        self.add_callback(layer)
-        return layer
+    def __init__(self, name, html):
+        WebLayer3857.__init__(self, groupName="Yahoo Maps", groupIcon="yahoo_icon.png",
+                              name=name, html=html)
+
+
+class OlYahooStreetLayer(OlYahooMapsLayer):
+
+    def __init__(self):
+        OlYahooMapsLayer.__init__(self, name='Yahoo Street', html='yahoo_street.html')
+
+
+class OlYahooHybridLayer(OlYahooMapsLayer):
+
+    def __init__(self):
+        OlYahooMapsLayer.__init__(self, name='Yahoo Hybrid', html='yahoo_hybrid.html')
+
+
+class OlYahooSatelliteLayer(OlYahooMapsLayer):
+
+    def __init__(self):
+        OlYahooMapsLayer.__init__(self, name='Yahoo Satellite', html='yahoo_satellite.html')

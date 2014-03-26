@@ -84,7 +84,7 @@ class OpenLayersOverviewWidget(QWidget,Ui_Form):
     self.__canvas = iface.mapCanvas()
     self.__dockwidget = dockwidget
     self.__olLayerTypeRegistry = olLayerTypeRegistry
-    self.__pathUrl = "file:///%s/html/%%s" % os.path.dirname( __file__ ).replace("\\", "/")
+    self.__pathUrl = "file:///%s/weblayers/html/%%s" % os.path.dirname( __file__ ).replace("\\", "/")
     self.__initLayerOL = False
     self.__fileNameImg = ''
     self.__srsOL = core.QgsCoordinateReferenceSystem(3857, core.QgsCoordinateReferenceSystem.EpsgCrsId)
@@ -133,8 +133,8 @@ class OpenLayersOverviewWidget(QWidget,Ui_Form):
     totalLayers = len( self.__olLayerTypeRegistry.types() )
     for id in range( totalLayers ):
       layer = self.__olLayerTypeRegistry.getById( id )
-      name  = QString( layer.name )
-      icon  = QIcon( pathPlugin % layer.icon )
+      name  = QString( layer.displayName )
+      icon  = QIcon( pathPlugin % layer.groupIcon )
       self.comboBoxTypeMap.addItem(icon, name, id)
 
   def __setConnections(self):
@@ -282,7 +282,7 @@ class OpenLayersOverviewWidget(QWidget,Ui_Form):
 
   def __setWebViewMap(self, id):
     layer = self.__olLayerTypeRegistry.getById( id )
-    self.lbStatusRead.setText( "Loading " +  layer.name + " ...")
+    self.lbStatusRead.setText( "Loading " +  layer.displayName + " ...")
     self.lbStatusRead.setVisible( True )
     self.webViewMap.setVisible( False )
     self.connect(self.webViewMap.page().mainFrame(), SIGNAL("loadFinished (bool)"),

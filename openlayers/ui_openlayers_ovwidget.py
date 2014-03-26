@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_openlayers_ovwidget.ui'
 #
-# Created: Sun Dec  1 21:39:15 2013
+# Created: Mon Mar 24 18:00:50 2014
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!

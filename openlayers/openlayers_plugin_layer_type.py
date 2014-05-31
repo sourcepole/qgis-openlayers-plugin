@@ -35,3 +35,6 @@ class OpenlayersPluginLayerType(QgsPluginLayerType):
         layer = OpenlayersLayer(self.iface, self.olLayerTypeRegistry)
         self.add_callback(layer)
         return layer
+
+    def showLayerProperties(self, layer):
+        return False

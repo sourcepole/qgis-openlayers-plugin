@@ -7,6 +7,7 @@ author=Sourcepole and contributors
 email=pka@sourcepole.ch
 
 changelog=1.3.0
+    - Moved into Web menu
     - Support for multi-treaded rendering (QGIS 2.3/2.4)
     - Refactoring of OL layers and registry
     - Ready for supporting other CRS and initial extends

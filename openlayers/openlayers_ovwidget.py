@@ -84,7 +84,6 @@ class OpenLayersOverviewWidget(QWidget,Ui_Form):
     self.__canvas = iface.mapCanvas()
     self.__dockwidget = dockwidget
     self.__olLayerTypeRegistry = olLayerTypeRegistry
-    self.__pathUrl = "file:///%s/weblayers/html/%%s" % os.path.dirname( __file__ ).replace("\\", "/")
     self.__initLayerOL = False
     self.__fileNameImg = ''
     self.__srsOL = core.QgsCoordinateReferenceSystem(3857, core.QgsCoordinateReferenceSystem.EpsgCrsId)
@@ -287,7 +286,8 @@ class OpenLayersOverviewWidget(QWidget,Ui_Form):
     self.webViewMap.setVisible( False )
     self.connect(self.webViewMap.page().mainFrame(), SIGNAL("loadFinished (bool)"),
                  self.__signal_webViewMap_loadFinished)
-    self.webViewMap.page().mainFrame().load( QUrl( self.__pathUrl % layer.html ) )
+    url = layer.html_url()
+    self.webViewMap.page().mainFrame().load( QUrl(url) )
 
   def __refreshMapOL(self):
     action = "map.setCenter(new OpenLayers.LonLat(%f, %f));" % self.__getCenterLongLat2OL()

@@ -217,7 +217,8 @@ class OpenlayersController(QObject):
             self.finished.emit()
 
     def pageRepaintRequested(self, rect):
-        debug("OpenlayersLayer pageRepaintRequested", 2)
+        debug("OpenlayersLayer pageRepaintRequested", 3)
+        #Plugin 1.1.2 finished rendering after waiting for 500ms timer
 
     def renderMap(self):
         rendererContext = self.context

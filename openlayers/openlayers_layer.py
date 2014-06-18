@@ -155,20 +155,16 @@ class OpenlayersController(QObject):
                 or self.page.lastLogicalDpi != rendererContext.painter().device().logicalDpiX()
                 or self.page.lastOutputDpi != self.outputDpi
                 or self.page.lastMapUnitsPerPixel != rendererContext.mapToPixel().mapUnitsPerPixel()):
-            olSize = rendererContext.painter().viewport().size()
+            self.targetSize = rendererContext.painter().viewport().size()
             if rendererContext.painter().device().logicalDpiX() != int(self.outputDpi):
                 # use screen dpi for printing
-                #sizeFact = self.outputDpi / 25.4 / rendererContext.mapToPixel().mapUnitsPerPixel()
-                sizeFact = 1
-                olSize.setWidth(rendererContext.extent().width() * sizeFact)
-                olSize.setHeight(rendererContext.extent().height() * sizeFact)
-            debug(" olSize: %d, %d" % (olSize.width(), olSize.height()), 3)
-            self.page.setViewportSize(olSize)
-            targetWidth = olSize.width()
-            targetHeight = olSize.height()
+                sizeFact = self.outputDpi / 25.4 / rendererContext.mapToPixel().mapUnitsPerPixel()
+                self.targetSize.setWidth(rendererContext.extent().width() * sizeFact)
+                self.targetSize.setHeight(rendererContext.extent().height() * sizeFact)
+            debug(" targetSize: %d, %d" % (self.targetSize.width(), self.targetSize.height()), 3)
 
             # find best resolution or use last
-            qgisRes = rendererContext.extent().width() / targetWidth
+            qgisRes = rendererContext.extent().width() / self.targetSize.width()
             olRes = qgisRes
             for res in self.page.resolutions():
                 olRes = res
@@ -179,9 +175,9 @@ class OpenlayersController(QObject):
             olWidth = rendererContext.extent().width() / olRes
             olHeight = rendererContext.extent().height() / olRes
             debug("    adjust viewport: %f -> %f: %f x %f" % (qgisRes, olRes, olWidth, olHeight), 3)
-            self.viewportSize = QSize(olWidth, olHeight)
-            self.page.setViewportSize(self.viewportSize)
-            self.img = QImage(self.viewportSize, QImage.Format_ARGB32_Premultiplied)
+            olSize = QSize(int(olWidth), int(olHeight))
+            self.page.setViewportSize(olSize)
+            self.img = QImage(olSize, QImage.Format_ARGB32_Premultiplied)
 
             if rendererContext.extent() != self.page.extent:
                 self.page.extent = rendererContext.extent()  # FIXME: store seperate for each rendererContext
@@ -231,10 +227,13 @@ class OpenlayersController(QObject):
         self.page.mainFrame().render(painter)
         painter.end()
 
-        # if olWidth != targetWidth or olHeight != targetHeight:
-        #     # scale using QImage for better quality
-        #     img = img.scaled(targetWidth, targetHeight, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        #     debug("    scale image: %i x %i -> %i x %i" % (olWidth, olHeight, targetWidth, targetHeight), 3)
+        if self.img.size() != self.targetSize:
+            targetWidth = self.targetSize.width()
+            targetHeight = self.targetSize.height()
+            # scale using QImage for better quality
+            debug("    scale image: %i x %i -> %i x %i" % (self.img.width(), self.img.height(),
+                  targetWidth, targetHeight), 3)
+            self.img = self.img.scaled(targetWidth, targetHeight, Qt.KeepAspectRatio, Qt.SmoothTransformation)
 
         # save current state
         self.page.lastExtent = rendererContext.extent()

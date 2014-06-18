@@ -101,7 +101,7 @@ class OpenlayersController(QObject):
 
         self.timerMax = QTimer()
         self.timerMax.setSingleShot(True)
-        self.timerMax.setInterval(3000)  # TODO: different timeouts for map types
+        self.timerMax.setInterval(5000)  # TODO: different timeouts for map types
         self.timerMax.timeout.connect(self.mapTimeout)
 
     @pyqtSlot()
@@ -142,7 +142,8 @@ class OpenlayersController(QObject):
         self.outputDpi = rendererContext.painter().device().logicalDpiX()  # FIXME: self.mapSettings.outputDpi()
         debug(" extent: %s" % rendererContext.extent().toString(), 3)
         debug(" center: %lf, %lf" % (rendererContext.extent().center().x(), rendererContext.extent().center().y()), 3)
-        debug(" size: %d, %d" % (rendererContext.painter().viewport().size().width(), rendererContext.painter().viewport().size().height()), 3)
+        debug(" size: %d, %d" % (rendererContext.painter().viewport().size().width(),
+              rendererContext.painter().viewport().size().height()), 3)
         debug(" logicalDpiX: %d" % rendererContext.painter().device().logicalDpiX(), 3)
         debug(" outputDpi: %lf" % self.outputDpi)
         debug(" mapUnitsPerPixel: %f" % rendererContext.mapToPixel().mapUnitsPerPixel(), 3)
@@ -185,11 +186,13 @@ class OpenlayersController(QObject):
 
         if rendererContext.extent() != self.page.extent:
             self.page.extent = rendererContext.extent()  # FIXME: store seperate for each rendererContext
-            debug("updating OpenLayers extent (%f, %f, %f, %f)" % (self.page.extent.xMinimum(), self.page.extent.yMinimum(), self.page.extent.xMaximum(), self.page.extent.yMaximum()), 3)
+            debug("map.zoomToExtent (%f, %f, %f, %f)" % (
+                self.page.extent.xMinimum(), self.page.extent.yMinimum(),
+                self.page.extent.xMaximum(), self.page.extent.yMaximum()), 3)
             self.page.mainFrame().evaluateJavaScript(
-                "map.zoomToExtent(new OpenLayers.Bounds(%f, %f, %f, %f), true);" %
-                (self.page.extent.xMinimum(), self.page.extent.yMinimum(), self.page.extent.xMaximum(), self.page.extent.yMaximum()))
-            debug("map.zoomToExtent finished", 3)
+                "map.zoomToExtent(new OpenLayers.Bounds(%f, %f, %f, %f), true);" % (
+                    self.page.extent.xMinimum(), self.page.extent.yMinimum(),
+                    self.page.extent.xMaximum(), self.page.extent.yMaximum()))
 
         self.mapFinished = False
         self.timer.start()
@@ -197,12 +200,11 @@ class OpenlayersController(QObject):
 
     def checkMapUpdate(self):
         if self.layerType.emitsLoadEnd:
-            debug('waiting for loadEnd', 3)
             # wait for OpenLayers to finish loading
             # NOTE: does not work with Google and Yahoo layers as they do not emit loadstart and loadend events
             loadEndOL = self.page.mainFrame().evaluateJavaScript("loadEnd")
-            debug('waiting ' + str(self.context.renderingStopped()) + ' ' + str(loadEndOL), 4)
-            #debug("loadEndOL: %d" % loadEndOL, 3)
+            debug("waiting for loadEnd: renderingStopped=%r loadEndOL=%r" % (
+                  self.context.renderingStopped(), loadEndOL), 4)
             if not loadEndOL is None:
                 self.mapFinished = loadEndOL
             else:
@@ -247,6 +249,7 @@ class OpenlayersController(QObject):
         self.page.lastMapUnitsPerPixel = rendererContext.mapToPixel().mapUnitsPerPixel()
 
     def mapTimeout(self):
+        debug("mapTimeout reached")
         self.timer.stop()
         self.img.fill(Qt.gray)
         self.finished.emit()

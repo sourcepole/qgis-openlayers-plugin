@@ -150,46 +150,50 @@ class OpenlayersController(QObject):
         #debug(" outputSize: %d, %d" % (self.iface.mapCanvas().mapRenderer().outputSize().width(), self.iface.mapCanvas().mapRenderer().outputSize().height()), 3)
         #debug(" scale: %lf" % self.iface.mapCanvas().mapRenderer().scale(), 3)
 
-        if (self.page.lastExtent != rendererContext.extent()
-                or self.page.lastViewPortSize != rendererContext.painter().viewport().size()
-                or self.page.lastLogicalDpi != rendererContext.painter().device().logicalDpiX()
-                or self.page.lastOutputDpi != self.outputDpi
-                or self.page.lastMapUnitsPerPixel != rendererContext.mapToPixel().mapUnitsPerPixel()):
-            self.targetSize = rendererContext.painter().viewport().size()
-            if rendererContext.painter().device().logicalDpiX() != int(self.outputDpi):
-                # use screen dpi for printing
-                sizeFact = self.outputDpi / 25.4 / rendererContext.mapToPixel().mapUnitsPerPixel()
-                self.targetSize.setWidth(rendererContext.extent().width() * sizeFact)
-                self.targetSize.setHeight(rendererContext.extent().height() * sizeFact)
-            debug(" targetSize: %d, %d" % (self.targetSize.width(), self.targetSize.height()), 3)
+        # if (self.page.lastExtent == rendererContext.extent()
+        #         and self.page.lastViewPortSize == rendererContext.painter().viewport().size()
+        #         and self.page.lastLogicalDpi == rendererContext.painter().device().logicalDpiX()
+        #         and self.page.lastOutputDpi == self.outputDpi
+        #         and self.page.lastMapUnitsPerPixel == rendererContext.mapToPixel().mapUnitsPerPixel()):
+        #     self.renderMap()
+        #     self.finished.emit()
+        #     return
 
-            # find best resolution or use last
-            qgisRes = rendererContext.extent().width() / self.targetSize.width()
-            olRes = qgisRes
-            for res in self.page.resolutions():
-                olRes = res
-                if qgisRes >= res:
-                    break
+        self.targetSize = rendererContext.painter().viewport().size()
+        if rendererContext.painter().device().logicalDpiX() != int(self.outputDpi):
+            # use screen dpi for printing
+            sizeFact = self.outputDpi / 25.4 / rendererContext.mapToPixel().mapUnitsPerPixel()
+            self.targetSize.setWidth(rendererContext.extent().width() * sizeFact)
+            self.targetSize.setHeight(rendererContext.extent().height() * sizeFact)
+        debug(" targetSize: %d, %d" % (self.targetSize.width(), self.targetSize.height()), 3)
 
-            # adjust OpenLayers viewport to match QGIS extent
-            olWidth = rendererContext.extent().width() / olRes
-            olHeight = rendererContext.extent().height() / olRes
-            debug("    adjust viewport: %f -> %f: %f x %f" % (qgisRes, olRes, olWidth, olHeight), 3)
-            olSize = QSize(int(olWidth), int(olHeight))
-            self.page.setViewportSize(olSize)
-            self.img = QImage(olSize, QImage.Format_ARGB32_Premultiplied)
+        # find best resolution or use last
+        qgisRes = rendererContext.extent().width() / self.targetSize.width()
+        olRes = qgisRes
+        for res in self.page.resolutions():
+            olRes = res
+            if qgisRes >= res:
+                break
 
-            if rendererContext.extent() != self.page.extent:
-                self.page.extent = rendererContext.extent()  # FIXME: store seperate for each rendererContext
-                debug("updating OpenLayers extent (%f, %f, %f, %f)" % (self.page.extent.xMinimum(), self.page.extent.yMinimum(), self.page.extent.xMaximum(), self.page.extent.yMaximum()), 3)
-                self.page.mainFrame().evaluateJavaScript(
-                    "map.zoomToExtent(new OpenLayers.Bounds(%f, %f, %f, %f), true);" %
-                    (self.page.extent.xMinimum(), self.page.extent.yMinimum(), self.page.extent.xMaximum(), self.page.extent.yMaximum()))
-                debug("map.zoomToExtent finished", 3)
+        # adjust OpenLayers viewport to match QGIS extent
+        olWidth = rendererContext.extent().width() / olRes
+        olHeight = rendererContext.extent().height() / olRes
+        debug("    adjust viewport: %f -> %f: %f x %f" % (qgisRes, olRes, olWidth, olHeight), 3)
+        olSize = QSize(int(olWidth), int(olHeight))
+        self.page.setViewportSize(olSize)
+        self.img = QImage(olSize, QImage.Format_ARGB32_Premultiplied)
 
-            self.mapFinished = False
-            self.timer.start()
-            self.timerMax.start()
+        if rendererContext.extent() != self.page.extent:
+            self.page.extent = rendererContext.extent()  # FIXME: store seperate for each rendererContext
+            debug("updating OpenLayers extent (%f, %f, %f, %f)" % (self.page.extent.xMinimum(), self.page.extent.yMinimum(), self.page.extent.xMaximum(), self.page.extent.yMaximum()), 3)
+            self.page.mainFrame().evaluateJavaScript(
+                "map.zoomToExtent(new OpenLayers.Bounds(%f, %f, %f, %f), true);" %
+                (self.page.extent.xMinimum(), self.page.extent.yMinimum(), self.page.extent.xMaximum(), self.page.extent.yMaximum()))
+            debug("map.zoomToExtent finished", 3)
+
+        self.mapFinished = False
+        self.timer.start()
+        self.timerMax.start()
 
     def checkMapUpdate(self):
         if self.layerType.emitsLoadEnd:

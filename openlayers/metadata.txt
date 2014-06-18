@@ -2,11 +2,15 @@
 name=OpenLayers Plugin
 qgisMinimumVersion=2.3
 description=OpenStreetMap, Google Maps, Bing Maps layers and more
-version=1.2.0
+version=1.3.1
 author=Sourcepole and contributors
 email=pka@sourcepole.ch
 
-changelog=1.2.0
+changelog=1.3.1
+    - Pre-release for QGIS 2.4 (Initial map rendering partially broken)
+    - Image scaling fixed
+    - Support for accented characters in home directory
+  1.3.0
     - Pre-release for QGIS 2.4 (Initial map rendering partially broken, printing not working yet)
     - Moved into Web menu
     - Support for multi-treaded rendering (QGIS 2.3/2.4)

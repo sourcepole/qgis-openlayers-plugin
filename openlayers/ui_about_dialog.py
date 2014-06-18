@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_about_dialog.ui'
 #
-# Created: Mon Mar 24 18:00:50 2014
+# Created: Wed Jun 18 23:20:32 2014
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -30,6 +30,7 @@ class Ui_dlgAbout(object):
         self.textBrowser.setUndoRedoEnabled(False)
         self.textBrowser.setReadOnly(True)
         self.textBrowser.setTextInteractionFlags(QtCore.Qt.LinksAccessibleByMouse|QtCore.Qt.TextSelectableByMouse)
+        self.textBrowser.setOpenExternalLinks(True)
         self.textBrowser.setObjectName(_fromUtf8("textBrowser"))
         self.verticalLayout_2.addWidget(self.textBrowser)
         self.tabWidget.addTab(self.tab, _fromUtf8(""))
@@ -85,7 +86,7 @@ class Ui_dlgAbout(object):
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-weight:600;\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">qgis-openlayers-plugin is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.</p>\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-style:italic;\">Copyright (c) 2010-2013 Pirmin Kalberer &amp; Mathias Walker, Sourcepole AG</span></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-style:italic;\">Copyright (c) 2010-2014 Pirmin Kalberer &amp; Mathias Walker, Sourcepole AG</span></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QtGui.QApplication.translate("dlgAbout", "Terms of Service", None, QtGui.QApplication.UnicodeUTF8))
         self.textBrowser_2.setHtml(QtGui.QApplication.translate("dlgAbout", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"

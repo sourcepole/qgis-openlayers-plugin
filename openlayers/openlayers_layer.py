@@ -19,7 +19,6 @@ email                : pka at sourcepole.ch
  *                                                                         *
  ***************************************************************************/
 """
-import PyQt4
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.QtWebKit import *
@@ -34,7 +33,10 @@ debuglevel = 4  # 0 (none) - 4 (all)
 
 def debug(msg, verbosity=1):
     if debuglevel >= verbosity:
-        qDebug(msg)
+        try:
+            qDebug(msg)
+        except:
+            pass
 
 
 class OLWebPage(QWebPage):

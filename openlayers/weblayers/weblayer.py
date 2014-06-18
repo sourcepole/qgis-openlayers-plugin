@@ -23,6 +23,7 @@ email                : pka at sourcepole.ch
 from PyQt4.QtGui import QAction, QIcon, QMenu
 from qgis.core import QGis, QgsCoordinateReferenceSystem
 import os
+import sys
 
 
 class WebLayerGroup:
@@ -95,7 +96,9 @@ class WebLayer:
         self._addLayerCallback(self)
 
     def html_url(self):
-        return "file:///" + os.path.dirname(__file__).replace("\\", "/") + "/html/" + self._html
+        dir = os.path.dirname(unicode(__file__, sys.getfilesystemencoding()))
+        url = "file://%s/html/%s" % (dir.replace("\\", "/"), self._html)
+        return url
 
     def coordRefSys(self, mapCoordSys):
         epsg = self.epsgList[0]  # TODO: look for matching coord

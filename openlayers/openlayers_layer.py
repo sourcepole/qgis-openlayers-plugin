@@ -120,9 +120,6 @@ class OpenlayersController(QObject):
         url = self.layerType.html_url()
         debug("page file: %s" % url)
         self.page.mainFrame().load(QUrl(url))
-        if not self.layerType.emitsLoadEnd:
-            debug("Layer type does not emit LoadEnd: connecting signal repaintRequested", 3)
-            QObject.connect(self.page, SIGNAL("repaintRequested(QRect)"), self.pageRepaintRequested)
         # wait for page to finish loading
         debug("OpenlayersWorker waiting for page to load", 3)
 
@@ -232,10 +229,6 @@ class OpenlayersController(QObject):
 
             self.finished.emit()
 
-    def pageRepaintRequested(self, rect):
-        debug("OpenlayersLayer pageRepaintRequested", 3)
-        #Plugin 1.1.2 finished rendering after waiting for 500ms timer
-
     def renderMap(self):
         rendererContext = self.context
         if rendererContext.painter().device().logicalDpiX() != int(self.outputDpi):
@@ -265,7 +258,11 @@ class OpenlayersController(QObject):
     def mapTimeout(self):
         debug("mapTimeout reached")
         self.timer.stop()
-        self.emitErrorImage()
+        if not self.layerType.emitsLoadEnd:
+            self.renderMap()
+            self.finished.emit()
+        else:
+            self.emitErrorImage()
 
     def emitErrorImage(self):
         self.img = QImage()

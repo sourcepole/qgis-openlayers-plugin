@@ -129,14 +129,11 @@ class OpenlayersController(QObject):
     def pageLoaded(self):
         debug("[GUI THREAD] pageLoaded", 3)
         if self.cancelled:
-            self.img.fill(Qt.gray)
+            self.emitErrorImage()
+            return
 
         self.page.loaded = True
-
-        if self.page.extent is None:
-            self.setup_map()
-        else:
-            self.finished.emit()
+        self.setup_map()
 
     def setup_map(self):
         rendererContext = self.context
@@ -170,13 +167,17 @@ class OpenlayersController(QObject):
             self.targetSize.setHeight(rendererContext.extent().height() * sizeFact)
         debug(" targetSize: %d, %d" % (self.targetSize.width(), self.targetSize.height()), 3)
 
-        # find best resolution or use last
+        # find matching OL resolution
         qgisRes = rendererContext.extent().width() / self.targetSize.width()
-        olRes = qgisRes
+        olRes = None
         for res in self.page.resolutions():
-            olRes = res
             if qgisRes >= res:
+                olRes = res
                 break
+        if olRes is None:
+            debug("No matching OL resolution found (QGIS resolution: %f)" % qgisRes)
+            self.emitErrorImage()
+            return
 
         # adjust OpenLayers viewport to match QGIS extent
         olWidth = rendererContext.extent().width() / olRes
@@ -186,16 +187,27 @@ class OpenlayersController(QObject):
         self.page.setViewportSize(olSize)
         self.img = QImage(olSize, QImage.Format_ARGB32_Premultiplied)
 
-        if rendererContext.extent() != self.page.extent:
-            self.page.extent = rendererContext.extent()  # FIXME: store seperate for each rendererContext
-            debug("map.zoomToExtent (%f, %f, %f, %f)" % (
+        self.page.extent = rendererContext.extent()
+        debug("map.zoomToExtent (%f, %f, %f, %f)" % (
+            self.page.extent.xMinimum(), self.page.extent.yMinimum(),
+            self.page.extent.xMaximum(), self.page.extent.yMaximum()), 3)
+        self.page.mainFrame().evaluateJavaScript(
+            "map.zoomToExtent(new OpenLayers.Bounds(%f, %f, %f, %f), true);" % (
                 self.page.extent.xMinimum(), self.page.extent.yMinimum(),
-                self.page.extent.xMaximum(), self.page.extent.yMaximum()), 3)
-            self.page.mainFrame().evaluateJavaScript(
-                "map.zoomToExtent(new OpenLayers.Bounds(%f, %f, %f, %f), true);" % (
-                    self.page.extent.xMinimum(), self.page.extent.yMinimum(),
-                    self.page.extent.xMaximum(), self.page.extent.yMaximum()))
-
+                self.page.extent.xMaximum(), self.page.extent.yMaximum()))
+        olextent = self.page.mainFrame().evaluateJavaScript("map.getExtent();")
+        debug("Resulting OL extent: %s" % olextent, 3)
+        if olextent is None:
+            debug("map.zoomToExtent failed")
+            self.emitErrorImage()
+            return
+        else:
+            reloffset = abs((self.page.extent.yMaximum()-olextent["top"])/self.page.extent.xMinimum())
+            debug("relative offset yMaximum %f" % reloffset, 3)
+            if reloffset > 0.1:
+                debug("OL extent shift failure: %s" % reloffset)
+                self.emitErrorImage()
+                return
         self.mapFinished = False
         self.timer.start()
         self.timerMax.start()
@@ -253,7 +265,12 @@ class OpenlayersController(QObject):
     def mapTimeout(self):
         debug("mapTimeout reached")
         self.timer.stop()
+        self.emitErrorImage()
+
+    def emitErrorImage(self):
+        self.img = QImage()
         self.img.fill(Qt.gray)
+        self.targetSize = self.img.size
         self.finished.emit()
 
 

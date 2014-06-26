@@ -196,8 +196,10 @@ class OpenlayersController(QObject):
         debug("Resulting OL extent: %s" % olextent, 3)
         if olextent is None:
             debug("map.zoomToExtent failed")
-            self.emitErrorImage()
-            return
+            #map.setCenter and other operations throw "undefined[0]: TypeError: 'null' is not an object" on first page load
+            #We ignore that and render the initial map with wrong extents
+            #self.emitErrorImage()
+            #return
         else:
             reloffset = abs((self.page.extent.yMaximum()-olextent["top"])/self.page.extent.xMinimum())
             debug("relative offset yMaximum %f" % reloffset, 3)

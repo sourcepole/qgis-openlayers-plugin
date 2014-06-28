@@ -1,12 +1,15 @@
 [general]
 name=OpenLayers Plugin
 qgisMinimumVersion=2.0
+qgisMaximumVersion=2.2
 description=OpenStreetMap, Google Maps, Bing Maps layers and more
-version=1.1.2
+version=1.1.4
 author=Sourcepole, Luiz Motta and other contributors
 email=pka@sourcepole.ch
 
-changelog=1.1.2
+changelog=1.1.3/1.1.4
+    - Set maximum version to 2.2
+  1.1.2
     - Fix saving/loading on OSGeo4W 64bit and OS X. Thanks to Minoru Akagi!
     - Terms of Service/About dialog
   1.1.1

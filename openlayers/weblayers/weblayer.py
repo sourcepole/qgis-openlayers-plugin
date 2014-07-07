@@ -97,7 +97,7 @@ class WebLayer:
 
     def html_url(self):
         dir = os.path.dirname(unicode(__file__, sys.getfilesystemencoding()))
-        url = "file://%s/html/%s" % (dir.replace("\\", "/"), self._html)
+        url = "file:///%s/html/%s" % (dir.replace("\\", "/"), self._html)
         return url
 
     def coordRefSys(self, mapCoordSys):

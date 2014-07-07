@@ -96,6 +96,8 @@ class OpenlayersController(QObject):
 
         self.page = webPage
         self.page.loadFinished.connect(self.pageLoaded)
+        # initial size for map
+        self.page.setViewportSize(QSize(1, 1))
 
         self.timer = QTimer()
         self.timer.setInterval(100)
@@ -182,6 +184,7 @@ class OpenlayersController(QObject):
         debug("    adjust viewport: %f -> %f: %f x %f" % (qgisRes, olRes, olWidth, olHeight), 3)
         olSize = QSize(int(olWidth), int(olHeight))
         self.page.setViewportSize(olSize)
+        self.page.mainFrame().evaluateJavaScript("map.updateSize();")
         self.img = QImage(olSize, QImage.Format_ARGB32_Premultiplied)
 
         self.page.extent = rendererContext.extent()

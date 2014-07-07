@@ -130,7 +130,6 @@ class OpenlayersController(QObject):
         if self.cancelled:
             self.emitErrorImage()
             return
-
         self.page.loaded = True
         self.setup_map()
 
@@ -197,7 +196,7 @@ class OpenlayersController(QObject):
                 self.page.extent.xMaximum(), self.page.extent.yMaximum()))
         olextent = self.page.mainFrame().evaluateJavaScript("map.getExtent();")
         debug("Resulting OL extent: %s" % olextent, 3)
-        if olextent is None:
+        if olextent is None or not hasattr(olextent, '__getitem__'):
             debug("map.zoomToExtent failed")
             #map.setCenter and other operations throw "undefined[0]: TypeError: 'null' is not an object" on first page load
             #We ignore that and render the initial map with wrong extents
@@ -263,15 +262,12 @@ class OpenlayersController(QObject):
     def mapTimeout(self):
         debug("mapTimeout reached")
         self.timer.stop()
-        if not self.layerType.emitsLoadEnd:
-            self.renderMap()
-            self.finished.emit()
-        else:
-            self.emitErrorImage()
+        #if not self.layerType.emitsLoadEnd:
+        self.renderMap()
+        self.finished.emit()
 
     def emitErrorImage(self):
         self.img = QImage()
-        self.img.fill(Qt.gray)
         self.targetSize = self.img.size
         self.finished.emit()
 

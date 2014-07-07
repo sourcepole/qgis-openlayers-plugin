@@ -37,6 +37,7 @@
                 150);
             });
 
+            /* map.setCenter raises "TypeError: 'null' is not an object" on first load */
             map.setCenter(new OpenLayers.LonLat(0, 0), 2);
             oloMarker = new OlOverviewMarker(map, getPathUpper(document.URL) + '/x.png');
         }

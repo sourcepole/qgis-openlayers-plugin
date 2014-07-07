@@ -30,6 +30,7 @@ class WebLayerTypeRegistry:
         self._groups = {}
         self._olLayerTypes = {}
         self._layerTypeId = 0  # Sequence for ID
+        self._olLayerTypeNames = {}
 
     def group(self, name, icon):
         """Create group and register in registry"""
@@ -46,12 +47,16 @@ class WebLayerTypeRegistry:
         layerType.layerTypeId = self._layerTypeId
         self._olLayerTypes[self._layerTypeId] = layerType
         self._layerTypeId += 1
+        self._olLayerTypeNames[layerType.layerTypeName] = layerType
 
     def types(self):
         return self._olLayerTypes.values()
 
     def getById(self, id):
         return self._olLayerTypes[id]
+
+    def getByName(self, name):
+        return self._olLayerTypeNames[name]
 
     def groupLayerTypes(self, group):
         lst = []

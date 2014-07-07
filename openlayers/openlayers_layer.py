@@ -329,11 +329,11 @@ class OpenlayersLayer(QgsPluginLayer):
         self.olWebPage = OLWebPage(self)
 
         #Set default layer type
-        self.setLayerType(self.olLayerTypeRegistry.getById(0))
+        self.setLayerType(self.olLayerTypeRegistry.getByName("Google Physical"))
 
     def readXml(self, node):
         # custom properties
-        self.setLayerType(self.olLayerTypeRegistry.getById(int(node.toElement().attribute("ol_layer_type", "0"))))
+        self.setLayerType(self.olLayerTypeRegistry.getByName(node.toElement().attribute("ol_layer_type", "Google Physical")))
         return True
 
     def writeXml(self, node, doc):
@@ -342,7 +342,7 @@ class OpenlayersLayer(QgsPluginLayer):
         element.setAttribute("type", "plugin")
         element.setAttribute("name", OpenlayersLayer.LAYER_TYPE)
         # custom properties
-        element.setAttribute("ol_layer_type", str(self.layerType.id))
+        element.setAttribute("ol_layer_type", str(self.layerType.layerTypeName))
         return True
 
     def setLayerType(self, layerType):

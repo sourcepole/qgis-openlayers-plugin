@@ -82,6 +82,7 @@ class WebLayer:
         self.groupName = groupName
         self.groupIcon = groupIcon
         self.displayName = name
+        self.layerTypeName = name
         self._html = html
 
     def addMenuEntry(self, groupMenu, parent):

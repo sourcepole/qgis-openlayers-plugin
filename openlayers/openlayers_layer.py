@@ -315,6 +315,7 @@ class OpenlayersRenderer(QgsMapLayerRenderer):
 class OpenlayersLayer(QgsPluginLayer):
 
     LAYER_TYPE = "openlayers"
+    LAYER_PROPERTY = "ol_layer_type"
     MAX_ZOOM_LEVEL = 15
     SCALE_ON_MAX_ZOOM = 13540  # QGIS scale for 72 dpi
 
@@ -323,16 +324,16 @@ class OpenlayersLayer(QgsPluginLayer):
         self.setValid(True)
 
         self.olLayerTypeRegistry = olLayerTypeRegistry
+        self.layerType = None
 
         #self.iface = iface
         self.olWebPage = OLWebPage(self)
 
-        #Set default layer type
-        self.setLayerType(self.olLayerTypeRegistry.getByName("Google Physical"))
-
     def readXml(self, node):
-        # custom properties
-        self.setLayerType(self.olLayerTypeRegistry.getByName(node.toElement().attribute("ol_layer_type", "Google Physical")))
+        # handle ol_layer_type idx stored in layer node (OL plugin <= 1.1.2)
+        ol_layer_type_idx = int(node.toElement().attribute("ol_layer_type", "-1"))
+        if ol_layer_type_idx != -1:
+            self.layerType = self.olLayerTypeRegistry.getById(ol_layer_type_idx)
         return True
 
     def writeXml(self, node, doc):
@@ -340,16 +341,25 @@ class OpenlayersLayer(QgsPluginLayer):
         # write plugin layer type to project (essential to be read from project)
         element.setAttribute("type", "plugin")
         element.setAttribute("name", OpenlayersLayer.LAYER_TYPE)
-        # custom properties
-        element.setAttribute("ol_layer_type", str(self.layerType.layerTypeName))
         return True
 
     def setLayerType(self, layerType):
+        qDebug(" setLayerType: %s" % layerType.layerTypeName)
         self.layerType = layerType
+        self.setCustomProperty(OpenlayersLayer.LAYER_PROPERTY, layerType.layerTypeName)
         coordRefSys = self.layerType.coordRefSys(None)  # FIXME
         self.setCrs(coordRefSys)
         #TODO: get extent from layer type
         self.setExtent(QgsRectangle(-20037508.34, -20037508.34, 20037508.34, 20037508.34))
 
     def createMapRenderer(self, context):
+        ol_layer_type_name = self.customProperty(OpenlayersLayer.LAYER_PROPERTY, "")
+        if ol_layer_type_name != "":
+            self.setLayerType(self.olLayerTypeRegistry.getByName(ol_layer_type_name))
+        elif self.layerType is not None:  # Set from layer type ID from old project files
+            self.setLayerType(self.layerType)
+        if self.layerType is None:
+            #Set default layer type
+            self.setLayerType(self.olLayerTypeRegistry.getByName("Google Physical"))
+
         return OpenlayersRenderer(self, context, self.olWebPage, self.layerType)

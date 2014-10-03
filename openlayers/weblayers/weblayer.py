@@ -31,7 +31,7 @@ class WebLayerGroup:
 
     def __init__(self, name, icon):
         self._menu = QMenu(name)
-        self._menu.setIcon(QIcon(os.path.join("icons", icon)))
+        self._menu.setIcon(QIcon(os.path.join(":/plugins/openlayers/weblayers/icons", icon)))
 
     def menu(self):
         return self._menu

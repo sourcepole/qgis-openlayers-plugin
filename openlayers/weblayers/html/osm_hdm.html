@@ -1,0 +1,53 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>OpenLayers OpenStreetMap Layer</title>
+    <link rel="stylesheet" href="qgis.css" type="text/css">
+    <script src="OpenLayers.js"></script>
+    <script src="OlOverviewMarker.js"></script>
+    <script type="text/javascript">
+        var map;
+        var loadEnd;
+        var oloMarker; // OpenLayer Overview Marker
+        function init() {
+            map = new OpenLayers.Map('map', {
+                theme: null,
+                controls: [],
+                projection: new OpenLayers.Projection("EPSG:3857"),
+                units: "m",
+                maxResolution: 156543.0339,
+                maxExtent: new OpenLayers.Bounds(-20037508.34, -20037508.34, 20037508.34, 20037508.34)
+            });
+
+            loadEnd = false;
+            function layerLoadStart(event)
+            {
+              loadEnd = false;
+            }
+            function layerLoadEnd(event)
+            {
+              loadEnd = true;
+            }
+
+            var osm = new OpenLayers.Layer.OSM(
+              "OpenStreetMap - Humanitarian Data Model",
+              ["http://a.tile.openstreetmap.fr/hot/${z}/${x}/${y}.png",
+              "http://b.tile.openstreetmap.fr/hot/${z}/${x}/${y}.png",
+              "http://c.tile.openstreetmap.fr/hot/${z}/${x}/${y}.png"],
+              {
+                eventListeners: {
+                  "loadstart": layerLoadStart,
+                  "loadend": layerLoadEnd
+                }
+              }
+            );
+            map.addLayer(osm);
+            map.addControl(new OpenLayers.Control.Attribution());
+            map.setCenter(new OpenLayers.LonLat(0, 0), 2);
+            oloMarker = new OlOverviewMarker(map, getPathUpper(document.URL) + '/x.png');
+        }
+    </script>
+  </head>
+  <body onload="init()">
+    <div id="map"></div>
+  </body>
+</html>

@@ -30,7 +30,7 @@ from openlayers_layer import OpenlayersLayer
 from openlayers_plugin_layer_type import OpenlayersPluginLayerType
 from weblayers.weblayer_registry import WebLayerTypeRegistry
 from weblayers.google_maps import OlGooglePhysicalLayer, OlGoogleStreetsLayer, OlGoogleHybridLayer, OlGoogleSatelliteLayer
-from weblayers.osm import OlOpenStreetMapLayer, OlOpenCycleMapLayer, OlOCMLandscapeLayer, OlOCMPublicTransportLayer
+from weblayers.osm import OlOpenStreetMapLayer, OlOpenCycleMapLayer, OlOCMLandscapeLayer, OlOCMPublicTransportLayer, OlOSMHumanitarianDataModelLayer
 from weblayers.yahoo_maps import OlYahooStreetLayer, OlYahooHybridLayer, OlYahooSatelliteLayer
 from weblayers.bing_maps import OlBingRoadLayer, OlBingAerialLayer, OlBingAerialLabelledLayer
 from weblayers.apple_maps import OlAppleiPhotoMapLayer
@@ -85,6 +85,7 @@ class OpenlayersPlugin:
         self._olLayerTypeRegistry.register(OlOpenCycleMapLayer())
         self._olLayerTypeRegistry.register(OlOCMLandscapeLayer())
         self._olLayerTypeRegistry.register(OlOCMPublicTransportLayer())
+        self._olLayerTypeRegistry.register(OlOSMHumanitarianDataModelLayer())
 
         self._olLayerTypeRegistry.register(OlYahooStreetLayer())
         self._olLayerTypeRegistry.register(OlYahooHybridLayer())

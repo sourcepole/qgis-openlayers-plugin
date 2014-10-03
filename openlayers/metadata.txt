@@ -1,12 +1,20 @@
 [general]
 name=OpenLayers Plugin
 qgisMinimumVersion=2.3
-description=OpenStreetMap, Google Maps, Bing Maps layers and more
-version=1.3.3
+description=OpenStreetMap, Google Maps, Bing Maps, MapQuest layers and more
+version=1.3.4
 author=Sourcepole and contributors
 email=pka@sourcepole.ch
 
-changelog=1.3.3
+changelog=1.3.4
+    - Add OpenStreetMap Humanitarian Data Model layer. Thanks to Vivien Deparday!
+    - Add MapQuest layers
+    - Remove obsolete Yahoo Maps layers
+    - Translation to brazilian portuguese (pt_BR). Thanks to Marcelo Soares Souza!
+    - Fix project loading. Thanks to Guilhem Vellut!
+    - Fix enabling of on-the-fly CRS transformation
+    - Fix menu icons
+  1.3.3
     - First release for QGIS 2.4
     - Save OL layer type in custom property
     - Fix initial map rendering
@@ -35,7 +43,7 @@ changelog=1.3.3
     -Fix for Python API breaks in master branch. Thanks to Salvatore Larosa!
 
 ; tags are in comma separated value format, spaces are allowed
-tags=openlayers,OSM,google,bing
+tags=openlayers,OSM,google,bing,mapquest
 
 homepage=http://hub.qgis.org/projects/openlayers/wiki
 tracker=http://hub.qgis.org/projects/openlayers/issues

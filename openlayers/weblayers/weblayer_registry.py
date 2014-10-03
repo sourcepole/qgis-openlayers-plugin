@@ -53,10 +53,16 @@ class WebLayerTypeRegistry:
         return self._olLayerTypes.values()
 
     def getById(self, id):
-        return self._olLayerTypes[id]
+        if self._olLayerTypes.has_key(id):
+            return self._olLayerTypes[id]
+        else:
+            return None
 
     def getByName(self, name):
-        return self._olLayerTypeNames[name]
+        if self._olLayerTypeNames.has_key(name):
+            return self._olLayerTypeNames[name]
+        else:
+            return None
 
     def groupLayerTypes(self, group):
         lst = []

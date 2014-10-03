@@ -1,0 +1,60 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>MapQuest-OSM Layer</title>
+    <link rel="stylesheet" href="qgis.css" type="text/css">
+    <script src="OpenLayers.js"></script>
+    <script src="OlOverviewMarker.js"></script>
+    <script type="text/javascript">
+        var map;
+        var loadEnd;
+        var oloMarker; // OpenLayer Overview Marker
+        function init() {
+            map = new OpenLayers.Map('map', {
+                theme: null,
+                controls: [],
+                projection: new OpenLayers.Projection("EPSG:3857"),
+                units: "m",
+                maxResolution: 156543.0339,
+                maxExtent: new OpenLayers.Bounds(-20037508.34, -20037508.34, 20037508.34, 20037508.34)
+            });
+
+            loadEnd = false;
+            function layerLoadStart(event)
+            {
+              loadEnd = false;
+            }
+            function layerLoadEnd(event)
+            {
+              loadEnd = true;
+            }
+
+            var layer = new OpenLayers.Layer.XYZ(
+              "MapQuest-OSM",
+              [
+                "http://otile1.mqcdn.com/tiles/1.0.0/map/${z}/${x}/${y}.jpg",
+                "http://otile2.mqcdn.com/tiles/1.0.0/map/${z}/${x}/${y}.jpg",
+                "http://otile3.mqcdn.com/tiles/1.0.0/map/${z}/${x}/${y}.jpg",
+                "http://otile4.mqcdn.com/tiles/1.0.0/map/${z}/${x}/${y}.jpg"
+              ],
+              {
+                sphericalMercator: true,
+                wrapDateLine: true,
+                numZoomLevels: 20,
+                attribution: "Data, imagery and map information provided by <a href='http://www.mapquest.com/'  target='_blank'>MapQuest</a> <img src='http://developer.mapquest.com/content/osm/mq_logo.png' border='0'>, <a href='http://www.openstreetmap.org/' target='_blank'>Open Street Map</a> and contributors, <a href='http://creativecommons.org/licenses/by-sa/2.0/' target='_blank'>CC-BY-SA</a>",
+                eventListeners: {
+                  "loadstart": layerLoadStart,
+                  "loadend": layerLoadEnd
+                }
+              }
+            );
+            map.addLayer(layer);
+            map.addControl(new OpenLayers.Control.Attribution());
+            map.setCenter(new OpenLayers.LonLat(0, 0), 2);
+            oloMarker = new OlOverviewMarker(map, getPathUpper(document.URL) + '/x.png');
+        }
+    </script>
+  </head>
+  <body onload="init()">
+    <div id="map"></div>
+  </body>
+</html>

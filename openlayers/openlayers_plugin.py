@@ -167,17 +167,15 @@ class OpenlayersPlugin:
         mapCanvas = self.iface.mapCanvas()
         # On the fly
         if QGis.QGIS_VERSION_INT >= 20300:
-            mapCanvas.mapSettings().setCrsTransformEnabled(True)
+            mapCanvas.setCrsTransformEnabled(True)
         else:
             mapCanvas.mapRenderer().setProjectionsEnabled(True)
         canvasCrs = self.canvasCrs()
         if canvasCrs != coordRefSys:
-            coodTrans = QgsCoordinateTransform(canvasCrs, coordRefSys)
+            coordTrans = QgsCoordinateTransform(canvasCrs, coordRefSys)
             extMap = mapCanvas.extent()
-            extMap = coodTrans.transform(extMap, QgsCoordinateTransform.ForwardTransform)
+            extMap = coordTrans.transform(extMap, QgsCoordinateTransform.ForwardTransform)
             if QGis.QGIS_VERSION_INT >= 20300:
-                #mapCanvas.mapRenderer().setDestinationCrs(coordRefSys)
-                #mapCanvas.mapSettings().setDestinationCrs(coordRefSys)
                 mapCanvas.setDestinationCrs(coordRefSys)
             elif QGis.QGIS_VERSION_INT >= 10900:
                 mapCanvas.mapRenderer().setDestinationCrs(coordRefSys)

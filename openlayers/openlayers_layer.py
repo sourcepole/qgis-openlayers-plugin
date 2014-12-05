@@ -217,7 +217,6 @@ class OpenlayersController(QObject):
     def checkMapUpdate(self):
         if self.layerType.emitsLoadEnd:
             # wait for OpenLayers to finish loading
-            # NOTE: does not work with Google and Yahoo layers as they do not emit loadstart and loadend events
             loadEndOL = self.page.mainFrame().evaluateJavaScript("loadEnd")
             debug("waiting for loadEnd: renderingStopped=%r loadEndOL=%r" % (
                   self.context.renderingStopped(), loadEndOL), 4)

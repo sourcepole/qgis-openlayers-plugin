@@ -127,9 +127,16 @@ class OpenlayersPlugin:
         QgsPluginLayerRegistry.instance().removePluginLayerType(OpenlayersLayer.LAYER_TYPE)
 
     def addLayer(self, layerType):
-        layer = OpenlayersLayer(self.iface, self._olLayerTypeRegistry)
-        layer.setLayerName(layerType.displayName)
-        layer.setLayerType(layerType)
+        gdalTMSConfig = layerType.gdalTMSConfig()
+        if gdalTMSConfig is not None:
+            # create GDAL TMS layer with XML string as datasource
+            layer = QgsRasterLayer(gdalTMSConfig, layerType.displayName)
+        else:
+            # create OpenlayersLayer
+            layer = OpenlayersLayer(self.iface, self._olLayerTypeRegistry)
+            layer.setLayerName(layerType.displayName)
+            layer.setLayerType(layerType)
+
         if layer.isValid():
             coordRefSys = layerType.coordRefSys(self.canvasCrs())
             self.setMapCrs(coordRefSys)

@@ -27,24 +27,24 @@ class OlOSMStamenLayer(WebLayer3857):
 
     emitsLoadEnd = True
 
-    def __init__(self, name, html):
+    def __init__(self, name, html, gdalTMS=None):
         WebLayer3857.__init__(self, groupName="OSM/Stamen", groupIcon="stamen_icon.png",
-                              name=name, html=html)
+                              name=name, html=html, gdalTMS=gdalTMS)
 
 
 class OlOSMStamenTonerLayer(OlOSMStamenLayer):
 
     def __init__(self):
-        OlOSMStamenLayer.__init__(self, name='Stamen Toner/OSM', html='stamen_toner.html')
+        OlOSMStamenLayer.__init__(self, name='Stamen Toner/OSM', html='stamen_toner.html', gdalTMS='stamen_toner.xml')
 
 
 class OlOSMStamenWatercolorLayer(OlOSMStamenLayer):
 
     def __init__(self):
-        OlOSMStamenLayer.__init__(self, name='Stamen Watercolor/OSM', html='stamen_watercolor.html')
+        OlOSMStamenLayer.__init__(self, name='Stamen Watercolor/OSM', html='stamen_watercolor.html', gdalTMS='stamen_watercolor.xml')
 
 
 class OlOSMStamenTerrainLayer(OlOSMStamenLayer):
 
     def __init__(self):
-        OlOSMStamenLayer.__init__(self, name='Stamen Terrain-USA/OSM', html='stamen_terrain.html')
+        OlOSMStamenLayer.__init__(self, name='Stamen Terrain-USA/OSM', html='stamen_terrain.html', gdalTMS='stamen_terrain.xml')

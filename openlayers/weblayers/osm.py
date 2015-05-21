@@ -27,36 +27,36 @@ class OlOSMLayer(WebLayer3857):
 
     emitsLoadEnd = True
 
-    def __init__(self, name, html):
+    def __init__(self, name, html, gdalTMS=None):
         WebLayer3857.__init__(self, groupName="OpenStreetMap", groupIcon="osm_icon.png",
-                              name=name, html=html)
+                              name=name, html=html, gdalTMS=gdalTMS)
 
 
 class OlOpenStreetMapLayer(OlOSMLayer):
 
     def __init__(self):
-        OlOSMLayer.__init__(self, name='OpenStreetMap', html='osm.html')
+        OlOSMLayer.__init__(self, name='OpenStreetMap', html='osm.html', gdalTMS='osm.xml')
 
 
 class OlOpenCycleMapLayer(OlOSMLayer):
 
     def __init__(self):
-        OlOSMLayer.__init__(self, name='OpenCycleMap', html='ocm.html')
+        OlOSMLayer.__init__(self, name='OpenCycleMap', html='ocm.html', gdalTMS='ocm.xml')
 
 
 class OlOCMLandscapeLayer(OlOSMLayer):
 
     def __init__(self):
-        OlOSMLayer.__init__(self, name='OCM Landscape', html='ocm_landscape.html')
+        OlOSMLayer.__init__(self, name='OCM Landscape', html='ocm_landscape.html', gdalTMS='ocm_landscape.xml')
 
 
 class OlOCMPublicTransportLayer(OlOSMLayer):
 
     def __init__(self):
-        OlOSMLayer.__init__(self, name='OCM Public Transport', html='ocm_transport.html')
+        OlOSMLayer.__init__(self, name='OCM Public Transport', html='ocm_transport.html', gdalTMS='ocm_transport.xml')
 
 
 class OlOSMHumanitarianDataModelLayer(OlOSMLayer):
 
     def __init__(self):
-        OlOSMLayer.__init__(self, name='OSM Humanitarian Data Model', html='osm_hdm.html')
+        OlOSMLayer.__init__(self, name='OSM Humanitarian Data Model', html='osm_hdm.html', gdalTMS='osm_hdm.xml')

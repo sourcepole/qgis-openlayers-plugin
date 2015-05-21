@@ -78,12 +78,15 @@ class WebLayer:
 
     emitsLoadEnd = True
 
-    def __init__(self, groupName, groupIcon, name, html):
+    def __init__(self, groupName, groupIcon, name, html, gdalTMS=None):
         self.groupName = groupName
         self.groupIcon = groupIcon
         self.displayName = name
         self.layerTypeName = name
         self._html = html
+        # optional GDAL TMS config to use as layer instead of an OpenlayersLayer
+        # the OpenlayersLayer is still used in the OpenLayers Overview
+        self._gdalTMS = gdalTMS
 
     def addMenuEntry(self, groupMenu, parent):
         self._actionAddLayer = QAction(self.displayName, parent)
@@ -100,6 +103,17 @@ class WebLayer:
         dir = os.path.dirname(unicode(__file__, sys.getfilesystemencoding()))
         url = "file:///%s/html/%s" % (dir.replace("\\", "/"), self._html)
         return url
+
+    def gdalTMSConfig(self):
+        if self._gdalTMS is not None:
+            # read GDAL TMS config from file
+            path = os.path.join(os.path.dirname(__file__), 'gdal_tms', self._gdalTMS)
+            f = open(path, 'r')
+            config = f.read()
+            f.close()
+            return config
+        else:
+            return None
 
     def coordRefSys(self, mapCoordSys):
         epsg = self.epsgList[0]  # TODO: look for matching coord

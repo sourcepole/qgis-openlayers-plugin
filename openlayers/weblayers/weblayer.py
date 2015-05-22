@@ -104,6 +104,9 @@ class WebLayer:
         url = "file:///%s/html/%s" % (dir.replace("\\", "/"), self._html)
         return url
 
+    def hasGdalTMS(self):
+        return self._gdalTMS is not None
+
     def gdalTMSConfig(self):
         if self._gdalTMS is not None:
             # read GDAL TMS config from file

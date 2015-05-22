@@ -136,10 +136,9 @@ class OpenlayersPlugin:
         QObject.disconnect(QgsProject.instance(), SIGNAL("readProject(const QDomDocument &)"), self.projectLoaded)
 
     def addLayer(self, layerType):
-        gdalTMSConfig = layerType.gdalTMSConfig()
-        if gdalTMSConfig is not None:
-            # create GDAL TMS layer with XML string as datasource
-            layer = QgsRasterLayer(gdalTMSConfig, layerType.displayName)
+        if layerType.hasGdalTMS():
+            # create GDAL TMS layer
+            layer = self.createGdalTmsLayer(layerType, layerType.displayName)
         else:
             # create OpenlayersLayer
             layer = OpenlayersLayer(self.iface, self._olLayerTypeRegistry)
@@ -205,12 +204,17 @@ class OpenlayersPlugin:
         rootGroup = self.iface.layerTreeView().layerTreeModel().rootGroup()
         for layer in QgsMapLayerRegistry.instance().mapLayers().values():
             if layer.type() == QgsMapLayer.PluginLayer and layer.pluginLayerType() == OpenlayersLayer.LAYER_TYPE:
-                gdalTMSConfig = layer.layerType.gdalTMSConfig()
-                if gdalTMSConfig is not None:
+                if layer.layerType.hasGdalTMS():
                     # replace layer
-                    gdalTMSLayer = QgsRasterLayer(gdalTMSConfig, layer.name())
+                    gdalTMSLayer = self.createGdalTmsLayer(layer.layerType, layer.name())
                     if gdalTMSLayer.isValid():
                         self.replaceLayer(rootGroup, layer, gdalTMSLayer)
+
+    def createGdalTmsLayer(self, layerType, name):
+        # create GDAL TMS layer with XML string as datasource
+        layer = QgsRasterLayer(layerType.gdalTMSConfig(), name)
+        layer.setCustomProperty('ol_layer_type', layerType.layerTypeName)
+        return layer
 
     def replaceLayer(self, group, oldLayer, newLayer):
         index = 0
@@ -263,6 +267,3 @@ class OpenlayersPlugin:
             # disable proxy
             os.environ["GDAL_HTTP_PROXY"] = ''
             os.environ["GDAL_HTTP_PROXYUSERPWD"] = ''
-
-        QgsMessageLog.logMessage("GDAL_HTTP_PROXY: %s" % os.environ.get("GDAL_HTTP_PROXY", None), "DEBUG")
-        QgsMessageLog.logMessage("GDAL_HTTP_PROXYUSERPWD: %s" % os.environ.get("GDAL_HTTP_PROXYUSERPWD", None), "DEBUG")

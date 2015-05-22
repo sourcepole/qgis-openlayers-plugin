@@ -22,6 +22,7 @@ email                : pka at sourcepole.ch
 # Import the PyQt and QGIS libraries
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+from PyQt4.QtNetwork import *
 from qgis.core import *
 from qgis.gui import *
 import resources_rc
@@ -29,6 +30,7 @@ from about_dialog import AboutDialog
 from openlayers_overview import OLOverview
 from openlayers_layer import OpenlayersLayer
 from openlayers_plugin_layer_type import OpenlayersPluginLayerType
+from tools_network import getProxy
 from weblayers.weblayer_registry import WebLayerTypeRegistry
 from weblayers.google_maps import OlGooglePhysicalLayer, OlGoogleStreetsLayer, OlGoogleHybridLayer, OlGoogleSatelliteLayer
 from weblayers.osm import OlOpenStreetMapLayer, OlOpenCycleMapLayer, OlOCMLandscapeLayer, OlOCMPublicTransportLayer, OlOSMHumanitarianDataModelLayer
@@ -119,6 +121,8 @@ class OpenlayersPlugin:
         QgsPluginLayerRegistry.instance().addPluginLayerType(self.pluginLayerType)
 
         QObject.connect(QgsProject.instance(), SIGNAL("readProject(const QDomDocument &)"), self.projectLoaded)
+
+        self.setGDALProxy()
 
     def unload(self):
         self.iface.webMenu().removeAction(self._olMenu.menuAction())
@@ -236,3 +240,29 @@ class OpenlayersPlugin:
 
         # layer not in this group
         return False
+
+    def setGDALProxy(self):
+        proxy = getProxy()
+
+        httpProxyTypes = [QNetworkProxy.DefaultProxy, QNetworkProxy.Socks5Proxy, QNetworkProxy.HttpProxy]
+        if QT_VERSION >= 0X040400:
+            httpProxyTypes.append(QNetworkProxy.HttpCachingProxy)
+
+        if proxy is not None and proxy.type() in httpProxyTypes:
+            # set HTTP proxy for GDAL
+            gdalHttpProxy = proxy.hostName()
+            port = proxy.port()
+            if port != 0:
+                gdalHttpProxy += ":%i" % port
+            os.environ["GDAL_HTTP_PROXY"] = gdalHttpProxy
+
+            if proxy.user():
+                gdalHttpProxyuserpwd = "%s:%s" % (proxy.user(), proxy.password())
+                os.environ["GDAL_HTTP_PROXYUSERPWD"] = gdalHttpProxyuserpwd
+        else:
+            # disable proxy
+            os.environ["GDAL_HTTP_PROXY"] = ''
+            os.environ["GDAL_HTTP_PROXYUSERPWD"] = ''
+
+        QgsMessageLog.logMessage("GDAL_HTTP_PROXY: %s" % os.environ.get("GDAL_HTTP_PROXY", None), "DEBUG")
+        QgsMessageLog.logMessage("GDAL_HTTP_PROXYUSERPWD: %s" % os.environ.get("GDAL_HTTP_PROXYUSERPWD", None), "DEBUG")

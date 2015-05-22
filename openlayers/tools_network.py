@@ -38,8 +38,9 @@ def getProxy():
     elif proxyType in ["5","FtpCachingProxy"] and QT_VERSION >= 0X040400: proxy.setType(QNetworkProxy.FtpCachingProxy)
     else: proxy.setType(QNetworkProxy.DefaultProxy)
     proxy.setHostName(settings.value("/proxyHost"))
-    # TODO
-    proxy.setPort(settings.value("/proxyPort", 10, type=int))
+    port = settings.value("/proxyPort", -1)
+    if port != -1 and port != "":
+      proxy.setPort(int(port))
     proxy.setUser(settings.value("/proxyUser"))
     proxy.setPassword(settings.value("/proxyPassword"))
   settings.endGroup()

@@ -23,6 +23,7 @@ email                : pka at sourcepole.ch
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from qgis.core import *
+from qgis.gui import *
 import resources_rc
 from about_dialog import AboutDialog
 from openlayers_overview import OLOverview
@@ -117,6 +118,8 @@ class OpenlayersPlugin:
                                                     self._olLayerTypeRegistry)
         QgsPluginLayerRegistry.instance().addPluginLayerType(self.pluginLayerType)
 
+        QObject.connect(QgsProject.instance(), SIGNAL("readProject(const QDomDocument &)"), self.projectLoaded)
+
     def unload(self):
         self.iface.webMenu().removeAction(self._olMenu.menuAction())
 
@@ -125,6 +128,8 @@ class OpenlayersPlugin:
 
         # Unregister plugin layer type
         QgsPluginLayerRegistry.instance().removePluginLayerType(OpenlayersLayer.LAYER_TYPE)
+
+        QObject.disconnect(QgsProject.instance(), SIGNAL("readProject(const QDomDocument &)"), self.projectLoaded)
 
     def addLayer(self, layerType):
         gdalTMSConfig = layerType.gdalTMSConfig()
@@ -190,3 +195,44 @@ class OpenlayersPlugin:
             mapCanvas.freeze(False)
             mapCanvas.setMapUnits(coordRefSys.mapUnits())
             mapCanvas.setExtent(extMap)
+
+    def projectLoaded(self):
+        # replace old OpenlayersLayer with GDAL TMS (OL plugin <= 1.3.6)
+        rootGroup = self.iface.layerTreeView().layerTreeModel().rootGroup()
+        for layer in QgsMapLayerRegistry.instance().mapLayers().values():
+            if layer.type() == QgsMapLayer.PluginLayer and layer.pluginLayerType() == OpenlayersLayer.LAYER_TYPE:
+                gdalTMSConfig = layer.layerType.gdalTMSConfig()
+                if gdalTMSConfig is not None:
+                    # replace layer
+                    gdalTMSLayer = QgsRasterLayer(gdalTMSConfig, layer.name())
+                    if gdalTMSLayer.isValid():
+                        self.replaceLayer(rootGroup, layer, gdalTMSLayer)
+
+    def replaceLayer(self, group, oldLayer, newLayer):
+        index = 0
+        for child in group.children():
+            if QgsLayerTree.isLayer(child):
+                if child.layerId() == oldLayer.id():
+                    # insert new layer
+                    QgsMapLayerRegistry.instance().addMapLayer(newLayer, False)
+                    newLayerNode = group.insertLayer(index, newLayer)
+                    newLayerNode.setVisible(child.isVisible())
+
+                    # remove old layer
+                    QgsMapLayerRegistry.instance().removeMapLayer(oldLayer.id())
+
+                    msg = "Updated layer '%s' from old OpenLayers Plugin version" % newLayer.name()
+                    self.iface.messageBar().pushMessage("OpenLayers Plugin", msg, level=QgsMessageBar.INFO)
+                    QgsMessageLog.logMessage(msg, "OpenLayers Plugin", QgsMessageLog.INFO)
+
+                    # layer replaced
+                    return True
+            else:
+                if self.replaceLayer(child, oldLayer, newLayer):
+                    # layer replaced in child group
+                    return True
+
+            index += 1
+
+        # layer not in this group
+        return False

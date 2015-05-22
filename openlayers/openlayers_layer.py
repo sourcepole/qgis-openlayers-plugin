@@ -330,10 +330,30 @@ class OpenlayersLayer(QgsPluginLayer):
         self.olWebPage = OLWebPage(self)
 
     def readXml(self, node):
-        # handle ol_layer_type idx stored in layer node (OL plugin <= 1.1.2)
-        ol_layer_type_idx = int(node.toElement().attribute("ol_layer_type", "-1"))
-        if ol_layer_type_idx != -1:
-            self.layerType = self.olLayerTypeRegistry.getById(ol_layer_type_idx)
+        # early read of custom properties
+        self.readCustomProperties(node)
+
+        # get layer type
+        ol_layer_type = None
+        ol_layer_type_name = self.customProperty(OpenlayersLayer.LAYER_PROPERTY, "")
+        if ol_layer_type_name != "":
+            ol_layer_type = self.olLayerTypeRegistry.getByName(ol_layer_type_name)
+        else:
+            # handle ol_layer_type idx stored in layer node (OL plugin <= 1.1.2)
+            ol_layer_type_idx = int(node.toElement().attribute("ol_layer_type", "-1"))
+            if ol_layer_type_idx != -1:
+                ol_layer_type = self.olLayerTypeRegistry.getById(ol_layer_type_idx)
+
+        if ol_layer_type is not None:
+            self.setLayerType(ol_layer_type)
+        else:
+            # Set default layer type
+            self.setLayerType(self.olLayerTypeRegistry.getByName("OpenStreetMap"))
+            if QGis.QGIS_VERSION_INT >= 20300:
+                msg = "Obsolete or unknown layer type '%s', using OpenStreetMap instead" % ol_layer_type_name
+                self.iface.messageBar().pushMessage("OpenLayers Plugin", msg, level=QgsMessageBar.WARNING)
+                QgsMessageLog.logMessage(msg, "OpenLayers Plugin", QgsMessageLog.WARNING)
+
         return True
 
     def writeXml(self, node, doc):
@@ -353,19 +373,4 @@ class OpenlayersLayer(QgsPluginLayer):
         self.setExtent(QgsRectangle(-20037508.34, -20037508.34, 20037508.34, 20037508.34))
 
     def createMapRenderer(self, context):
-        ol_layer_type_name = self.customProperty(OpenlayersLayer.LAYER_PROPERTY, "")
-        if ol_layer_type_name != "":
-            ol_layer_type = self.olLayerTypeRegistry.getByName(ol_layer_type_name)
-            if ol_layer_type is not None:
-                self.setLayerType(ol_layer_type)
-        elif self.layerType is not None:  # Set from layer type ID from old project files
-            self.setLayerType(self.layerType)
-        if self.layerType is None:
-            #Set default layer type
-            self.setLayerType(self.olLayerTypeRegistry.getByName("OpenStreetMap"))
-            if QGis.QGIS_VERSION_INT >= 20300:
-                msg = "Obsolete or unknown layer type '%s', using OpenStreetMap instead" % ol_layer_type_name
-                self.iface.messageBar().pushMessage("OpenLayers Plugin", msg, level=QgsMessageBar.WARNING)
-                QgsMessageLog.logMessage(msg, "OpenLayers Plugin", QgsMessageLog.WARNING)
-
         return OpenlayersRenderer(self, context, self.olWebPage, self.layerType)

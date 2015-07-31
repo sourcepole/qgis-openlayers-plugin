@@ -1,0 +1,57 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>OpenLayers Stamen Toner/OSM map Layer</title>
+    <link rel="stylesheet" href="qgis.css" type="text/css">
+    <script src="OpenLayers.js"></script>
+    <script src="OlOverviewMarker.js"></script>
+    <script type="text/javascript">
+        var map;
+        var loadEnd;
+        var oloMarker; // OpenLayer Overview Marker
+        function init() {
+            map = new OpenLayers.Map('map', {
+                theme: null,
+                controls: [],
+                projection: new OpenLayers.Projection("EPSG:900913"),
+                units: "m",
+                maxResolution: 156543.0339,
+                maxExtent: new OpenLayers.Bounds(-20037508.34, -20037508.34, 20037508.34, 20037508.34),
+                adjustZoom: function(zoom) { return zoom; }
+            });
+
+            loadEnd = false;
+            function layerLoadStart(event)
+            {
+              loadEnd = false;
+            }
+            function layerLoadEnd(event)
+            {
+              loadEnd = true;
+            }
+
+            var apple = new OpenLayers.Layer.XYZ(
+              "Stamen Toner/OSM map",
+              "http://tile.stamen.com/toner-lite/${z}/${x}/${y}.png",
+              {
+                sphericalMercator: true,
+                wrapDateLine: true,
+                // TODO: min zoom level 2
+                numZoomLevels: 20,
+//                attribution: "", // FIXME: attribution
+                eventListeners: {
+                  "loadstart": layerLoadStart,
+                  "loadend": layerLoadEnd
+                }
+              }
+            );
+            map.addLayer(apple);
+            map.addControl(new OpenLayers.Control.Attribution());
+            map.setCenter(new OpenLayers.LonLat(0, 0), 3);
+            oloMarker = new OlOverviewMarker(map, getPathUpper(document.URL) + '/x.png');
+        }
+    </script>
+  </head>
+  <body onload="init()">
+    <div id="map"></div>
+  </body>
+</html>

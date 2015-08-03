@@ -36,7 +36,7 @@ from weblayers.google_maps import OlGooglePhysicalLayer, OlGoogleStreetsLayer, O
 from weblayers.osm import OlOpenStreetMapLayer, OlOpenCycleMapLayer, OlOCMLandscapeLayer, OlOCMPublicTransportLayer, OlOSMHumanitarianDataModelLayer
 from weblayers.bing_maps import OlBingRoadLayer, OlBingAerialLayer, OlBingAerialLabelledLayer
 from weblayers.apple_maps import OlAppleiPhotoMapLayer
-from weblayers.osm_stamen import OlOSMStamenTonerLayer, OlOSMStamenWatercolorLayer, OlOSMStamenTerrainLayer
+from weblayers.osm_stamen import OlOSMStamenTonerLayer, OlOSMStamenTonerLiteLayer, OlOSMStamenWatercolorLayer, OlOSMStamenTerrainLayer
 from weblayers.map_quest import OlMapQuestOSMLayer, OlMapQuestOpenAerialLayer
 import os.path
 
@@ -95,6 +95,7 @@ class OpenlayersPlugin:
         self._olLayerTypeRegistry.register(OlBingAerialLabelledLayer())
 
         self._olLayerTypeRegistry.register(OlOSMStamenTonerLayer())
+        self._olLayerTypeRegistry.register(OlOSMStamenTonerLiteLayer())
         self._olLayerTypeRegistry.register(OlOSMStamenWatercolorLayer())
         self._olLayerTypeRegistry.register(OlOSMStamenTerrainLayer())
 

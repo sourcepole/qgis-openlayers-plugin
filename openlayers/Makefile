@@ -31,7 +31,8 @@ SOURCES = openlayers_plugin.py \
 TRANSLATIONS = i18n/openlayers_de.ts \
                i18n/openlayers_en.ts \
                i18n/openlayers_fr.ts \
-               i18n/openlayers_pt_BR.ts
+               i18n/openlayers_pt_BR.ts \
+               i18n/openlayers_es.ts
 
 # global
 
@@ -58,7 +59,7 @@ compile: $(UI_FILES) $(RESOURCE_FILES)
 	pyuic4 -o $@ $<
 
 %.qm : %.ts
-	lrelease $<
+	/usr/lib/x86_64-linux-gnu/qt4/bin/lrelease $<
 
 # The deploy  target only works on unix like operating system where
 # the Python plugin directory is located at:

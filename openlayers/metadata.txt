@@ -7,7 +7,9 @@ version=1.4.0
 author=Sourcepole and contributors
 email=pka@sourcepole.ch
 
-changelog=1.4.0
+changelog=1.4.1
+    - Spanish translation. Thanks to @ermati
+  1.4.0
     - Support printing and rotating of OpenStreetMap and OSM/Stamen layers
     - Update Google Maps layers and add configurable API key
     - Update to OpenLayers 2.14

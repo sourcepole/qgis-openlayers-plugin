@@ -106,6 +106,11 @@ class OpenLayersOverviewWidget(QWidget,Ui_Form):
       self.__manager.setProxy(proxy)
       self.webViewMap.page().setNetworkAccessManager(self.__manager)
 
+    self.__timerMapReady = QTimer()
+    self.__timerMapReady.setSingleShot(True)
+    self.__timerMapReady.setInterval(20)
+    self.__timerMapReady.timeout.connect(self.__checkMapReady)
+
   def __del__(self):
     self.__marker.reset()
     # Disconnect Canvas
@@ -273,7 +278,8 @@ class OpenLayersOverviewWidget(QWidget,Ui_Form):
     if ok == False:
       QMessageBox.warning(self, QApplication.translate("OpenLayersOverviewWidget", "OpenLayers Overview"), QApplication.translate("OpenLayersOverviewWidget", "Error loading page!"))
     else:
-      self.__refreshMapOL()
+      # wait until OpenLayers map is ready
+      self.__checkMapReady()
     self.lbStatusRead.setVisible( False )
     self.webViewMap.setVisible( True )
     self.disconnect(self.webViewMap.page().mainFrame(), SIGNAL("loadFinished (bool)"),
@@ -288,6 +294,14 @@ class OpenLayersOverviewWidget(QWidget,Ui_Form):
                  self.__signal_webViewMap_loadFinished)
     url = layer.html_url()
     self.webViewMap.page().mainFrame().load( QUrl(url) )
+
+  def __checkMapReady(self):
+    if self.webViewMap.page().mainFrame().evaluateJavaScript("map != undefined"):
+      # map ready
+      self.__refreshMapOL()
+    else:
+      # wait for map
+      self.__timerMapReady.start()
 
   def __refreshMapOL(self):
     action = "map.setCenter(new OpenLayers.LonLat(%f, %f));" % self.__getCenterLongLat2OL()

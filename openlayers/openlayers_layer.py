@@ -100,6 +100,11 @@ class OpenlayersController(QObject):
         # initial size for map
         self.page.setViewportSize(QSize(1, 1))
 
+        self.timerMapReady = QTimer()
+        self.timerMapReady.setSingleShot(True)
+        self.timerMapReady.setInterval(20)
+        self.timerMapReady.timeout.connect(self.checkMapReady)
+
         self.timer = QTimer()
         self.timer.setInterval(100)
         self.timer.timeout.connect(self.checkMapUpdate)
@@ -131,8 +136,19 @@ class OpenlayersController(QObject):
         if self.cancelled:
             self.emitErrorImage()
             return
-        self.page.loaded = True
-        self.setup_map()
+
+        # wait until OpenLayers map is ready
+        self.checkMapReady()
+
+    def checkMapReady(self):
+        debug("[GUI THREAD] checkMapReady", 3)
+        if self.page.mainFrame().evaluateJavaScript("map != undefined"):
+            # map ready
+            self.page.loaded = True
+            self.setup_map()
+        else:
+            # wait for map
+            self.timerMapReady.start()
 
     def setup_map(self):
         rendererContext = self.context

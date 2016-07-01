@@ -110,6 +110,14 @@ class OpenlayersPlugin:
                 layer.addMenuEntry(groupMenu, self.iface.mainWindow())
             self._olMenu.addMenu(groupMenu)
 
+        # add action for setting Google Maps API key
+        for action in self._olMenu.actions():
+            print action.text()
+            if action.text() == "Google Maps":
+                self._actionGoogleMapsApiKey = QAction("Set API key", self.iface.mainWindow())
+                self._actionGoogleMapsApiKey.triggered.connect(self.showGoogleMapsApiKeyDialog)
+                action.menu().addAction(self._actionGoogleMapsApiKey)
+
         #Create Web menu, if it doesn't exist yet
         self.iface.addPluginToWebMenu("_tmp", self._actionAbout)
         self._menu = self.iface.webMenu()
@@ -268,3 +276,9 @@ class OpenlayersPlugin:
             # disable proxy
             os.environ["GDAL_HTTP_PROXY"] = ''
             os.environ["GDAL_HTTP_PROXYUSERPWD"] = ''
+
+    def showGoogleMapsApiKeyDialog(self):
+        apiKey = QSettings().value("Plugin-OpenLayers/googleMapsApiKey")
+        newApiKey, ok = QInputDialog.getText(self.iface.mainWindow(), "Google Maps API key", "Enter your Google Maps API key", QLineEdit.Normal, apiKey)
+        if ok:
+            QSettings().setValue("Plugin-OpenLayers/googleMapsApiKey", newApiKey)

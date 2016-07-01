@@ -20,6 +20,7 @@ email                : pka at sourcepole.ch
  ***************************************************************************/
 """
 
+from PyQt4.QtCore import QSettings
 from weblayer import WebLayer3857
 
 
@@ -31,6 +32,12 @@ class OlGoogleMapsLayer(WebLayer3857):
         WebLayer3857.__init__(self, groupName="Google Maps", groupIcon="google_icon.png",
                               name=name, html=html)
 
+    def html_url(self):
+        url = WebLayer3857.html_url(self)
+        apiKey = QSettings().value("Plugin-OpenLayers/googleMapsApiKey")
+        if apiKey != None and bool(apiKey.strip()):
+            url += "?key=%s" % apiKey
+        return url
 
 class OlGooglePhysicalLayer(OlGoogleMapsLayer):
 

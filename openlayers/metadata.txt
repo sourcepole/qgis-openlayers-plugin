@@ -1,13 +1,14 @@
 [general]
 name=OpenLayers Plugin
 qgisMinimumVersion=2.3
-description=OpenStreetMap, Google Maps, Bing Maps, MapQuest layers and more
+description=Google Maps, Bing Maps, OpenStreetMap layers and more
+about=Google Maps, Bing Maps, OpenStreetMap layers and more
 version=1.4.0
 author=Sourcepole and contributors
 email=pka@sourcepole.ch
 
 changelog=1.4.0
-    - Support printing and rotating of OpenStreetMap, MapQuest and OSM/Stamen layers
+    - Support printing and rotating of OpenStreetMap and OSM/Stamen layers
     - Update Google Maps layers and add configurable API key
     - Update to OpenLayers 2.14
     - Add Stamen Toner Lite layer. Thanks to Gerald Rich!

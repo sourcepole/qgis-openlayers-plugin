@@ -2,11 +2,16 @@
 name=OpenLayers Plugin
 qgisMinimumVersion=2.3
 description=OpenStreetMap, Google Maps, Bing Maps, MapQuest layers and more
-version=1.3.6
+version=1.4.0
 author=Sourcepole and contributors
 email=pka@sourcepole.ch
 
-changelog=1.3.6
+changelog=1.4.0
+    - Support printing and rotating of OpenStreetMap, MapQuest and OSM/Stamen layers
+    - Update Google Maps layers and add configurable API key
+    - Update to OpenLayers 2.14
+    - Add Stamen Toner Lite layer. Thanks to Gerald Rich!
+  1.3.6
     - Fix zooming of Google Maps layers
     - Release sponsored by BLS Netz AG
   1.3.5
@@ -49,7 +54,7 @@ changelog=1.3.6
     -Fix for Python API breaks in master branch. Thanks to Salvatore Larosa!
 
 ; tags are in comma separated value format, spaces are allowed
-tags=openlayers,OSM,google,bing,mapquest
+tags=openlayers,OSM,google,bing,mapquest,stamen
 
 homepage=http://hub.qgis.org/projects/openlayers/wiki
 tracker=http://hub.qgis.org/projects/openlayers/issues

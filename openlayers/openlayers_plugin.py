@@ -112,7 +112,6 @@ class OpenlayersPlugin:
 
         # add action for setting Google Maps API key
         for action in self._olMenu.actions():
-            print action.text()
             if action.text() == "Google Maps":
                 self._actionGoogleMapsApiKey = QAction("Set API key", self.iface.mainWindow())
                 self._actionGoogleMapsApiKey.triggered.connect(self.showGoogleMapsApiKeyDialog)

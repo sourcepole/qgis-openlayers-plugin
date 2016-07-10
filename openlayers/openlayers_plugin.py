@@ -161,6 +161,13 @@ class OpenlayersPlugin:
             # last added layer is new reference
             self.setReferenceLayer(layer)
 
+            if not layerType.hasGdalTMS():
+                msg = "Printing and rotating of Javascript API " \
+                      "based layers is currently not supported!"
+                self.iface.messageBar().pushMessage(
+                    "OpenLayers Plugin", msg, level=QgsMessageBar.WARNING,
+                    duration=5)
+
     def setReferenceLayer(self, layer):
         self.layer = layer
 

@@ -3,11 +3,13 @@ name=OpenLayers Plugin
 qgisMinimumVersion=2.3
 description=Google Maps, Bing Maps, OpenStreetMap layers and more
 about=Google Maps, Bing Maps, OpenStreetMap layers and more
-version=1.4.0
+version=1.4.1
 author=Sourcepole and contributors
 email=pka@sourcepole.ch
 
 changelog=1.4.1
+    - Display warning for Google & Bing layers regarding printing and rotating
+    - Fix UnicodeEncodeError at initialization
     - Spanish translation. Thanks to @ermati
   1.4.0
     - Support printing and rotating of OpenStreetMap and OSM/Stamen layers

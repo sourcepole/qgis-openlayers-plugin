@@ -99,9 +99,6 @@ class OpenlayersPlugin:
         self._olLayerTypeRegistry.register(OlOSMStamenWatercolorLayer())
         self._olLayerTypeRegistry.register(OlOSMStamenTerrainLayer())
 
-        self._olLayerTypeRegistry.register(OlMapQuestOSMLayer())
-        self._olLayerTypeRegistry.register(OlMapQuestOpenAerialLayer())
-
         self._olLayerTypeRegistry.register(OlAppleiPhotoMapLayer())
 
         for group in self._olLayerTypeRegistry.groups():

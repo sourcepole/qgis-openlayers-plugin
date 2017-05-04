@@ -39,6 +39,7 @@ from weblayers.apple_maps import OlAppleiPhotoMapLayer
 from weblayers.osm_stamen import OlOSMStamenTonerLayer, OlOSMStamenTonerLiteLayer, OlOSMStamenWatercolorLayer, OlOSMStamenTerrainLayer
 from weblayers.map_quest import OlMapQuestOSMLayer, OlMapQuestOpenAerialLayer
 import os.path
+import time
 
 
 class OpenlayersPlugin:
@@ -126,6 +127,7 @@ class OpenlayersPlugin:
         QgsPluginLayerRegistry.instance().addPluginLayerType(self.pluginLayerType)
 
         QObject.connect(QgsProject.instance(), SIGNAL("readProject(const QDomDocument &)"), self.projectLoaded)
+        QgsProject.instance().projectSaved.connect(self.projectSaved)
 
         self.setGDALProxy()
 
@@ -139,6 +141,7 @@ class OpenlayersPlugin:
         QgsPluginLayerRegistry.instance().removePluginLayerType(OpenlayersLayer.LAYER_TYPE)
 
         QObject.disconnect(QgsProject.instance(), SIGNAL("readProject(const QDomDocument &)"), self.projectLoaded)
+        QgsProject.instance().projectSaved.disconnect(self.projectSaved)
 
     def addLayer(self, layerType):
         if layerType.hasGdalTMS():
@@ -221,6 +224,25 @@ class OpenlayersPlugin:
                     gdalTMSLayer = self.createGdalTmsLayer(layer.layerType, layer.name())
                     if gdalTMSLayer.isValid():
                         self.replaceLayer(rootGroup, layer, gdalTMSLayer)
+
+    def projectSaved(self):
+        hasOlLayer = False
+        for layer in QgsMapLayerRegistry.instance().mapLayers().values():
+            if layer.customProperty('ol_layer_type'):
+                hasOlLayer = True
+        if not hasOlLayer:
+            return
+
+        day = 3600*24
+        now = time.time()
+        lastInfo = QSettings().value("Plugin-OpenLayers/cloud_info_ts", type=float)
+        if lastInfo == 0.0:
+            lastInfo = now-20*day  # Show first time after 10 days
+            QSettings().setValue("Plugin-OpenLayers/cloud_info_ts", lastInfo)
+        days = (now-lastInfo)/day
+        if days >= 30:
+            self.dlgAbout.show()
+            QSettings().setValue("Plugin-OpenLayers/cloud_info_ts", now)
 
     def createGdalTmsLayer(self, layerType, name):
         # create GDAL TMS layer with XML string as datasource

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_about_dialog.ui'
 #
-# Created: Fri May  5 11:25:19 2017
+# Created: Fri May  5 11:59:53 2017
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -105,7 +105,7 @@ class Ui_dlgAbout(object):
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:9pt;\">The terms of service of the used map providers apply!</span></p>\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:9pt;\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:9pt;\">Selected links:</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a href=\"http://www.openstreetmap.org/copyright\"><span style=\" font-size:9pt; text-decoration: underline; color:#0057ae;\">OpenStreetMap</span></a></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a href=\"http://www.openstreetmap.org/copyright\"><span style=\" font-size:9pt; text-decoration: underline; color:#0057ae;\">OpenStreetMap</span></a><span style=\" font-size:9pt;\"> (</span><a href=\"https://operations.osmfoundation.org/policies/tiles/\"><span style=\" font-size:9pt; text-decoration: underline; color:#0057ae;\">Tile Usage</span></a><span style=\" font-size:9pt;\">)</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a href=\"https://developers.google.com/maps/terms\"><span style=\" font-size:9pt; text-decoration: underline; color:#0057ae;\">Google Maps</span></a></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a href=\"http://www.microsoft.com/maps/product/terms.html\"><span style=\" font-size:9pt; text-decoration: underline; color:#0057ae;\">Microsoft® Bing™ Maps</span></a></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a href=\"http://developer.mapquest.com/web/info/terms-of-use\"><span style=\" font-size:9pt; text-decoration: underline; color:#0057ae;\">MapQuest</span></a></p>\n"

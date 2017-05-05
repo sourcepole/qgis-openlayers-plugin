@@ -33,7 +33,8 @@ from openlayers_plugin_layer_type import OpenlayersPluginLayerType
 from tools_network import getProxy
 from weblayers.weblayer_registry import WebLayerTypeRegistry
 from weblayers.google_maps import OlGooglePhysicalLayer, OlGoogleStreetsLayer, OlGoogleHybridLayer, OlGoogleSatelliteLayer
-from weblayers.osm import OlOpenStreetMapLayer, OlOpenCycleMapLayer, OlOCMLandscapeLayer, OlOCMPublicTransportLayer, OlOSMHumanitarianDataModelLayer
+from weblayers.osm import OlOpenStreetMapLayer, OlOSMHumanitarianDataModelLayer
+from weblayers.osm_thunderforest import OlOpenCycleMapLayer, OlOCMLandscapeLayer, OlOCMPublicTransportLayer, OlOCMOutdoorstLayer, OlOCMTransportDarkLayer, OlOCMSpinalMapLayer, OlOCMPioneerLayer, OlOCMMobileAtlasLayer, OlOCMNeighbourhoodLayer
 from weblayers.bing_maps import OlBingRoadLayer, OlBingAerialLayer, OlBingAerialLabelledLayer
 from weblayers.apple_maps import OlAppleiPhotoMapLayer
 from weblayers.osm_stamen import OlOSMStamenTonerLayer, OlOSMStamenTonerLiteLayer, OlOSMStamenWatercolorLayer, OlOSMStamenTerrainLayer
@@ -88,11 +89,24 @@ class OpenlayersPlugin:
         self._olLayerTypeRegistry.register(OlOpenCycleMapLayer())
         self._olLayerTypeRegistry.register(OlOCMLandscapeLayer())
         self._olLayerTypeRegistry.register(OlOCMPublicTransportLayer())
+
+        # ID 8-10 was Yahoo
         self._olLayerTypeRegistry.register(OlOSMHumanitarianDataModelLayer())
+
+        self._olLayerTypeRegistry.register(OlOCMOutdoorstLayer())
+        self._olLayerTypeRegistry.register(OlOCMTransportDarkLayer())
 
         self._olLayerTypeRegistry.register(OlBingRoadLayer())
         self._olLayerTypeRegistry.register(OlBingAerialLayer())
         self._olLayerTypeRegistry.register(OlBingAerialLabelledLayer())
+
+        # Order from here on is free. Layers 0-14 should keep order for
+        # compatibility with OL Plugin < 2.3
+
+        self._olLayerTypeRegistry.register(OlOCMSpinalMapLayer())
+        self._olLayerTypeRegistry.register(OlOCMPioneerLayer())
+        self._olLayerTypeRegistry.register(OlOCMMobileAtlasLayer())
+        self._olLayerTypeRegistry.register(OlOCMNeighbourhoodLayer())
 
         self._olLayerTypeRegistry.register(OlOSMStamenTonerLayer())
         self._olLayerTypeRegistry.register(OlOSMStamenTonerLiteLayer())
@@ -107,12 +121,16 @@ class OpenlayersPlugin:
                 layer.addMenuEntry(groupMenu, self.iface.mainWindow())
             self._olMenu.addMenu(groupMenu)
 
-        # add action for setting Google Maps API key
+        # add action for API key dialogs
         for action in self._olMenu.actions():
             if action.text() == "Google Maps":
                 self._actionGoogleMapsApiKey = QAction("Set API key", self.iface.mainWindow())
                 self._actionGoogleMapsApiKey.triggered.connect(self.showGoogleMapsApiKeyDialog)
                 action.menu().addAction(self._actionGoogleMapsApiKey)
+            if action.text() == "OSM/Thunderforest":
+                self._actionThunderforestApiKey = QAction("Set API key", self.iface.mainWindow())
+                self._actionThunderforestApiKey.triggered.connect(self.showThunderforestApiKeyDialog)
+                action.menu().addAction(self._actionThunderforestApiKey)
 
         #Create Web menu, if it doesn't exist yet
         self.iface.addPluginToWebMenu("_tmp", self._actionAbout)
@@ -304,6 +322,12 @@ class OpenlayersPlugin:
 
     def showGoogleMapsApiKeyDialog(self):
         apiKey = QSettings().value("Plugin-OpenLayers/googleMapsApiKey")
-        newApiKey, ok = QInputDialog.getText(self.iface.mainWindow(), "Google Maps API key", "Enter your Google Maps API key", QLineEdit.Normal, apiKey)
+        newApiKey, ok = QInputDialog.getText(self.iface.mainWindow(), "API key", "Enter your Google Maps API key", QLineEdit.Normal, apiKey)
         if ok:
             QSettings().setValue("Plugin-OpenLayers/googleMapsApiKey", newApiKey)
+
+    def showThunderforestApiKeyDialog(self):
+        apiKey = QSettings().value("Plugin-OpenLayers/thunderforestApiKey")
+        newApiKey, ok = QInputDialog.getText(self.iface.mainWindow(), "API key", "Enter your API key (<a href=\"https://thunderforest.com/pricing/\">https://thunderforest.com</a>)", QLineEdit.Normal, apiKey)
+        if ok:
+            QSettings().setValue("Plugin-OpenLayers/thunderforestApiKey", newApiKey)

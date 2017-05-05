@@ -8,6 +8,16 @@
         var map;
         var loadEnd;
         var oloMarker; // OpenLayer Overview Marker
+
+        function getParameterByName(name, url) {
+            if (!url) url = window.location.href;
+            name = name.replace(/[\[\]]/g, "\\$&");
+            var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+                results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, " "));
+        }
         function init() {
             map = new OpenLayers.Map('map', {
                 theme: null,
@@ -29,9 +39,15 @@
               loadEnd = true;
             }
 
+            var layer = getParameterByName("layer") || "cycle";
+            var apiKey = getParameterByName("key");
+            var url = "https://tile.thunderforest.com/"+layer+"/${z}/${x}/${y}.png";
+            if (apiKey != null) {
+                url += "?apikey=" + apiKey;
+            }
             var osm = new OpenLayers.Layer.OSM(
-              "OpenCyclemapMap",
-              "http://tile.opencyclemap.org/cycle/${z}/${x}/${y}.png",
+              "Thunderforest " + layer,
+              url,
               {
                 eventListeners: {
                   "loadstart": layerLoadStart,

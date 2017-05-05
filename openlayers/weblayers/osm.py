@@ -38,24 +38,6 @@ class OlOpenStreetMapLayer(OlOSMLayer):
         OlOSMLayer.__init__(self, name='OpenStreetMap', html='osm.html', gdalTMS='osm.xml')
 
 
-class OlOpenCycleMapLayer(OlOSMLayer):
-
-    def __init__(self):
-        OlOSMLayer.__init__(self, name='OpenCycleMap', html='ocm.html', gdalTMS='ocm.xml')
-
-
-class OlOCMLandscapeLayer(OlOSMLayer):
-
-    def __init__(self):
-        OlOSMLayer.__init__(self, name='OCM Landscape', html='ocm_landscape.html', gdalTMS='ocm_landscape.xml')
-
-
-class OlOCMPublicTransportLayer(OlOSMLayer):
-
-    def __init__(self):
-        OlOSMLayer.__init__(self, name='OCM Public Transport', html='ocm_transport.html', gdalTMS='ocm_transport.xml')
-
-
 class OlOSMHumanitarianDataModelLayer(OlOSMLayer):
 
     def __init__(self):

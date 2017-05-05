@@ -3,11 +3,15 @@ name=OpenLayers Plugin
 qgisMinimumVersion=2.3
 description=Google Maps, Bing Maps, OpenStreetMap layers and more
 about=Google Maps, Bing Maps, OpenStreetMap layers and more
-version=1.4.1
+version=1.4.2
 author=Sourcepole and contributors
 email=pka@sourcepole.ch
 
-changelog=1.4.1
+changelog=1.4.2
+    - Thunderstorm OSM layers with API Key (OpenCycleMap, etc.)
+    - Wikimedia Commons OpenStreetMap layers. Thanks to  Henry Walshaw!
+    - Discontinued MapQuest layers removed
+  1.4.1
     - Display warning for Google & Bing layers regarding printing and rotating
     - Fix UnicodeEncodeError at initialization
     - Spanish translation. Thanks to @ermati
@@ -59,10 +63,10 @@ changelog=1.4.1
     -Fix for Python API breaks in master branch. Thanks to Salvatore Larosa!
 
 ; tags are in comma separated value format, spaces are allowed
-tags=openlayers,OSM,google,bing,mapquest,stamen
+tags=openlayers,OSM,google,bing,stamen
 
-homepage=http://hub.qgis.org/projects/openlayers/wiki
-tracker=http://hub.qgis.org/projects/openlayers/issues
+homepage=https://github.com/sourcepole/qgis-openlayers-plugin
+tracker=https://github.com/sourcepole/qgis-openlayers-plugin/issues
 repository=https://github.com/sourcepole/qgis-openlayers-plugin
 icon=openlayers.png
 

@@ -76,8 +76,7 @@ class OpenlayersPlugin:
         self._olMenu.addAction(self.overviewAddAction)
 
         self._actionAbout = QAction("Terms of Service / About", self.iface.mainWindow())
-        QObject.connect(self._actionAbout, SIGNAL("triggered()"), self.dlgAbout, SLOT("show()"))
-        #? self._actionAbout.triggered.connect(self.dlgAbout, SLOT("show()"))
+        self._actionAbout.triggered.connect(self.dlgAbout.show)
         self._olMenu.addAction(self._actionAbout)
 
         self._olLayerTypeRegistry.register(OlGooglePhysicalLayer())
@@ -241,6 +240,7 @@ class OpenlayersPlugin:
             QSettings().setValue("Plugin-OpenLayers/cloud_info_ts", lastInfo)
         days = (now-lastInfo)/day
         if days >= 30:
+            self.dlgAbout.tabWidget.setCurrentWidget(self.dlgAbout.tab_publishing)
             self.dlgAbout.show()
             QSettings().setValue("Plugin-OpenLayers/cloud_info_ts", now)
 

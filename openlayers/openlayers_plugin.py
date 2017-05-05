@@ -39,6 +39,7 @@ from weblayers.bing_maps import OlBingRoadLayer, OlBingAerialLayer, OlBingAerial
 from weblayers.apple_maps import OlAppleiPhotoMapLayer
 from weblayers.osm_stamen import OlOSMStamenTonerLayer, OlOSMStamenTonerLiteLayer, OlOSMStamenWatercolorLayer, OlOSMStamenTerrainLayer
 from weblayers.map_quest import OlMapQuestOSMLayer, OlMapQuestOpenAerialLayer
+from weblayers.wikimedia_maps import WikimediaLabelledLayer, WikimediaUnLabelledLayer
 import os.path
 import time
 
@@ -114,6 +115,9 @@ class OpenlayersPlugin:
         self._olLayerTypeRegistry.register(OlOSMStamenTerrainLayer())
 
         self._olLayerTypeRegistry.register(OlAppleiPhotoMapLayer())
+
+        self._olLayerTypeRegistry.register(WikimediaLabelledLayer())
+        self._olLayerTypeRegistry.register(WikimediaUnLabelledLayer())
 
         for group in self._olLayerTypeRegistry.groups():
             groupMenu = group.menu()

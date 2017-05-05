@@ -7,5 +7,6 @@
     <file>weblayers/icons/google_icon.png</file>
     <file>weblayers/icons/osm_icon.png</file>
     <file>weblayers/icons/stamen_icon.png</file>
+    <file>weblayers/icons/wikimedia_icon.png</file>
   </qresource>
 </RCC>

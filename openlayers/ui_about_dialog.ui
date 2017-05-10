@@ -171,6 +171,13 @@ p, li { white-space: pre-wrap; }
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QCheckBox" name="cb_publishing">
+         <property name="text">
+          <string>Don't show again</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
     </widget>

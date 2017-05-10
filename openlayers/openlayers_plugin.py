@@ -80,6 +80,7 @@ class OpenlayersPlugin:
         self._actionAbout = QAction("Terms of Service / About", self.iface.mainWindow())
         self._actionAbout.triggered.connect(self.dlgAbout.show)
         self._olMenu.addAction(self._actionAbout)
+        self.dlgAbout.finished.connect(self._publicationInfoClosed)
 
         self._olLayerTypeRegistry.register(OlGooglePhysicalLayer())
         self._olLayerTypeRegistry.register(OlGoogleStreetsLayer())
@@ -246,25 +247,32 @@ class OpenlayersPlugin:
                     if gdalTMSLayer.isValid():
                         self.replaceLayer(rootGroup, layer, gdalTMSLayer)
 
-    def projectSaved(self):
-        hasOlLayer = False
+    def _hasOlLayer(self):
         for layer in QgsMapLayerRegistry.instance().mapLayers().values():
             if layer.customProperty('ol_layer_type'):
-                hasOlLayer = True
-        if not hasOlLayer:
-            return
+                return True
+        return False
 
+    def _publicationInfo(self):
+        cloud_info_off = QSettings().value("Plugin-OpenLayers/cloud_info_off", defaultValue=False, type=bool)
         day = 3600*24
         now = time.time()
-        lastInfo = QSettings().value("Plugin-OpenLayers/cloud_info_ts", type=float)
+        lastInfo = QSettings().value("Plugin-OpenLayers/cloud_info_ts", defaultValue=0.0, type=float)
         if lastInfo == 0.0:
             lastInfo = now-20*day  # Show first time after 10 days
             QSettings().setValue("Plugin-OpenLayers/cloud_info_ts", lastInfo)
         days = (now-lastInfo)/day
-        if days >= 30:
+        if days >= 30 and not cloud_info_off:
             self.dlgAbout.tabWidget.setCurrentWidget(self.dlgAbout.tab_publishing)
             self.dlgAbout.show()
             QSettings().setValue("Plugin-OpenLayers/cloud_info_ts", now)
+
+    def _publicationInfoClosed(self):
+        QSettings().setValue("Plugin-OpenLayers/cloud_info_off", self.dlgAbout.cb_publishing.isChecked())
+
+    def projectSaved(self):
+        if self._hasOlLayer():
+            self._publicationInfo()
 
     def createGdalTmsLayer(self, layerType, name):
         # create GDAL TMS layer with XML string as datasource

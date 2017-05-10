@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_about_dialog.ui'
 #
-# Created: Fri May  5 16:26:42 2017
+# Created: Wed May 10 08:59:27 2017
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -73,6 +73,9 @@ class Ui_dlgAbout(object):
         self.textBrowser1.setOpenExternalLinks(True)
         self.textBrowser1.setObjectName(_fromUtf8("textBrowser1"))
         self.verticalLayout_5.addWidget(self.textBrowser1)
+        self.cb_publishing = QtGui.QCheckBox(self.tab_publishing)
+        self.cb_publishing.setObjectName(_fromUtf8("cb_publishing"))
+        self.verticalLayout_5.addWidget(self.cb_publishing)
         self.tabWidget.addTab(self.tab_publishing, _fromUtf8(""))
         self.verticalLayout_3.addWidget(self.tabWidget)
         self.widget = QtGui.QWidget(dlgAbout)
@@ -163,6 +166,7 @@ class Ui_dlgAbout(object):
 "<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:\'Noto Sans\';\"><br /></p>\n"
 "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Noto Sans\';\">Install the QGIS Cloud plugin and publish your map </span></p>\n"
 "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Noto Sans\';\">on </span><a href=\"https://qgiscloud.com/?ol\"><span style=\" font-family:\'Noto Sans\'; text-decoration: underline; color:#2980b9;\">QGIS Cloud </span></a><span style=\" font-family:\'Noto Sans\';\">with a few mouse clicks!</span></p></body></html>", None))
+        self.cb_publishing.setText(_translate("dlgAbout", "Don\'t show again", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_publishing), _translate("dlgAbout", "Publishing", None))
 
 import resources_rc

@@ -38,7 +38,6 @@ from weblayers.osm_thunderforest import OlOpenCycleMapLayer, OlOCMLandscapeLayer
 from weblayers.bing_maps import OlBingRoadLayer, OlBingAerialLayer, OlBingAerialLabelledLayer
 from weblayers.apple_maps import OlAppleiPhotoMapLayer
 from weblayers.osm_stamen import OlOSMStamenTonerLayer, OlOSMStamenTonerLiteLayer, OlOSMStamenWatercolorLayer, OlOSMStamenTerrainLayer
-from weblayers.map_quest import OlMapQuestOSMLayer, OlMapQuestOpenAerialLayer
 from weblayers.wikimedia_maps import WikimediaLabelledLayer, WikimediaUnLabelledLayer
 import os.path
 import time

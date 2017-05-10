@@ -26,8 +26,10 @@ QGISDIR=.qgis2
 
 # translation
 SOURCES = openlayers_plugin.py \
+          ui_about_dialog.py \
           openlayers_ovwidget.py \
-          openlayers_ovwidgetbase.py
+          ui_openlayers_ovwidget.py
+
 TRANSLATIONS = i18n/openlayers_de.ts \
                i18n/openlayers_en.ts \
                i18n/openlayers_fr.ts \

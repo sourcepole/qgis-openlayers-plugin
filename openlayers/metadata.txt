@@ -3,11 +3,13 @@ name=OpenLayers Plugin
 qgisMinimumVersion=2.3
 description=Google Maps, Bing Maps, OpenStreetMap layers and more
 about=Google Maps, Bing Maps, OpenStreetMap layers and more
-version=1.4.3
+version=1.4.4
 author=Sourcepole and contributors
 email=pka@sourcepole.ch
 
-changelog=1.4.3
+changelog=1.4.4
+    - Improved use of system proxy settings
+  1.4.3
     - Fix "No module named map_quest"
   1.4.2
     - Thunderstorm OSM layers with API Key (OpenCycleMap, etc.)

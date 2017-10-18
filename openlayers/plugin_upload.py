@@ -8,9 +8,9 @@ import getpass
 from optparse import OptionParser
 
 # Configuration
-PROTOCOL='http'
+PROTOCOL='https'
 SERVER='plugins.qgis.org'
-PORT='80'
+PORT='443'
 ENDPOINT='/plugins/RPC2/'
 VERBOSE=False
 

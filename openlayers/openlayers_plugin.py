@@ -30,6 +30,7 @@ from about_dialog import AboutDialog
 from openlayers_overview import OLOverview
 from openlayers_layer import OpenlayersLayer
 from openlayers_plugin_layer_type import OpenlayersPluginLayerType
+from tools_network import getProxy
 from weblayers.weblayer_registry import WebLayerTypeRegistry
 from weblayers.google_maps import OlGooglePhysicalLayer, OlGoogleStreetsLayer, OlGoogleHybridLayer, OlGoogleSatelliteLayer
 from weblayers.osm import OlOpenStreetMapLayer, OlOSMHumanitarianDataModelLayer
@@ -308,32 +309,25 @@ class OpenlayersPlugin:
         return False
 
     def setGDALProxy(self):
-        proxy_enabled = (QSettings().value("/proxy/proxyEnabled") is not None and
-                         QSettings().value("/proxy/proxyEnabled", True, type=bool))
+        proxy = getProxy()
 
-        if proxy_enabled:
-            proxy = QgsNetworkAccessManager.instance().proxy().applicationProxy()
-            httpProxyTypes = [QNetworkProxy.DefaultProxy, QNetworkProxy.Socks5Proxy, QNetworkProxy.HttpProxy]
-            if QT_VERSION >= 0X040400:
-                httpProxyTypes.append(QNetworkProxy.HttpCachingProxy)
+        httpProxyTypes = [QNetworkProxy.DefaultProxy, QNetworkProxy.Socks5Proxy, QNetworkProxy.HttpProxy]
+        if QT_VERSION >= 0X040400:
+            httpProxyTypes.append(QNetworkProxy.HttpCachingProxy)
 
-            if proxy.type() in httpProxyTypes:
-                # set HTTP proxy for GDAL
-                gdalHttpProxy = proxy.hostName()
-                port = proxy.port()
-                if port != 0:
-                    gdalHttpProxy += ":%i" % port
-                os.environ["GDAL_HTTP_PROXY"] = gdalHttpProxy
+        if proxy is not None and proxy.type() in httpProxyTypes:
+            # set HTTP proxy for GDAL
+            gdalHttpProxy = proxy.hostName()
+            port = proxy.port()
+            if port != 0:
+                gdalHttpProxy += ":%i" % port
+            os.environ["GDAL_HTTP_PROXY"] = gdalHttpProxy
 
-                if proxy.user():
-                    gdalHttpProxyuserpwd = "%s:%s" % (proxy.user(), proxy.password())
-                    os.environ["GDAL_HTTP_PROXYUSERPWD"] = gdalHttpProxyuserpwd
+            if proxy.user():
+                gdalHttpProxyuserpwd = "%s:%s" % (proxy.user(), proxy.password())
+                os.environ["GDAL_HTTP_PROXYUSERPWD"] = gdalHttpProxyuserpwd
 
-                os.environ["GDAL_PROXY_AUTH"] = "ANY"
-        else:
-            # disable proxy
-            os.environ["GDAL_HTTP_PROXY"] = ''
-            os.environ["GDAL_HTTP_PROXYUSERPWD"] = ''
+            os.environ["GDAL_PROXY_AUTH"] = "ANY"
 
     def showGoogleMapsApiKeyDialog(self):
         apiKey = QSettings().value("Plugin-OpenLayers/googleMapsApiKey")

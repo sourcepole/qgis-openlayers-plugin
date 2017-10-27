@@ -32,6 +32,7 @@ except ImportError:
     # we are using Python3 so QString is not defined
     QString = type("")
 
+from tools_network import getProxy
 import bindogr
 
 from ui_openlayers_ovwidget import Ui_Form
@@ -87,6 +88,7 @@ class OpenLayersOverviewWidget(QWidget,Ui_Form):
     self.__fileNameImg = ''
     self.__srsOL = core.QgsCoordinateReferenceSystem(3857, core.QgsCoordinateReferenceSystem.EpsgCrsId)
     self.__marker = MarkerCursor(self.__canvas, self.__srsOL)
+    self.__manager = None # Need persist for PROXY
     bindogr.initOgr()
     self.__init()
 
@@ -97,7 +99,12 @@ class OpenLayersOverviewWidget(QWidget,Ui_Form):
     self.__registerObjJS()
     self.lbStatusRead.setVisible( False )
     self.__setConnections()
-    self.webViewMap.page().setNetworkAccessManager(QgsNetworkAccessManager.instance())
+    # Proxy
+    proxy = getProxy()
+    if not proxy is None:
+      self.__manager = QNetworkAccessManager()
+      self.__manager.setProxy(proxy)
+      self.webViewMap.page().setNetworkAccessManager(self.__manager)
 
     self.__timerMapReady = QTimer()
     self.__timerMapReady.setSingleShot(True)

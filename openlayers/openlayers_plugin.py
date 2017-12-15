@@ -39,6 +39,7 @@ from weblayers.bing_maps import OlBingRoadLayer, OlBingAerialLayer, OlBingAerial
 from weblayers.apple_maps import OlAppleiPhotoMapLayer
 from weblayers.osm_stamen import OlOSMStamenTonerLayer, OlOSMStamenTonerLiteLayer, OlOSMStamenWatercolorLayer, OlOSMStamenTerrainLayer
 from weblayers.wikimedia_maps import WikimediaLabelledLayer, WikimediaUnLabelledLayer
+from osgeo import gdal
 import os.path
 import time
 
@@ -317,17 +318,22 @@ class OpenlayersPlugin:
 
         if proxy is not None and proxy.type() in httpProxyTypes:
             # set HTTP proxy for GDAL
+            if proxy.type() == QNetworkProxy.DefaultProxy:
+                npq = QNetworkProxyQuery(QUrl("http://tile.openstreetmap.org"))
+                proxies = QNetworkProxyFactory.systemProxyForQuery(npq)
+                if len(proxies) > 0:
+                    proxy = proxies[0]
             gdalHttpProxy = proxy.hostName()
             port = proxy.port()
             if port != 0:
                 gdalHttpProxy += ":%i" % port
-            os.environ["GDAL_HTTP_PROXY"] = gdalHttpProxy
+            gdal.SetConfigOption("GDAL_HTTP_PROXY", str(gdalHttpProxy))
 
             if proxy.user():
                 gdalHttpProxyuserpwd = "%s:%s" % (proxy.user(), proxy.password())
-                os.environ["GDAL_HTTP_PROXYUSERPWD"] = gdalHttpProxyuserpwd
+                gdal.SetConfigOption("GDAL_HTTP_PROXYUSERPWD", str(gdalHttpProxyuserpwd))
 
-            os.environ["GDAL_PROXY_AUTH"] = "ANY"
+            gdal.SetConfigOption("GDAL_PROXY_AUTH", "ANY")
 
     def showGoogleMapsApiKeyDialog(self):
         apiKey = QSettings().value("Plugin-OpenLayers/googleMapsApiKey")

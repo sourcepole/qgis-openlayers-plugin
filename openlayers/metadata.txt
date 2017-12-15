@@ -3,11 +3,13 @@ name=OpenLayers Plugin
 qgisMinimumVersion=2.3
 description=Google Maps, Bing Maps, OpenStreetMap layers and more
 about=Google Maps, Bing Maps, OpenStreetMap layers and more
-version=1.4.5
+version=1.4.6
 author=Sourcepole and contributors
 email=pka@sourcepole.ch
 
-changelog=1.4.5
+changelog=1.4.6
+    - Improved use of proxy settings for GDAL Layers (OSM, etc.)
+  1.4.5
     - Partial revert of new proxy method because of Windows crashes
   1.4.4
     - Improved use of system proxy settings

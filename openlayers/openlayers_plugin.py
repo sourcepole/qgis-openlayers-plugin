@@ -330,11 +330,11 @@ class OpenlayersPlugin:
             port = proxy.port()
             if port != 0:
                 gdalHttpProxy += ":%i" % port
-            gdal.SetConfigOption("GDAL_HTTP_PROXY", str(gdalHttpProxy))
+            gdal.SetConfigOption("GDAL_HTTP_PROXY", gdalHttpProxy.encode('utf-8'))
 
             if proxy.user():
                 gdalHttpProxyuserpwd = "%s:%s" % (proxy.user(), proxy.password())
-                gdal.SetConfigOption("GDAL_HTTP_PROXYUSERPWD", str(gdalHttpProxyuserpwd))
+                gdal.SetConfigOption("GDAL_HTTP_PROXYUSERPWD", gdalHttpProxyuserpwd.encode('utf-8'))
 
             gdal.SetConfigOption("GDAL_PROXY_AUTH", "ANY")
 

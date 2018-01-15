@@ -51,6 +51,8 @@ class OpenlayersPlugin:
         self.iface = iface
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
+        # Keep a reference to all OL layers to avoid GC
+        self._ol_layers = []
         # initialize locale
         locale = QSettings().value("locale/userLocale")[0:2]
         localePath = os.path.join(self.plugin_dir, "i18n", "openlayers_{}.qm".format(locale))
@@ -179,6 +181,7 @@ class OpenlayersPlugin:
             coordRefSys = layerType.coordRefSys(self.canvasCrs())
             self.setMapCrs(coordRefSys)
             QgsMapLayerRegistry.instance().addMapLayer(layer)
+            self._ol_layers += [layer]
 
             # last added layer is new reference
             self.setReferenceLayer(layer)

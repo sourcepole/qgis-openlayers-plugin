@@ -32,13 +32,28 @@ from openlayers_layer import OpenlayersLayer
 from openlayers_plugin_layer_type import OpenlayersPluginLayerType
 from tools_network import getProxy
 from weblayers.weblayer_registry import WebLayerTypeRegistry
-from weblayers.google_maps import OlGooglePhysicalLayer, OlGoogleStreetsLayer, OlGoogleHybridLayer, OlGoogleSatelliteLayer
+from weblayers.google_maps import (OlGooglePhysicalLayer,
+                                   OlGoogleStreetsLayer, OlGoogleHybridLayer,
+                                   OlGoogleSatelliteLayer)
 from weblayers.osm import OlOpenStreetMapLayer, OlOSMHumanitarianDataModelLayer
-from weblayers.osm_thunderforest import OlOpenCycleMapLayer, OlOCMLandscapeLayer, OlOCMPublicTransportLayer, OlOCMOutdoorstLayer, OlOCMTransportDarkLayer, OlOCMSpinalMapLayer, OlOCMPioneerLayer, OlOCMMobileAtlasLayer, OlOCMNeighbourhoodLayer
-from weblayers.bing_maps import OlBingRoadLayer, OlBingAerialLayer, OlBingAerialLabelledLayer
+from weblayers.osm_thunderforest import (OlOpenCycleMapLayer,
+                                         OlOCMLandscapeLayer,
+                                         OlOCMPublicTransportLayer,
+                                         OlOCMOutdoorstLayer,
+                                         OlOCMTransportDarkLayer,
+                                         OlOCMSpinalMapLayer,
+                                         OlOCMPioneerLayer,
+                                         OlOCMMobileAtlasLayer,
+                                         OlOCMNeighbourhoodLayer)
+from weblayers.bing_maps import (OlBingRoadLayer, OlBingAerialLayer,
+                                 OlBingAerialLabelledLayer)
 from weblayers.apple_maps import OlAppleiPhotoMapLayer
-from weblayers.osm_stamen import OlOSMStamenTonerLayer, OlOSMStamenTonerLiteLayer, OlOSMStamenWatercolorLayer, OlOSMStamenTerrainLayer
-from weblayers.wikimedia_maps import WikimediaLabelledLayer, WikimediaUnLabelledLayer
+from weblayers.osm_stamen import (OlOSMStamenTonerLayer,
+                                  OlOSMStamenTonerLiteLayer,
+                                  OlOSMStamenWatercolorLayer,
+                                  OlOSMStamenTerrainLayer)
+from weblayers.wikimedia_maps import (WikimediaLabelledLayer,
+                                      WikimediaUnLabelledLayer)
 from osgeo import gdal
 import os.path
 import time
@@ -55,7 +70,8 @@ class OpenlayersPlugin:
         self._ol_layers = []
         # initialize locale
         locale = QSettings().value("locale/userLocale")[0:2]
-        localePath = os.path.join(self.plugin_dir, "i18n", "openlayers_{}.qm".format(locale))
+        localePath = os.path.join(self.plugin_dir, "i18n",
+                                  "openlayers_{}.qm".format(locale))
 
         if os.path.exists(localePath):
             self.translator = QTranslator()
@@ -73,13 +89,17 @@ class OpenlayersPlugin:
         self._olMenu.setIcon(QIcon(":/plugins/openlayers/openlayers.png"))
 
         # Overview
-        self.overviewAddAction = QAction(QApplication.translate("OpenlayersPlugin", "OpenLayers Overview"), self.iface.mainWindow())
+        self.overviewAddAction = QAction(QApplication.translate(
+            "OpenlayersPlugin", "OpenLayers Overview"),
+                                         self.iface.mainWindow())
         self.overviewAddAction.setCheckable(True)
         self.overviewAddAction.setChecked(False)
-        QObject.connect(self.overviewAddAction, SIGNAL("toggled(bool)"), self.olOverview.setVisible)
+        QObject.connect(self.overviewAddAction, SIGNAL(
+            "toggled(bool)"), self.olOverview.setVisible)
         self._olMenu.addAction(self.overviewAddAction)
 
-        self._actionAbout = QAction("Terms of Service / About", self.iface.mainWindow())
+        self._actionAbout = QAction("Terms of Service / About",
+                                    self.iface.mainWindow())
         self._actionAbout.triggered.connect(self.dlgAbout.show)
         self._olMenu.addAction(self._actionAbout)
         self.dlgAbout.finished.connect(self._publicationInfoClosed)
@@ -131,26 +151,32 @@ class OpenlayersPlugin:
         # add action for API key dialogs
         for action in self._olMenu.actions():
             if action.text() == "Google Maps":
-                self._actionGoogleMapsApiKey = QAction("Set API key", self.iface.mainWindow())
-                self._actionGoogleMapsApiKey.triggered.connect(self.showGoogleMapsApiKeyDialog)
+                self._actionGoogleMapsApiKey = QAction(
+                    "Set API key", self.iface.mainWindow())
+                self._actionGoogleMapsApiKey.triggered.connect(
+                    self.showGoogleMapsApiKeyDialog)
                 action.menu().addAction(self._actionGoogleMapsApiKey)
             if action.text() == "OSM/Thunderforest":
-                self._actionThunderforestApiKey = QAction("Set API key", self.iface.mainWindow())
-                self._actionThunderforestApiKey.triggered.connect(self.showThunderforestApiKeyDialog)
+                self._actionThunderforestApiKey = QAction(
+                    "Set API key", self.iface.mainWindow())
+                self._actionThunderforestApiKey.triggered.connect(
+                    self.showThunderforestApiKeyDialog)
                 action.menu().addAction(self._actionThunderforestApiKey)
 
-        #Create Web menu, if it doesn't exist yet
+        # Create Web menu, if it doesn't exist yet
         self.iface.addPluginToWebMenu("_tmp", self._actionAbout)
         self._menu = self.iface.webMenu()
         self._menu.addMenu(self._olMenu)
         self.iface.removePluginWebMenu("_tmp", self._actionAbout)
 
         # Register plugin layer type
-        self.pluginLayerType = OpenlayersPluginLayerType(self.iface, self.setReferenceLayer,
-                                                    self._olLayerTypeRegistry)
-        QgsPluginLayerRegistry.instance().addPluginLayerType(self.pluginLayerType)
+        self.pluginLayerType = OpenlayersPluginLayerType(
+            self.iface, self.setReferenceLayer, self._olLayerTypeRegistry)
+        QgsPluginLayerRegistry.instance().addPluginLayerType(
+            self.pluginLayerType)
 
-        QObject.connect(QgsProject.instance(), SIGNAL("readProject(const QDomDocument &)"), self.projectLoaded)
+        QObject.connect(QgsProject.instance(), SIGNAL(
+            "readProject(const QDomDocument &)"), self.projectLoaded)
         QgsProject.instance().projectSaved.connect(self.projectSaved)
 
         self.setGDALProxy()
@@ -162,9 +188,11 @@ class OpenlayersPlugin:
         del self.olOverview
 
         # Unregister plugin layer type
-        QgsPluginLayerRegistry.instance().removePluginLayerType(OpenlayersLayer.LAYER_TYPE)
+        QgsPluginLayerRegistry.instance().removePluginLayerType(
+            OpenlayersLayer.LAYER_TYPE)
 
-        QObject.disconnect(QgsProject.instance(), SIGNAL("readProject(const QDomDocument &)"), self.projectLoaded)
+        QObject.disconnect(QgsProject.instance(), SIGNAL(
+            "readProject(const QDomDocument &)"), self.projectLoaded)
         QgsProject.instance().projectSaved.disconnect(self.projectSaved)
 
     def addLayer(self, layerType):
@@ -209,7 +237,7 @@ class OpenlayersPlugin:
     def canvasCrs(self):
         mapCanvas = self.iface.mapCanvas()
         if QGis.QGIS_VERSION_INT >= 20300:
-            #crs = mapCanvas.mapRenderer().destinationCrs()
+            # crs = mapCanvas.mapRenderer().destinationCrs()
             crs = mapCanvas.mapSettings().destinationCrs()
         elif QGis.QGIS_VERSION_INT >= 10900:
             crs = mapCanvas.mapRenderer().destinationCrs()
@@ -228,7 +256,8 @@ class OpenlayersPlugin:
         if canvasCrs != coordRefSys:
             coordTrans = QgsCoordinateTransform(canvasCrs, coordRefSys)
             extMap = mapCanvas.extent()
-            extMap = coordTrans.transform(extMap, QgsCoordinateTransform.ForwardTransform)
+            extMap = coordTrans.transform(
+                extMap, QgsCoordinateTransform.ForwardTransform)
             if QGis.QGIS_VERSION_INT >= 20300:
                 mapCanvas.setDestinationCrs(coordRefSys)
             elif QGis.QGIS_VERSION_INT >= 10900:
@@ -246,7 +275,8 @@ class OpenlayersPlugin:
             if layer.type() == QgsMapLayer.PluginLayer and layer.pluginLayerType() == OpenlayersLayer.LAYER_TYPE:
                 if layer.layerType.hasGdalTMS():
                     # replace layer
-                    gdalTMSLayer = self.createGdalTmsLayer(layer.layerType, layer.name())
+                    gdalTMSLayer = self.createGdalTmsLayer(layer.layerType,
+                                                           layer.name())
                     if gdalTMSLayer.isValid():
                         self.replaceLayer(rootGroup, layer, gdalTMSLayer)
 
@@ -257,21 +287,25 @@ class OpenlayersPlugin:
         return False
 
     def _publicationInfo(self):
-        cloud_info_off = QSettings().value("Plugin-OpenLayers/cloud_info_off", defaultValue=False, type=bool)
+        cloud_info_off = QSettings().value("Plugin-OpenLayers/cloud_info_off",
+                                           defaultValue=False, type=bool)
         day = 3600*24
         now = time.time()
-        lastInfo = QSettings().value("Plugin-OpenLayers/cloud_info_ts", defaultValue=0.0, type=float)
+        lastInfo = QSettings().value("Plugin-OpenLayers/cloud_info_ts",
+                                     defaultValue=0.0, type=float)
         if lastInfo == 0.0:
             lastInfo = now-20*day  # Show first time after 10 days
             QSettings().setValue("Plugin-OpenLayers/cloud_info_ts", lastInfo)
         days = (now-lastInfo)/day
         if days >= 30 and not cloud_info_off:
-            self.dlgAbout.tabWidget.setCurrentWidget(self.dlgAbout.tab_publishing)
+            self.dlgAbout.tabWidget.setCurrentWidget(
+                self.dlgAbout.tab_publishing)
             self.dlgAbout.show()
             QSettings().setValue("Plugin-OpenLayers/cloud_info_ts", now)
 
     def _publicationInfoClosed(self):
-        QSettings().setValue("Plugin-OpenLayers/cloud_info_off", self.dlgAbout.cb_publishing.isChecked())
+        QSettings().setValue("Plugin-OpenLayers/cloud_info_off",
+                             self.dlgAbout.cb_publishing.isChecked())
 
     def projectSaved(self):
         if self._hasOlLayer():
@@ -294,11 +328,15 @@ class OpenlayersPlugin:
                     newLayerNode.setVisible(child.isVisible())
 
                     # remove old layer
-                    QgsMapLayerRegistry.instance().removeMapLayer(oldLayer.id())
+                    QgsMapLayerRegistry.instance().removeMapLayer(
+                        oldLayer.id())
 
-                    msg = "Updated layer '%s' from old OpenLayers Plugin version" % newLayer.name()
-                    self.iface.messageBar().pushMessage("OpenLayers Plugin", msg, level=QgsMessageBar.INFO)
-                    QgsMessageLog.logMessage(msg, "OpenLayers Plugin", QgsMessageLog.INFO)
+                    msg = "Updated layer '%s' from old \
+                     OpenLayers Plugin version" % newLayer.name()
+                    self.iface.messageBar().pushMessage(
+                        "OpenLayers Plugin", msg, level=QgsMessageBar.INFO)
+                    QgsMessageLog.logMessage(
+                        msg, "OpenLayers Plugin", QgsMessageLog.INFO)
 
                     # layer replaced
                     return True
@@ -315,7 +353,8 @@ class OpenlayersPlugin:
     def setGDALProxy(self):
         proxy = getProxy()
 
-        httpProxyTypes = [QNetworkProxy.DefaultProxy, QNetworkProxy.Socks5Proxy, QNetworkProxy.HttpProxy]
+        httpProxyTypes = [QNetworkProxy.DefaultProxy,
+                          QNetworkProxy.Socks5Proxy, QNetworkProxy.HttpProxy]
         if QT_VERSION >= 0X040400:
             httpProxyTypes.append(QNetworkProxy.HttpCachingProxy)
 
@@ -330,22 +369,30 @@ class OpenlayersPlugin:
             port = proxy.port()
             if port != 0:
                 gdalHttpProxy += ":%i" % port
-            gdal.SetConfigOption("GDAL_HTTP_PROXY", gdalHttpProxy.encode('utf-8'))
+            gdal.SetConfigOption("GDAL_HTTP_PROXY",
+                                 gdalHttpProxy.encode('utf-8'))
 
             if proxy.user():
-                gdalHttpProxyuserpwd = "%s:%s" % (proxy.user(), proxy.password())
-                gdal.SetConfigOption("GDAL_HTTP_PROXYUSERPWD", gdalHttpProxyuserpwd.encode('utf-8'))
+                gdalHttpProxyuserpwd = "%s:%s" % (proxy.user(),
+                                                  proxy.password())
+                gdal.SetConfigOption("GDAL_HTTP_PROXYUSERPWD",
+                                     gdalHttpProxyuserpwd.encode('utf-8'))
 
             gdal.SetConfigOption("GDAL_PROXY_AUTH", "ANY")
 
     def showGoogleMapsApiKeyDialog(self):
         apiKey = QSettings().value("Plugin-OpenLayers/googleMapsApiKey")
-        newApiKey, ok = QInputDialog.getText(self.iface.mainWindow(), "API key", "Enter your Google Maps API key", QLineEdit.Normal, apiKey)
+        newApiKey, ok = QInputDialog.getText(
+            self.iface.mainWindow(), "API key",
+            "Enter your Google Maps API key", QLineEdit.Normal, apiKey)
         if ok:
             QSettings().setValue("Plugin-OpenLayers/googleMapsApiKey", newApiKey)
 
     def showThunderforestApiKeyDialog(self):
         apiKey = QSettings().value("Plugin-OpenLayers/thunderforestApiKey")
-        newApiKey, ok = QInputDialog.getText(self.iface.mainWindow(), "API key", "Enter your API key (<a href=\"https://thunderforest.com/pricing/\">https://thunderforest.com</a>)", QLineEdit.Normal, apiKey)
+        newApiKey, ok = QInputDialog.getText(
+            self.iface.mainWindow(), "API key",
+            "Enter your API key (<a href=\"https://thunderforest.com/pricing/\">https://thunderforest.com</a>)", QLineEdit.Normal, apiKey)
         if ok:
-            QSettings().setValue("Plugin-OpenLayers/thunderforestApiKey", newApiKey)
+            QSettings().setValue("Plugin-OpenLayers/thunderforestApiKey",
+                                 newApiKey)

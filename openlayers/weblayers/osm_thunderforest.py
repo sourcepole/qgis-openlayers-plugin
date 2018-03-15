@@ -29,8 +29,10 @@ class OlOSMThunderforest(WebLayer3857):
     emitsLoadEnd = True
 
     def __init__(self, name, layer):
-        WebLayer3857.__init__(self, groupName="OSM/Thunderforest", groupIcon="osm_icon.png",
-                              name=name, html='osm_thunderforest.html', gdalTMS='inline')
+        WebLayer3857.__init__(self, groupName="OSM/Thunderforest",
+                              groupIcon="osm_icon.png",
+                              name=name, html='osm_thunderforest.html',
+                              gdalTMS='inline')
         self._layer = layer
 
     def apiKey(self):
@@ -70,6 +72,7 @@ class OlOSMThunderforest(WebLayer3857):
             keyarg = ""
         return gdal_xml.format(layer=self._layer, apikey=keyarg)
 
+
 class OlOpenCycleMapLayer(OlOSMThunderforest):
 
     def __init__(self):
@@ -79,13 +82,15 @@ class OlOpenCycleMapLayer(OlOSMThunderforest):
 class OlOCMLandscapeLayer(OlOSMThunderforest):
 
     def __init__(self):
-        OlOSMThunderforest.__init__(self, name='OCM Landscape', layer='landscape')
+        OlOSMThunderforest.__init__(self, name='OCM Landscape',
+                                    layer='landscape')
 
 
 class OlOCMPublicTransportLayer(OlOSMThunderforest):
 
     def __init__(self):
-        OlOSMThunderforest.__init__(self, name='OCM Public Transport', layer='transport')
+        OlOSMThunderforest.__init__(self, name='OCM Public Transport',
+                                    layer='transport')
 
 
 class OlOCMOutdoorstLayer(OlOSMThunderforest):
@@ -97,13 +102,15 @@ class OlOCMOutdoorstLayer(OlOSMThunderforest):
 class OlOCMTransportDarkLayer(OlOSMThunderforest):
 
     def __init__(self):
-        OlOSMThunderforest.__init__(self, name='Transport Dark', layer='transport-dark')
+        OlOSMThunderforest.__init__(self, name='Transport Dark',
+                                    layer='transport-dark')
 
 
 class OlOCMSpinalMapLayer(OlOSMThunderforest):
 
     def __init__(self):
-        OlOSMThunderforest.__init__(self, name='Spinal Map', layer='spinal-map')
+        OlOSMThunderforest.__init__(self, name='Spinal Map',
+                                    layer='spinal-map')
 
 
 class OlOCMPioneerLayer(OlOSMThunderforest):
@@ -115,10 +122,12 @@ class OlOCMPioneerLayer(OlOSMThunderforest):
 class OlOCMMobileAtlasLayer(OlOSMThunderforest):
 
     def __init__(self):
-        OlOSMThunderforest.__init__(self, name='Mobile Atlas', layer='mobile-atlas')
+        OlOSMThunderforest.__init__(self, name='Mobile Atlas',
+                                    layer='mobile-atlas')
 
 
 class OlOCMNeighbourhoodLayer(OlOSMThunderforest):
 
     def __init__(self):
-        OlOSMThunderforest.__init__(self, name='Neighbourhood', layer='neighbourhood')
+        OlOSMThunderforest.__init__(self, name='Neighbourhood',
+                                    layer='neighbourhood')

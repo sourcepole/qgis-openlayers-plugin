@@ -1,4 +1,4 @@
-from PyQt4 import QtCore, QtGui
+from PyQt4 import QtGui
 from ui_about_dialog import Ui_dlgAbout
 
 

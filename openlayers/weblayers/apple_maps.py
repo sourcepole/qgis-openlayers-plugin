@@ -28,5 +28,6 @@ class OlAppleiPhotoMapLayer(WebLayer3857):
     emitsLoadEnd = True
 
     def __init__(self):
-        WebLayer3857.__init__(self, groupName="Apple Maps", groupIcon="apple_icon.png",
+        WebLayer3857.__init__(self, groupName="Apple Maps",
+                              groupIcon="apple_icon.png",
                               name='Apple iPhoto map', html='apple.html')

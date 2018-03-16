@@ -20,7 +20,7 @@ email                : pka at sourcepole.ch
  ***************************************************************************/
 """
 
-from weblayer import WebLayer3857
+from .weblayer import WebLayer3857
 
 
 class OlOSMLayer(WebLayer3857):

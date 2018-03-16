@@ -18,8 +18,8 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import *
-from PyQt4.QtNetwork import *
+from PyQt5.QtCore import QSettings, QT_VERSION
+from PyQt5.QtNetwork import QNetworkProxy
 
 
 def getProxy():

@@ -20,8 +20,8 @@ email                : pka at sourcepole.ch
  ***************************************************************************/
 """
 
-from PyQt4.QtCore import QSettings
-from weblayer import WebLayer3857
+from PyQt5.QtCore import QSettings
+from .weblayer import WebLayer3857
 
 
 class OlGoogleMapsLayer(WebLayer3857):

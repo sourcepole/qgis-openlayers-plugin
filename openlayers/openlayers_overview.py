@@ -18,9 +18,9 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QApplication, QDockWidget
-from openlayers_ovwidget import OpenLayersOverviewWidget
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QApplication, QDockWidget
+from .openlayers_ovwidget import OpenLayersOverviewWidget
 
 
 class OLOverview(object):

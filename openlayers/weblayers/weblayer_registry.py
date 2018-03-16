@@ -20,7 +20,7 @@ email                : pka at sourcepole.ch
  ***************************************************************************/
 """
 
-from weblayer import WebLayerGroup
+from .weblayer import WebLayerGroup
 
 
 class WebLayerTypeRegistry:
@@ -53,13 +53,13 @@ class WebLayerTypeRegistry:
         return self._olLayerTypes.values()
 
     def getById(self, id):
-        if self._olLayerTypes.has_key(id):
+        if id in self._olLayerTypes:
             return self._olLayerTypes[id]
         else:
             return None
 
     def getByName(self, name):
-        if self._olLayerTypeNames.has_key(name):
+        if name in self._olLayerTypeNames:
             return self._olLayerTypeNames[name]
         else:
             return None

@@ -20,8 +20,9 @@ email                : pka at sourcepole.ch
  ***************************************************************************/
 """
 
-from PyQt4.QtGui import QAction, QIcon, QMenu
-from qgis.core import QGis, QgsCoordinateReferenceSystem
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QAction, QMenu
+from qgis.core import Qgis as QGis, QgsCoordinateReferenceSystem
 import os
 import sys
 
@@ -102,7 +103,7 @@ class WebLayer:
         self._addLayerCallback(self)
 
     def html_url(self):
-        dir = os.path.dirname(unicode(__file__, sys.getfilesystemencoding()))
+        dir = os.path.dirname(__file__)
         url = "file:///%s/html/%s" % (dir.replace("\\", "/"), self._html)
         return url
 

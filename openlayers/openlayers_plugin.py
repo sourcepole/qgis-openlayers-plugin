@@ -20,40 +20,47 @@ email                : pka at sourcepole.ch
  ***************************************************************************/
 """
 # Import the PyQt and QGIS libraries
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.QtNetwork import *
-from qgis.core import *
-from qgis.gui import *
-import resources_rc
-from about_dialog import AboutDialog
-from openlayers_overview import OLOverview
-from openlayers_layer import OpenlayersLayer
-from openlayers_plugin_layer_type import OpenlayersPluginLayerType
-from tools_network import getProxy
-from weblayers.weblayer_registry import WebLayerTypeRegistry
-from weblayers.google_maps import (OlGooglePhysicalLayer,
-                                   OlGoogleStreetsLayer, OlGoogleHybridLayer,
-                                   OlGoogleSatelliteLayer)
-from weblayers.osm import OlOpenStreetMapLayer, OlOSMHumanitarianDataModelLayer
-from weblayers.osm_thunderforest import (OlOpenCycleMapLayer,
-                                         OlOCMLandscapeLayer,
-                                         OlOCMPublicTransportLayer,
-                                         OlOCMOutdoorstLayer,
-                                         OlOCMTransportDarkLayer,
-                                         OlOCMSpinalMapLayer,
-                                         OlOCMPioneerLayer,
-                                         OlOCMMobileAtlasLayer,
-                                         OlOCMNeighbourhoodLayer)
-from weblayers.bing_maps import (OlBingRoadLayer, OlBingAerialLayer,
-                                 OlBingAerialLabelledLayer)
-from weblayers.apple_maps import OlAppleiPhotoMapLayer
-from weblayers.osm_stamen import (OlOSMStamenTonerLayer,
-                                  OlOSMStamenTonerLiteLayer,
-                                  OlOSMStamenWatercolorLayer,
-                                  OlOSMStamenTerrainLayer)
-from weblayers.wikimedia_maps import (WikimediaLabelledLayer,
-                                      WikimediaUnLabelledLayer)
+from PyQt5.QtCore import (QUrl, QSettings, QT_VERSION, QTranslator)
+from PyQt5.QtWidgets import (QApplication, QLineEdit, QInputDialog, QAction,
+                             QMenu)
+from PyQt5.QtGui import QIcon
+from PyQt5.QtNetwork import (QNetworkProxyFactory, QNetworkProxyQuery,
+                             QNetworkProxy)
+from qgis.core import (QgsCoordinateTransform, Qgis as QGis, QgsProject,
+                       QgsPluginLayerRegistry, QgsLayerTree, QgsMapLayer,
+                       QgsRasterLayer, QgsMessageLog)
+from qgis.gui import QgsMessageBar
+
+# from . import resources_rc
+from .about_dialog import AboutDialog
+from .openlayers_overview import OLOverview
+from .openlayers_layer import OpenlayersLayer
+from .openlayers_plugin_layer_type import OpenlayersPluginLayerType
+from .tools_network import getProxy
+from .weblayers.weblayer_registry import WebLayerTypeRegistry
+from .weblayers.google_maps import (OlGooglePhysicalLayer,
+                                    OlGoogleStreetsLayer, OlGoogleHybridLayer,
+                                    OlGoogleSatelliteLayer)
+from .weblayers.osm import (OlOpenStreetMapLayer,
+                            OlOSMHumanitarianDataModelLayer)
+from .weblayers.osm_thunderforest import (OlOpenCycleMapLayer,
+                                          OlOCMLandscapeLayer,
+                                          OlOCMPublicTransportLayer,
+                                          OlOCMOutdoorstLayer,
+                                          OlOCMTransportDarkLayer,
+                                          OlOCMSpinalMapLayer,
+                                          OlOCMPioneerLayer,
+                                          OlOCMMobileAtlasLayer,
+                                          OlOCMNeighbourhoodLayer)
+from .weblayers.bing_maps import (OlBingRoadLayer, OlBingAerialLayer,
+                                  OlBingAerialLabelledLayer)
+from .weblayers.apple_maps import OlAppleiPhotoMapLayer
+from .weblayers.osm_stamen import (OlOSMStamenTonerLayer,
+                                   OlOSMStamenTonerLiteLayer,
+                                   OlOSMStamenWatercolorLayer,
+                                   OlOSMStamenTerrainLayer)
+from .weblayers.wikimedia_maps import (WikimediaLabelledLayer,
+                                       WikimediaUnLabelledLayer)
 from osgeo import gdal
 import os.path
 import time
@@ -77,12 +84,10 @@ class OpenlayersPlugin:
             self.translator = QTranslator()
             self.translator.load(localePath)
 
-            if qVersion() > '4.3.3':
-                QCoreApplication.installTranslator(self.translator)
-
         self._olLayerTypeRegistry = WebLayerTypeRegistry(self)
         self.olOverview = OLOverview(iface, self._olLayerTypeRegistry)
         self.dlgAbout = AboutDialog()
+        self.pluginLayerRegistry = QgsPluginLayerRegistry()
 
     def initGui(self):
         self._olMenu = QMenu("OpenLayers plugin")
@@ -94,8 +99,7 @@ class OpenlayersPlugin:
                                          self.iface.mainWindow())
         self.overviewAddAction.setCheckable(True)
         self.overviewAddAction.setChecked(False)
-        QObject.connect(self.overviewAddAction, SIGNAL(
-            "toggled(bool)"), self.olOverview.setVisible)
+        self.overviewAddAction.toggled.connect(self.olOverview.setVisible)
         self._olMenu.addAction(self.overviewAddAction)
 
         self._actionAbout = QAction("Terms of Service / About",
@@ -172,11 +176,11 @@ class OpenlayersPlugin:
         # Register plugin layer type
         self.pluginLayerType = OpenlayersPluginLayerType(
             self.iface, self.setReferenceLayer, self._olLayerTypeRegistry)
-        QgsPluginLayerRegistry.instance().addPluginLayerType(
+
+        self.pluginLayerRegistry.addPluginLayerType(
             self.pluginLayerType)
 
-        QObject.connect(QgsProject.instance(), SIGNAL(
-            "readProject(const QDomDocument &)"), self.projectLoaded)
+        QgsProject.instance().readProject.connect(self.projectLoaded)
         QgsProject.instance().projectSaved.connect(self.projectSaved)
 
         self.setGDALProxy()
@@ -188,11 +192,10 @@ class OpenlayersPlugin:
         del self.olOverview
 
         # Unregister plugin layer type
-        QgsPluginLayerRegistry.instance().removePluginLayerType(
+        self.pluginLayerRegistry.removePluginLayerType(
             OpenlayersLayer.LAYER_TYPE)
 
-        QObject.disconnect(QgsProject.instance(), SIGNAL(
-            "readProject(const QDomDocument &)"), self.projectLoaded)
+        QgsProject.instance().readProject.disconnect(self.projectLoaded)
         QgsProject.instance().projectSaved.disconnect(self.projectSaved)
 
     def addLayer(self, layerType):
@@ -202,13 +205,13 @@ class OpenlayersPlugin:
         else:
             # create OpenlayersLayer
             layer = OpenlayersLayer(self.iface, self._olLayerTypeRegistry)
-            layer.setLayerName(layerType.displayName)
+            layer.setName(layerType.displayName)
             layer.setLayerType(layerType)
 
         if layer.isValid():
             coordRefSys = layerType.coordRefSys(self.canvasCrs())
             self.setMapCrs(coordRefSys)
-            QgsMapLayerRegistry.instance().addMapLayer(layer)
+            QgsProject.instance().addMapLayer(layer)
             self._ol_layers += [layer]
 
             # last added layer is new reference
@@ -236,42 +239,27 @@ class OpenlayersPlugin:
 
     def canvasCrs(self):
         mapCanvas = self.iface.mapCanvas()
-        if QGis.QGIS_VERSION_INT >= 20300:
-            # crs = mapCanvas.mapRenderer().destinationCrs()
-            crs = mapCanvas.mapSettings().destinationCrs()
-        elif QGis.QGIS_VERSION_INT >= 10900:
-            crs = mapCanvas.mapRenderer().destinationCrs()
-        else:
-            crs = mapCanvas.mapRenderer().destinationSrs()
+        crs = mapCanvas.mapSettings().destinationCrs()
         return crs
 
     def setMapCrs(self, coordRefSys):
         mapCanvas = self.iface.mapCanvas()
         # On the fly
-        if QGis.QGIS_VERSION_INT >= 20300:
-            mapCanvas.setCrsTransformEnabled(True)
-        else:
-            mapCanvas.mapRenderer().setProjectionsEnabled(True)
         canvasCrs = self.canvasCrs()
         if canvasCrs != coordRefSys:
-            coordTrans = QgsCoordinateTransform(canvasCrs, coordRefSys)
+            coordTrans = QgsCoordinateTransform(canvasCrs, coordRefSys,
+                                                QgsProject.instance())
             extMap = mapCanvas.extent()
             extMap = coordTrans.transform(
                 extMap, QgsCoordinateTransform.ForwardTransform)
-            if QGis.QGIS_VERSION_INT >= 20300:
-                mapCanvas.setDestinationCrs(coordRefSys)
-            elif QGis.QGIS_VERSION_INT >= 10900:
-                mapCanvas.mapRenderer().setDestinationCrs(coordRefSys)
-            else:
-                mapCanvas.mapRenderer().setDestinationSrs(coordRefSys)
+            mapCanvas.setDestinationCrs(coordRefSys)
             mapCanvas.freeze(False)
-            mapCanvas.setMapUnits(coordRefSys.mapUnits())
             mapCanvas.setExtent(extMap)
 
     def projectLoaded(self):
         # replace old OpenlayersLayer with GDAL TMS (OL plugin <= 1.3.6)
         rootGroup = self.iface.layerTreeView().layerTreeModel().rootGroup()
-        for layer in QgsMapLayerRegistry.instance().mapLayers().values():
+        for layer in QgsProject.instance().mapLayers().values():
             if layer.type() == QgsMapLayer.PluginLayer and layer.pluginLayerType() == OpenlayersLayer.LAYER_TYPE:
                 if layer.layerType.hasGdalTMS():
                     # replace layer
@@ -281,7 +269,7 @@ class OpenlayersPlugin:
                         self.replaceLayer(rootGroup, layer, gdalTMSLayer)
 
     def _hasOlLayer(self):
-        for layer in QgsMapLayerRegistry.instance().mapLayers().values():
+        for layer in QgsProject.instance().mapLayers().values():
             if layer.customProperty('ol_layer_type'):
                 return True
         return False
@@ -323,12 +311,12 @@ class OpenlayersPlugin:
             if QgsLayerTree.isLayer(child):
                 if child.layerId() == oldLayer.id():
                     # insert new layer
-                    QgsMapLayerRegistry.instance().addMapLayer(newLayer, False)
+                    QgsProject.instance().addMapLayer(newLayer, False)
                     newLayerNode = group.insertLayer(index, newLayer)
                     newLayerNode.setVisible(child.isVisible())
 
                     # remove old layer
-                    QgsMapLayerRegistry.instance().removeMapLayer(
+                    QgsProject.instance().removeMapLayer(
                         oldLayer.id())
 
                     msg = "Updated layer '%s' from old \
@@ -386,7 +374,8 @@ class OpenlayersPlugin:
             self.iface.mainWindow(), "API key",
             "Enter your Google Maps API key", QLineEdit.Normal, apiKey)
         if ok:
-            QSettings().setValue("Plugin-OpenLayers/googleMapsApiKey", newApiKey)
+            QSettings().setValue("Plugin-OpenLayers/googleMapsApiKey",
+                                 newApiKey)
 
     def showThunderforestApiKeyDialog(self):
         apiKey = QSettings().value("Plugin-OpenLayers/thunderforestApiKey")

@@ -23,5 +23,5 @@ email                : pka at sourcepole.ch
 
 
 def classFactory(iface):
-    from openlayers_plugin import OpenlayersPlugin
+    from .openlayers_plugin import OpenlayersPlugin
     return OpenlayersPlugin(iface)

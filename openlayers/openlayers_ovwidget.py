@@ -21,21 +21,20 @@
 """
 import os.path
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.QtNetwork import *
-from qgis import core, gui, utils
+from PyQt5.QtCore import QObject, QTimer, Qt, QUrl
+from PyQt5.QtWidgets import (QWidget, QMessageBox, QApplication, QFileDialog,
+                             QDockWidget)
+from PyQt5.QtGui import QIcon, QPainter, QImage
+from PyQt5.QtNetwork import QNetworkAccessManager
+from qgis.core import (QgsGeometry, QgsPointXY as QgsPoint, QgsRectangle,
+                       QgsCoordinateReferenceSystem, QgsCoordinateTransform,
+                       QgsProject)
+from qgis.gui import QgsVertexMarker, QgsMapCanvas
 
-try:
-    from PyQt4.QtCore import QString
-except ImportError:
-    # we are using Python3 so QString is not defined
-    QString = type("")
+from .tools_network import getProxy
+from . import bindogr
 
-from tools_network import getProxy
-import bindogr
-
-from ui_openlayers_ovwidget import Ui_Form
+from .ui_openlayers_ovwidget import Ui_Form
 
 
 class MarkerCursor(QObject):
@@ -53,9 +52,9 @@ class MarkerCursor(QObject):
     def __refresh(self, pointCenter):
         if self.__marker is not None:
             self.reset()
-        self.__marker = gui.QgsVertexMarker(self.__canvas)
+        self.__marker = QgsVertexMarker(self.__canvas)
         self.__marker.setCenter(pointCenter)
-        self.__marker.setIconType(gui.QgsVertexMarker.ICON_X)
+        self.__marker.setIconType(QgsVertexMarker.ICON_X)
         self.__marker.setPenWidth(4)
 
     def setVisible(self, visible):
@@ -66,21 +65,21 @@ class MarkerCursor(QObject):
         del self.__marker
         self.__marker = None
 
-    @pyqtSlot(str)
     def changeMarker(self, strListExtent):
         if not self.__showMarker:
             return
         # left, bottom, right, top
         left, bottom, right, top = [float(item) for item in
                                     strListExtent.split(',')]
-        pointCenter = core.QgsRectangle(core.QgsPoint(left, top),
-                                        core.QgsPoint(right, bottom)).center()
-        crsCanvas = self.__canvas.mapRenderer().destinationCrs()
+        pointCenter = QgsRectangle(QgsPoint(left, top),
+                                   QgsPoint(right, bottom)).center()
+        crsCanvas = self.__canvas.mapSettings().destinationCrs()
         if self.__srsOL != crsCanvas:
-            coodTrans = core.QgsCoordinateTransform(self.__srsOL, crsCanvas)
+            coodTrans = QgsCoordinateTransform(self.__srsOL, crsCanvas,
+                                               QgsProject.instance())
             pointCenter = coodTrans.transform(
                 pointCenter,
-                core.QgsCoordinateTransform.ForwardTransform)
+                QgsCoordinateTransform.ForwardTransform)
         self.__refresh(pointCenter)
 
 
@@ -95,8 +94,8 @@ class OpenLayersOverviewWidget(QWidget, Ui_Form):
         self.__olLayerTypeRegistry = olLayerTypeRegistry
         self.__initLayerOL = False
         self.__fileNameImg = ''
-        self.__srsOL = core.QgsCoordinateReferenceSystem(
-            3857, core.QgsCoordinateReferenceSystem.EpsgCrsId)
+        self.__srsOL = QgsCoordinateReferenceSystem(
+            3857, QgsCoordinateReferenceSystem.EpsgCrsId)
         self.__marker = MarkerCursor(self.__canvas, self.__srsOL)
         self.__manager = None  # Need persist for PROXY
         bindogr.initOgr()
@@ -125,11 +124,9 @@ class OpenLayersOverviewWidget(QWidget, Ui_Form):
         self.__marker.reset()
     # Disconnect Canvas
     # Canvas
-        self.disconnect(self.__canvas, SIGNAL("extentsChanged()"),
-                        self.__signal_canvas_extentsChanged)
+        QgsMapCanvas.extentsChanged.disconnect(self.__canvas)
     # Doc WidgetparentWidget
-        self.disconnect(self.__dockwidget, SIGNAL("visibilityChanged (bool)"),
-                        self.__signal_DocWidget_visibilityChanged)
+        QDockWidget.visibilityChanged.disconnect(self.__dockwidget)
 
     def __populateButtonBox(self):
         pathPlugin = "%s%s%%s" % (os.path.dirname(__file__), os.path.sep)
@@ -148,38 +145,37 @@ class OpenLayersOverviewWidget(QWidget, Ui_Form):
         totalLayers = len(self.__olLayerTypeRegistry.types())
         for id in range(totalLayers):
             layer = self.__olLayerTypeRegistry.getById(id)
-            name = QString(layer.displayName)
+            name = str(layer.displayName)
             icon = QIcon(pathPlugin % layer.groupIcon)
             self.comboBoxTypeMap.addItem(icon, name, id)
 
     def __setConnections(self):
         # Check Box
-        self.connect(self.checkBoxEnableMap, SIGNAL("stateChanged (int)"),
-                     self.__signal_checkBoxEnableMap_stateChanged)
-        self.connect(self.checkBoxHideCross, SIGNAL("stateChanged (int)"),
-                     self.__signal_checkBoxHideCross_stateChanged)
+        self.checkBoxEnableMap.stateChanged.connect(
+            self.__signal_checkBoxEnableMap_stateChanged)
+        self.checkBoxHideCross.stateChanged.connect(
+            self.__signal_checkBoxHideCross_stateChanged)
         # comboBoxTypeMap
-        self.connect(self.comboBoxTypeMap, SIGNAL(
-            " currentIndexChanged (int)"),
-                     self.__signal_comboBoxTypeMap_currentIndexChanged)
+        self.comboBoxTypeMap.currentIndexChanged.connect(
+            self.__signal_comboBoxTypeMap_currentIndexChanged)
         # Canvas
-        self.connect(self.__canvas, SIGNAL("extentsChanged()"),
-                     self.__signal_canvas_extentsChanged)
+        self.__canvas.extentsChanged.connect(
+            self.__signal_canvas_extentsChanged)
         # Doc WidgetparentWidget
-        self.connect(self.__dockwidget, SIGNAL("visibilityChanged (bool)"),
-                     self.__signal_DocWidget_visibilityChanged)
+        self.__dockwidget.visibilityChanged.connect(
+            self.__signal_DocWidget_visibilityChanged)
         # WebView Map
-        self.connect(self.webViewMap.page().mainFrame(), SIGNAL(
-            "javaScriptWindowObjectCleared()"), self.__registerObjJS)
+        self.webViewMap.page().mainFrame().javaScriptWindowObjectCleared.connect(
+            self.__registerObjJS)
         # Push Button
-        self.connect(self.pbRefresh, SIGNAL("clicked (bool)"),
-                     self.__signal_pbRefresh_clicked)
-        self.connect(self.pbAddRaster, SIGNAL("clicked (bool)"),
-                     self.__signal_pbAddRaster_clicked)
-        self.connect(self.pbCopyKml, SIGNAL("clicked (bool)"),
-                     self.__signal_pbCopyKml_clicked)
-        self.connect(self.pbSaveImg, SIGNAL("clicked (bool)"),
-                     self.__signal_pbSaveImg_clicked)
+        self.pbRefresh.clicked.connect(
+            self.__signal_pbRefresh_clicked)
+        self.pbAddRaster.clicked.connect(
+            self.__signal_pbAddRaster_clicked)
+        self.pbCopyKml.clicked.connect(
+            self.__signal_pbCopyKml_clicked)
+        self.pbSaveImg.clicked.connect(
+            self.__signal_pbSaveImg_clicked)
 
     def __registerObjJS(self):
         self.webViewMap.page().mainFrame().addToJavaScriptWindowObject(
@@ -256,14 +252,15 @@ class OpenLayersOverviewWidget(QWidget, Ui_Form):
         # Extent Openlayers
         action = "map.getExtent().toGeometry().toString();"
         wkt = self.webViewMap.page().mainFrame().evaluateJavaScript(action)
-        rect = core.QgsGeometry.fromWkt(wkt).boundingBox()
-        srsGE = core.QgsCoordinateReferenceSystem(
-            4326, core.QgsCoordinateReferenceSystem.EpsgCrsId)
-        coodTrans = core.QgsCoordinateTransform(self.__srsOL, srsGE)
+        rect = QgsGeometry.fromWkt(wkt).boundingBox()
+        srsGE = QgsCoordinateReferenceSystem(
+            4326, QgsCoordinateReferenceSystem.EpsgCrsId)
+        coodTrans = QgsCoordinateTransform(self.__srsOL, srsGE,
+                                           QgsProject.instance())
         rect = coodTrans.transform(
-            rect, core.QgsCoordinateTransform.ForwardTransform)
-        line = core.QgsGeometry.fromRect(rect).asPolygon()[0]
-        wkt = str(core.QgsGeometry.fromPolyline(line).exportToWkt())
+            rect, QgsCoordinateTransform.ForwardTransform)
+        line = QgsGeometry.fromRect(rect).asPolygon()[0]
+        wkt = str(QgsGeometry.fromPolyline(line).exportToWkt())
         # Kml
         proj4 = str(srsGE.toProj4())
         kmlLine = bindogr.exportKml(wkt, proj4)
@@ -314,18 +311,16 @@ class OpenLayersOverviewWidget(QWidget, Ui_Form):
             self.__checkMapReady()
         self.lbStatusRead.setVisible(False)
         self.webViewMap.setVisible(True)
-        self.disconnect(self.webViewMap.page().mainFrame(),
-                        SIGNAL("loadFinished (bool)"),
-                        self.__signal_webViewMap_loadFinished)
+        self.webViewMap.page().mainFrame().loadFinished.disconnect(
+            self.__signal_webViewMap_loadFinished)
 
     def __setWebViewMap(self, id):
         layer = self.__olLayerTypeRegistry.getById(id)
         self.lbStatusRead.setText("Loading " + layer.displayName + " ...")
         self.lbStatusRead.setVisible(True)
         self.webViewMap.setVisible(False)
-        self.connect(self.webViewMap.page().mainFrame(),
-                     SIGNAL("loadFinished (bool)"),
-                     self.__signal_webViewMap_loadFinished)
+        self.webViewMap.page().mainFrame().loadFinished.connect(
+            self.__signal_webViewMap_loadFinished)
         url = layer.html_url()
         self.webViewMap.page().mainFrame().load(QUrl(url))
 
@@ -349,9 +344,10 @@ class OpenLayersOverviewWidget(QWidget, Ui_Form):
 
     def __getCenterLongLat2OL(self):
         pntCenter = self.__canvas.extent().center()
-        crsCanvas = self.__canvas.mapRenderer().destinationCrs()
+        crsCanvas = self.__canvas.mapSettings().destinationCrs()
         if crsCanvas != self.__srsOL:
-            coodTrans = core.QgsCoordinateTransform(crsCanvas, self.__srsOL)
+            coodTrans = QgsCoordinateTransform(crsCanvas, self.__srsOL,
+                                               QgsProject.instance())
             pntCenter = coodTrans.transform(
-                pntCenter, core.QgsCoordinateTransform.ForwardTransform)
+                pntCenter, QgsCoordinateTransform.ForwardTransform)
         return tuple([pntCenter.x(), pntCenter.y()])

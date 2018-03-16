@@ -19,14 +19,17 @@ email                : pka at sourcepole.ch
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.QtWebKit import *
-from PyQt4.QtNetwork import *
-from qgis.core import *
-from qgis.gui import *
 
-from tools_network import getProxy
+from PyQt5.QtCore import (QUrl, Qt, QMetaObject, QTimer, QEventLoop,
+                          QSize, QObject, pyqtSignal, qDebug)
+from PyQt5.QtGui import QImage, QPainter
+from PyQt5.QtNetwork import QNetworkAccessManager
+from PyQt5.QtWebKitWidgets import QWebPage
+from qgis.core import (QgsMapLayerRenderer, Qgis as QGis, QgsMessageLog,
+                       QgsPluginLayer, QgsRectangle)
+from qgis.gui import QgsMessageBar
+
+from .tools_network import getProxy
 
 
 debuglevel = 4  # 0 (none) - 4 (all)
@@ -117,7 +120,6 @@ class OpenlayersController(QObject):
         self.timerMax.setInterval(5000)
         self.timerMax.timeout.connect(self.mapTimeout)
 
-    @pyqtSlot()
     def request(self):
         debug("[GUI THREAD] Processing request", 3)
         self.cancelled = False

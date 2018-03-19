@@ -21,12 +21,12 @@
 """
 import os.path
 
-from PyQt5.QtCore import QObject, QTimer, Qt, QUrl
+from PyQt5.QtCore import QObject, QTimer, Qt, QUrl, pyqtSlot
 from PyQt5.QtWidgets import (QWidget, QMessageBox, QApplication, QFileDialog,
                              QDockWidget)
 from PyQt5.QtGui import QIcon, QPainter, QImage
 from PyQt5.QtNetwork import QNetworkAccessManager
-from qgis.core import (QgsGeometry, QgsPointXY as QgsPoint, QgsRectangle,
+from qgis.core import (QgsGeometry, QgsPointXY, QgsRectangle,
                        QgsCoordinateReferenceSystem, QgsCoordinateTransform,
                        QgsProject)
 from qgis.gui import QgsVertexMarker, QgsMapCanvas
@@ -65,14 +65,15 @@ class MarkerCursor(QObject):
         del self.__marker
         self.__marker = None
 
+    @pyqtSlot(str)
     def changeMarker(self, strListExtent):
         if not self.__showMarker:
             return
         # left, bottom, right, top
         left, bottom, right, top = [float(item) for item in
                                     strListExtent.split(',')]
-        pointCenter = QgsRectangle(QgsPoint(left, top),
-                                   QgsPoint(right, bottom)).center()
+        pointCenter = QgsRectangle(QgsPointXY(left, top),
+                                   QgsPointXY(right, bottom)).center()
         crsCanvas = self.__canvas.mapSettings().destinationCrs()
         if self.__srsOL != crsCanvas:
             coodTrans = QgsCoordinateTransform(self.__srsOL, crsCanvas,
@@ -260,7 +261,7 @@ class OpenLayersOverviewWidget(QWidget, Ui_Form):
         rect = coodTrans.transform(
             rect, QgsCoordinateTransform.ForwardTransform)
         line = QgsGeometry.fromRect(rect).asPolygon()[0]
-        wkt = str(QgsGeometry.fromPolyline(line).exportToWkt())
+        wkt = str(QgsGeometry.fromPolylineXY(line).asWkt())
         # Kml
         proj4 = str(srsGE.toProj4())
         kmlLine = bindogr.exportKml(wkt, proj4)
@@ -279,6 +280,8 @@ class OpenLayersOverviewWidget(QWidget, Ui_Form):
         clipBoard.setText(kml)
 
     def __signal_pbSaveImg_clicked(self, cheked):
+        if type(self.__fileNameImg) == tuple:
+            self.__fileNameImg = self.__fileNameImg[0]
         fileName = QFileDialog.getSaveFileName(self,
                                                QApplication.translate(
                                                    "OpenLayersOverviewWidget",
@@ -297,7 +300,7 @@ class OpenLayersOverviewWidget(QWidget, Ui_Form):
         imgPainter.begin(img)
         self.webViewMap.page().mainFrame().render(imgPainter)
         imgPainter.end()
-        img.save(fileName, "JPEG")
+        img.save(fileName[0], "JPEG")
 
     def __signal_webViewMap_loadFinished(self, ok):
         if ok is False:

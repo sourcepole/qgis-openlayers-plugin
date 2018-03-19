@@ -26,12 +26,11 @@ from PyQt5.QtWidgets import (QApplication, QLineEdit, QInputDialog, QAction,
 from PyQt5.QtGui import QIcon
 from PyQt5.QtNetwork import (QNetworkProxyFactory, QNetworkProxyQuery,
                              QNetworkProxy)
-from qgis.core import (QgsCoordinateTransform, Qgis as QGis, QgsProject,
+from qgis.core import (QgsCoordinateTransform, Qgis, QgsProject,
                        QgsPluginLayerRegistry, QgsLayerTree, QgsMapLayer,
                        QgsRasterLayer, QgsMessageLog)
-from qgis.gui import QgsMessageBar
 
-# from . import resources_rc
+from . import resources_rc
 from .about_dialog import AboutDialog
 from .openlayers_overview import OLOverview
 from .openlayers_layer import OpenlayersLayer
@@ -221,7 +220,7 @@ class OpenlayersPlugin:
                 msg = "Printing and rotating of Javascript API " \
                       "based layers is currently not supported!"
                 self.iface.messageBar().pushMessage(
-                    "OpenLayers Plugin", msg, level=QgsMessageBar.WARNING,
+                    "OpenLayers Plugin", msg, level=Qgis.MessageLevel(1),
                     duration=5)
 
     def setReferenceLayer(self, layer):
@@ -229,12 +228,8 @@ class OpenlayersPlugin:
 
     def removeLayer(self, layerId):
         if self.layer is not None:
-            if QGis.QGIS_VERSION_INT >= 10900:
-                if self.layer.id() == layerId:
-                    self.layer = None
-            else:
-                if self.layer.getLayerID() == layerId:
-                    self.layer = None
+            if self.layer.id() == layerId:
+                self.layer = None
             # TODO: switch to next available OpenLayers layer?
 
     def canvasCrs(self):
@@ -322,7 +317,7 @@ class OpenlayersPlugin:
                     msg = "Updated layer '%s' from old \
                      OpenLayers Plugin version" % newLayer.name()
                     self.iface.messageBar().pushMessage(
-                        "OpenLayers Plugin", msg, level=QgsMessageBar.INFO)
+                        "OpenLayers Plugin", msg, level=Qgis.MessageLevel(0))
                     QgsMessageLog.logMessage(
                         msg, "OpenLayers Plugin", QgsMessageLog.INFO)
 

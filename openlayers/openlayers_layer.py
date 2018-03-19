@@ -21,13 +21,12 @@ email                : pka at sourcepole.ch
 """
 
 from PyQt5.QtCore import (QUrl, Qt, QMetaObject, QTimer, QEventLoop,
-                          QSize, QObject, pyqtSignal, qDebug)
+                          QSize, QObject, pyqtSignal, qDebug, pyqtSlot)
 from PyQt5.QtGui import QImage, QPainter
 from PyQt5.QtNetwork import QNetworkAccessManager
 from PyQt5.QtWebKitWidgets import QWebPage
-from qgis.core import (QgsMapLayerRenderer, Qgis as QGis, QgsMessageLog,
+from qgis.core import (QgsMapLayerRenderer, Qgis, QgsMessageLog,
                        QgsPluginLayer, QgsRectangle)
-from qgis.gui import QgsMessageBar
 
 from .tools_network import getProxy
 
@@ -39,7 +38,7 @@ def debug(msg, verbosity=1):
     if debuglevel >= verbosity:
         try:
             qDebug(msg)
-        except:
+        except Exception:
             pass
 
 
@@ -120,6 +119,7 @@ class OpenlayersController(QObject):
         self.timerMax.setInterval(5000)
         self.timerMax.timeout.connect(self.mapTimeout)
 
+    @pyqtSlot()
     def request(self):
         debug("[GUI THREAD] Processing request", 3)
         self.cancelled = False
@@ -404,14 +404,12 @@ class OpenlayersLayer(QgsPluginLayer):
             # Set default layer type
             self.setLayerType(
                 self.olLayerTypeRegistry.getByName("OpenStreetMap"))
-            if QGis.QGIS_VERSION_INT >= 20300:
-                msg = "Obsolete or unknown layer type '%s', using OpenStreetMap\
-                 instead" % ol_layer_type_name
-                self.iface.messageBar().pushMessage("OpenLayers Plugin", msg,
-                                                    level=QgsMessageBar.
-                                                    WARNING)
-                QgsMessageLog.logMessage(msg, "OpenLayers Plugin",
-                                         QgsMessageLog.WARNING)
+            msg = "Obsolete or unknown layer type '%s', using OpenStreetMap\
+             instead" % ol_layer_type_name
+            self.iface.messageBar().pushMessage("OpenLayers Plugin", msg,
+                                                level=Qgis.MessageLevel(1))
+            QgsMessageLog.logMessage(msg, "OpenLayers Plugin",
+                                     QgsMessageLog.WARNING)
 
         return True
 

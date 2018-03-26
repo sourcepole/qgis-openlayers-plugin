@@ -20,8 +20,8 @@ email                : pka at sourcepole.ch
  ***************************************************************************/
 """
 
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QAction, QMenu
+from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtWidgets import QAction, QMenu
 from qgis.core import Qgis as QGis, QgsCoordinateReferenceSystem
 import os
 import sys

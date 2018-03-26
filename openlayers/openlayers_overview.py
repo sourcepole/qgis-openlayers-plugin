@@ -18,8 +18,8 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QDockWidget
+from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtWidgets import QApplication, QDockWidget
 from .openlayers_ovwidget import OpenLayersOverviewWidget
 
 

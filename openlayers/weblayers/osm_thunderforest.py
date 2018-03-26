@@ -21,7 +21,7 @@ email                : pka at sourcepole.ch
 """
 
 from .weblayer import WebLayer3857
-from PyQt5.QtCore import QSettings
+from qgis.PyQt.QtCore import QSettings
 
 
 class OlOSMThunderforest(WebLayer3857):

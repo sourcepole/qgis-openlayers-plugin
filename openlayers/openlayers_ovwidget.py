@@ -21,16 +21,15 @@
 """
 import os.path
 
-from PyQt5.QtCore import QObject, QTimer, Qt, QUrl, pyqtSlot
-from PyQt5.QtWidgets import (QWidget, QMessageBox, QApplication, QFileDialog,
-                             QDockWidget)
-from PyQt5.QtGui import QIcon, QPainter, QImage
-from PyQt5.QtNetwork import QNetworkAccessManager
+from qgis.PyQt.QtCore import QObject, QTimer, Qt, QUrl, pyqtSlot
+from qgis.PyQt.QtWidgets import (QWidget, QMessageBox, QApplication,
+                                 QFileDialog, QDockWidget)
+from qgis.PyQt.QtGui import QIcon, QPainter, QImage
+from qgis.PyQt.QtNetwork import QNetworkAccessManager
 from qgis.core import (QgsGeometry, QgsPointXY, QgsRectangle,
                        QgsCoordinateReferenceSystem, QgsCoordinateTransform,
-                       QgsProject)
+                       QgsProject, QgsLogger)
 from qgis.gui import QgsVertexMarker, QgsMapCanvas
-
 from .tools_network import getProxy
 from . import bindogr
 
@@ -337,13 +336,16 @@ class OpenLayersOverviewWidget(QWidget, Ui_Form):
             self.__timerMapReady.start()
 
     def __refreshMapOL(self):
-        action = "map.setCenter(new OpenLayers.LonLat(%f, %f));" % (
-            self.__getCenterLongLat2OL())
-        self.webViewMap.page().mainFrame().evaluateJavaScript(action)
-        action = "map.zoomToScale(%f);" % self.__canvas.scale()
-        self.webViewMap.page().mainFrame().evaluateJavaScript(action)
-        self.webViewMap.page().mainFrame().evaluateJavaScript(
-            "oloMarker.changeMarker();")
+        try:
+            action = "map.setCenter(new OpenLayers.LonLat(%f, %f));" % (
+                self.__getCenterLongLat2OL())
+            self.webViewMap.page().mainFrame().evaluateJavaScript(action)
+            action = "map.zoomToScale(%f);" % self.__canvas.scale()
+            self.webViewMap.page().mainFrame().evaluateJavaScript(action)
+            self.webViewMap.page().mainFrame().evaluateJavaScript(
+                "oloMarker.changeMarker();")
+        except Exception as e:
+            QgsLogger().warning(e.args[0])
 
     def __getCenterLongLat2OL(self):
         pntCenter = self.__canvas.extent().center()

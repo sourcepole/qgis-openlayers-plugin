@@ -20,7 +20,7 @@ email                : pka at sourcepole.ch
  ***************************************************************************/
 """
 
-from PyQt5.QtCore import QSettings
+from qgis.PyQt.QtCore import QSettings
 from .weblayer import WebLayer3857
 
 

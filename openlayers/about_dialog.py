@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QDialog
+from qgis.PyQt.QtWidgets import QDialog
 from .ui_about_dialog import Ui_dlgAbout
 
 

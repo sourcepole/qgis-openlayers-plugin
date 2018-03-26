@@ -20,11 +20,11 @@ email                : pka at sourcepole.ch
  ***************************************************************************/
 """
 
-from PyQt5.QtCore import (QUrl, Qt, QMetaObject, QTimer, QEventLoop,
-                          QSize, QObject, pyqtSignal, qDebug, pyqtSlot)
-from PyQt5.QtGui import QImage, QPainter
-from PyQt5.QtNetwork import QNetworkAccessManager
-from PyQt5.QtWebKitWidgets import QWebPage
+from qgis.PyQt.QtCore import (QUrl, Qt, QMetaObject, QTimer, QEventLoop,
+                              QSize, QObject, pyqtSignal, qDebug, pyqtSlot)
+from qgis.PyQt.QtGui import QImage, QPainter
+from qgis.PyQt.QtNetwork import QNetworkAccessManager
+from qgis.PyQt.QtWebKitWidgets import QWebPage
 from qgis.core import (QgsMapLayerRenderer, Qgis, QgsMessageLog,
                        QgsPluginLayer, QgsRectangle)
 

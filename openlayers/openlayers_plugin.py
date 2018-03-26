@@ -20,12 +20,12 @@ email                : pka at sourcepole.ch
  ***************************************************************************/
 """
 # Import the PyQt and QGIS libraries
-from PyQt5.QtCore import (QUrl, QSettings, QT_VERSION, QTranslator)
-from PyQt5.QtWidgets import (QApplication, QLineEdit, QInputDialog, QAction,
-                             QMenu)
-from PyQt5.QtGui import QIcon
-from PyQt5.QtNetwork import (QNetworkProxyFactory, QNetworkProxyQuery,
-                             QNetworkProxy)
+from qgis.PyQt.QtCore import (QUrl, QSettings, QT_VERSION, QTranslator)
+from qgis.PyQt.QtWidgets import (QApplication, QLineEdit, QInputDialog,
+                                 QAction, QMenu)
+from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtNetwork import (QNetworkProxyFactory, QNetworkProxyQuery,
+                                 QNetworkProxy)
 from qgis.core import (QgsCoordinateTransform, Qgis, QgsProject,
                        QgsPluginLayerRegistry, QgsLayerTree, QgsMapLayer,
                        QgsRasterLayer, QgsMessageLog)

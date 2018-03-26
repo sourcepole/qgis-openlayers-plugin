@@ -20,7 +20,7 @@ email                : pka at sourcepole.ch
  ***************************************************************************/
 """
 from qgis.core import QgsPluginLayerType
-from openlayers_layer import OpenlayersLayer
+from .openlayers_layer import OpenlayersLayer
 
 
 class OpenlayersPluginLayerType(QgsPluginLayerType):

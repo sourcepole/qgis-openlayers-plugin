@@ -20,7 +20,7 @@ email                : pka at sourcepole.ch
  ***************************************************************************/
 """
 
-from weblayer import WebLayer3857
+from .weblayer import WebLayer3857
 
 
 class OlOSMLayer(WebLayer3857):
@@ -28,17 +28,20 @@ class OlOSMLayer(WebLayer3857):
     emitsLoadEnd = True
 
     def __init__(self, name, html, gdalTMS=None):
-        WebLayer3857.__init__(self, groupName="OpenStreetMap", groupIcon="osm_icon.png",
+        WebLayer3857.__init__(self, groupName="OpenStreetMap",
+                              groupIcon="osm_icon.png",
                               name=name, html=html, gdalTMS=gdalTMS)
 
 
 class OlOpenStreetMapLayer(OlOSMLayer):
 
     def __init__(self):
-        OlOSMLayer.__init__(self, name='OpenStreetMap', html='osm.html', gdalTMS='osm.xml')
+        OlOSMLayer.__init__(self, name='OpenStreetMap', html='osm.html',
+                            gdalTMS='osm.xml')
 
 
 class OlOSMHumanitarianDataModelLayer(OlOSMLayer):
 
     def __init__(self):
-        OlOSMLayer.__init__(self, name='OSM Humanitarian Data Model', html='osm_hdm.html', gdalTMS='osm_hdm.xml')
+        OlOSMLayer.__init__(self, name='OSM Humanitarian Data Model',
+                            html='osm_hdm.html', gdalTMS='osm_hdm.xml')

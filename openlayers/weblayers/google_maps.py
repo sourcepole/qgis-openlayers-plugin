@@ -20,8 +20,8 @@ email                : pka at sourcepole.ch
  ***************************************************************************/
 """
 
-from PyQt4.QtCore import QSettings
-from weblayer import WebLayer3857
+from qgis.PyQt.QtCore import QSettings
+from .weblayer import WebLayer3857
 
 
 class OlGoogleMapsLayer(WebLayer3857):
@@ -29,35 +29,41 @@ class OlGoogleMapsLayer(WebLayer3857):
     emitsLoadEnd = True
 
     def __init__(self, name, html):
-        WebLayer3857.__init__(self, groupName="Google Maps", groupIcon="google_icon.png",
-                              name=name, html=html)
+        WebLayer3857.__init__(self, groupName="Google Maps",
+                              groupIcon="google_icon.png", name=name,
+                              html=html)
 
     def html_url(self):
         url = WebLayer3857.html_url(self)
         apiKey = QSettings().value("Plugin-OpenLayers/googleMapsApiKey")
-        if apiKey != None and bool(apiKey.strip()):
+        if apiKey is not None and bool(apiKey.strip()):
             url += "?key=%s" % apiKey
         return url
+
 
 class OlGooglePhysicalLayer(OlGoogleMapsLayer):
 
     def __init__(self):
-        OlGoogleMapsLayer.__init__(self, name="Google Physical", html="google_physical.html")
+        OlGoogleMapsLayer.__init__(self, name="Google Physical",
+                                   html="google_physical.html")
 
 
 class OlGoogleStreetsLayer(OlGoogleMapsLayer):
 
     def __init__(self):
-        OlGoogleMapsLayer.__init__(self, name='Google Streets', html='google_streets.html')
+        OlGoogleMapsLayer.__init__(self, name='Google Streets',
+                                   html='google_streets.html')
 
 
 class OlGoogleHybridLayer(OlGoogleMapsLayer):
 
     def __init__(self):
-        OlGoogleMapsLayer.__init__(self, name='Google Hybrid', html='google_hybrid.html')
+        OlGoogleMapsLayer.__init__(self, name='Google Hybrid',
+                                   html='google_hybrid.html')
 
 
 class OlGoogleSatelliteLayer(OlGoogleMapsLayer):
 
     def __init__(self):
-        OlGoogleMapsLayer.__init__(self, name='Google Satellite', html='google_satellite.html')
+        OlGoogleMapsLayer.__init__(self, name='Google Satellite',
+                                   html='google_satellite.html')

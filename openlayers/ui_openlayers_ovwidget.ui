@@ -65,7 +65,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QWebView" name="webViewMap"/>
+    <widget class="QWebView" name="webViewMap" native="true"/>
    </item>
    <item>
     <layout class="QHBoxLayout" name="lytHideCross">

@@ -21,6 +21,7 @@ email                : pka at sourcepole.ch
  This script initializes the plugin, making it known to QGIS.
 """
 
+
 def classFactory(iface):
-  from openlayers_plugin import OpenlayersPlugin
-  return OpenlayersPlugin(iface)
+    from .openlayers_plugin import OpenlayersPlugin
+    return OpenlayersPlugin(iface)

@@ -18,9 +18,9 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QApplication, QDockWidget
-from openlayers_ovwidget import OpenLayersOverviewWidget
+from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtWidgets import QApplication, QDockWidget
+from .openlayers_ovwidget import OpenLayersOverviewWidget
 
 
 class OLOverview(object):
@@ -33,9 +33,13 @@ class OLOverview(object):
 
     # Private
     def _setDocWidget(self):
-        self._dockwidget = QDockWidget(QApplication.translate("OpenLayersOverviewWidget", "OpenLayers Overview"), self._iface.mainWindow())
+        self._dockwidget = QDockWidget(QApplication.translate(
+            "OpenLayersOverviewWidget", "OpenLayers Overview"),
+                                       self._iface.mainWindow())
         self._dockwidget.setObjectName("dwOpenlayersOverview")
-        self._oloWidget = OpenLayersOverviewWidget(self._iface, self._dockwidget, self._olLayerTypeRegistry)
+        self._oloWidget = OpenLayersOverviewWidget(self._iface,
+                                                   self._dockwidget,
+                                                   self._olLayerTypeRegistry)
         self._dockwidget.setWidget(self._oloWidget)
 
     def _initGui(self):
@@ -54,5 +58,5 @@ class OLOverview(object):
             if self._dockwidget is None:
                 self._initGui()
         else:
-            if not self._dockwidget is None:
+            if self._dockwidget is not None:
                 self._unload()

@@ -20,8 +20,9 @@ email                : pka at sourcepole.ch
  ***************************************************************************/
 """
 
-from PyQt4.QtGui import QAction, QIcon, QMenu
-from qgis.core import QGis, QgsCoordinateReferenceSystem
+from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtWidgets import QAction, QMenu
+from qgis.core import Qgis as QGis, QgsCoordinateReferenceSystem
 import os
 import sys
 
@@ -31,7 +32,8 @@ class WebLayerGroup:
 
     def __init__(self, name, icon):
         self._menu = QMenu(name)
-        self._menu.setIcon(QIcon(os.path.join(":/plugins/openlayers/weblayers/icons", icon)))
+        self._menu.setIcon(QIcon(os.path.join(
+            ":/plugins/openlayers/weblayers/icons", icon)))
 
     def menu(self):
         return self._menu
@@ -48,21 +50,21 @@ class WebLayer:
 
     layerTypeId = None
     """Numerical ID used in versions < 2.3"""
-    #GOOGLE_TERRAIN => 0,
-    #GOOGLE_ROADMAP => 1,
-    #GOOGLE_HYBRID => 2,
-    #GOOGLE_SATELLITE => 3,
-    #OSM => 4,
-    #OCM => 5,
-    #OCM_LANDSCAPE => 6,
-    #OCM_PUBLIC_TRANSPORT => 7,
-    #YAHOO_STREET => 8,
-    #YAHOO_HYBRID => 9,
-    #YAHOO_SATELLITE => 10,
-    #BING_ROAD => 11,
-    #BING_AERIAL => 12,
-    #BING_AERIAL_WITH_LABELS => 13,
-    #APPLE_IPHOTO => 14
+    # GOOGLE_TERRAIN => 0,
+    # GOOGLE_ROADMAP => 1,
+    # GOOGLE_HYBRID => 2,
+    # GOOGLE_SATELLITE => 3,
+    # OSM => 4,
+    # OCM => 5,
+    # OCM_LANDSCAPE => 6,
+    # OCM_PUBLIC_TRANSPORT => 7,
+    # YAHOO_STREET => 8,
+    # YAHOO_HYBRID => 9,
+    # YAHOO_SATELLITE => 10,
+    # BING_ROAD => 11,
+    # BING_AERIAL => 12,
+    # BING_AERIAL_WITH_LABELS => 13,
+    # APPLE_IPHOTO => 14
 
     groupName = None
     """Group in menu"""
@@ -84,7 +86,8 @@ class WebLayer:
         self.displayName = name
         self.layerTypeName = name
         self._html = html
-        # optional GDAL TMS config to use as layer instead of an OpenlayersLayer
+        # optional GDAL TMS config to use as layer instead of an
+        # OpenlayersLayer
         # the OpenlayersLayer is still used in the OpenLayers Overview
         self._gdalTMS = gdalTMS
 
@@ -100,7 +103,7 @@ class WebLayer:
         self._addLayerCallback(self)
 
     def html_url(self):
-        dir = os.path.dirname(unicode(__file__, sys.getfilesystemencoding()))
+        dir = os.path.dirname(__file__)
         url = "file:///%s/html/%s" % (dir.replace("\\", "/"), self._html)
         return url
 
@@ -110,7 +113,8 @@ class WebLayer:
     def gdalTMSConfig(self):
         if self._gdalTMS is not None:
             # read GDAL TMS config from file
-            path = os.path.join(os.path.dirname(__file__), 'gdal_tms', self._gdalTMS)
+            path = os.path.join(os.path.dirname(__file__), 'gdal_tms',
+                                self._gdalTMS)
             f = open(path, 'r')
             config = f.read()
             f.close()
@@ -144,7 +148,8 @@ class WebLayer3857(WebLayer):
             idEpsgRSGoogle = epsg
             createCrs = coordRefSys.createFromEpsg(idEpsgRSGoogle)
         if not createCrs:
-            google_proj_def = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 "
+            google_proj_def = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +\
+            lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 "
             google_proj_def += "+units=m +nadgrids=@null +wktext +no_defs"
             isOk = coordRefSys.createFromProj4(google_proj_def)
             if not isOk:

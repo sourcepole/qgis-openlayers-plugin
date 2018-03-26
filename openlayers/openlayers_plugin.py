@@ -20,25 +20,46 @@ email                : pka at sourcepole.ch
  ***************************************************************************/
 """
 # Import the PyQt and QGIS libraries
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.QtNetwork import *
-from qgis.core import *
-from qgis.gui import *
-import resources_rc
-from about_dialog import AboutDialog
-from openlayers_overview import OLOverview
-from openlayers_layer import OpenlayersLayer
-from openlayers_plugin_layer_type import OpenlayersPluginLayerType
-from tools_network import getProxy
-from weblayers.weblayer_registry import WebLayerTypeRegistry
-from weblayers.google_maps import OlGooglePhysicalLayer, OlGoogleStreetsLayer, OlGoogleHybridLayer, OlGoogleSatelliteLayer
-from weblayers.osm import OlOpenStreetMapLayer, OlOSMHumanitarianDataModelLayer
-from weblayers.osm_thunderforest import OlOpenCycleMapLayer, OlOCMLandscapeLayer, OlOCMPublicTransportLayer, OlOCMOutdoorstLayer, OlOCMTransportDarkLayer, OlOCMSpinalMapLayer, OlOCMPioneerLayer, OlOCMMobileAtlasLayer, OlOCMNeighbourhoodLayer
-from weblayers.bing_maps import OlBingRoadLayer, OlBingAerialLayer, OlBingAerialLabelledLayer
-from weblayers.apple_maps import OlAppleiPhotoMapLayer
-from weblayers.osm_stamen import OlOSMStamenTonerLayer, OlOSMStamenTonerLiteLayer, OlOSMStamenWatercolorLayer, OlOSMStamenTerrainLayer
-from weblayers.wikimedia_maps import WikimediaLabelledLayer, WikimediaUnLabelledLayer
+from qgis.PyQt.QtCore import (QUrl, QSettings, QT_VERSION, QTranslator)
+from qgis.PyQt.QtWidgets import (QApplication, QLineEdit, QInputDialog,
+                                 QAction, QMenu)
+from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtNetwork import (QNetworkProxyFactory, QNetworkProxyQuery,
+                                 QNetworkProxy)
+from qgis.core import (QgsCoordinateTransform, Qgis, QgsProject,
+                       QgsPluginLayerRegistry, QgsLayerTree, QgsMapLayer,
+                       QgsRasterLayer, QgsMessageLog)
+
+from . import resources_rc
+from .about_dialog import AboutDialog
+from .openlayers_overview import OLOverview
+from .openlayers_layer import OpenlayersLayer
+from .openlayers_plugin_layer_type import OpenlayersPluginLayerType
+from .tools_network import getProxy
+from .weblayers.weblayer_registry import WebLayerTypeRegistry
+from .weblayers.google_maps import (OlGooglePhysicalLayer,
+                                    OlGoogleStreetsLayer, OlGoogleHybridLayer,
+                                    OlGoogleSatelliteLayer)
+from .weblayers.osm import (OlOpenStreetMapLayer,
+                            OlOSMHumanitarianDataModelLayer)
+from .weblayers.osm_thunderforest import (OlOpenCycleMapLayer,
+                                          OlOCMLandscapeLayer,
+                                          OlOCMPublicTransportLayer,
+                                          OlOCMOutdoorstLayer,
+                                          OlOCMTransportDarkLayer,
+                                          OlOCMSpinalMapLayer,
+                                          OlOCMPioneerLayer,
+                                          OlOCMMobileAtlasLayer,
+                                          OlOCMNeighbourhoodLayer)
+from .weblayers.bing_maps import (OlBingRoadLayer, OlBingAerialLayer,
+                                  OlBingAerialLabelledLayer)
+from .weblayers.apple_maps import OlAppleiPhotoMapLayer
+from .weblayers.osm_stamen import (OlOSMStamenTonerLayer,
+                                   OlOSMStamenTonerLiteLayer,
+                                   OlOSMStamenWatercolorLayer,
+                                   OlOSMStamenTerrainLayer)
+from .weblayers.wikimedia_maps import (WikimediaLabelledLayer,
+                                       WikimediaUnLabelledLayer)
 from osgeo import gdal
 import os.path
 import time
@@ -55,31 +76,33 @@ class OpenlayersPlugin:
         self._ol_layers = []
         # initialize locale
         locale = QSettings().value("locale/userLocale")[0:2]
-        localePath = os.path.join(self.plugin_dir, "i18n", "openlayers_{}.qm".format(locale))
+        localePath = os.path.join(self.plugin_dir, "i18n",
+                                  "openlayers_{}.qm".format(locale))
 
         if os.path.exists(localePath):
             self.translator = QTranslator()
             self.translator.load(localePath)
 
-            if qVersion() > '4.3.3':
-                QCoreApplication.installTranslator(self.translator)
-
         self._olLayerTypeRegistry = WebLayerTypeRegistry(self)
         self.olOverview = OLOverview(iface, self._olLayerTypeRegistry)
         self.dlgAbout = AboutDialog()
+        self.pluginLayerRegistry = QgsPluginLayerRegistry()
 
     def initGui(self):
         self._olMenu = QMenu("OpenLayers plugin")
         self._olMenu.setIcon(QIcon(":/plugins/openlayers/openlayers.png"))
 
         # Overview
-        self.overviewAddAction = QAction(QApplication.translate("OpenlayersPlugin", "OpenLayers Overview"), self.iface.mainWindow())
+        self.overviewAddAction = QAction(QApplication.translate(
+            "OpenlayersPlugin", "OpenLayers Overview"),
+                                         self.iface.mainWindow())
         self.overviewAddAction.setCheckable(True)
         self.overviewAddAction.setChecked(False)
-        QObject.connect(self.overviewAddAction, SIGNAL("toggled(bool)"), self.olOverview.setVisible)
+        self.overviewAddAction.toggled.connect(self.olOverview.setVisible)
         self._olMenu.addAction(self.overviewAddAction)
 
-        self._actionAbout = QAction("Terms of Service / About", self.iface.mainWindow())
+        self._actionAbout = QAction("Terms of Service / About",
+                                    self.iface.mainWindow())
         self._actionAbout.triggered.connect(self.dlgAbout.show)
         self._olMenu.addAction(self._actionAbout)
         self.dlgAbout.finished.connect(self._publicationInfoClosed)
@@ -131,26 +154,32 @@ class OpenlayersPlugin:
         # add action for API key dialogs
         for action in self._olMenu.actions():
             if action.text() == "Google Maps":
-                self._actionGoogleMapsApiKey = QAction("Set API key", self.iface.mainWindow())
-                self._actionGoogleMapsApiKey.triggered.connect(self.showGoogleMapsApiKeyDialog)
+                self._actionGoogleMapsApiKey = QAction(
+                    "Set API key", self.iface.mainWindow())
+                self._actionGoogleMapsApiKey.triggered.connect(
+                    self.showGoogleMapsApiKeyDialog)
                 action.menu().addAction(self._actionGoogleMapsApiKey)
             if action.text() == "OSM/Thunderforest":
-                self._actionThunderforestApiKey = QAction("Set API key", self.iface.mainWindow())
-                self._actionThunderforestApiKey.triggered.connect(self.showThunderforestApiKeyDialog)
+                self._actionThunderforestApiKey = QAction(
+                    "Set API key", self.iface.mainWindow())
+                self._actionThunderforestApiKey.triggered.connect(
+                    self.showThunderforestApiKeyDialog)
                 action.menu().addAction(self._actionThunderforestApiKey)
 
-        #Create Web menu, if it doesn't exist yet
+        # Create Web menu, if it doesn't exist yet
         self.iface.addPluginToWebMenu("_tmp", self._actionAbout)
         self._menu = self.iface.webMenu()
         self._menu.addMenu(self._olMenu)
         self.iface.removePluginWebMenu("_tmp", self._actionAbout)
 
         # Register plugin layer type
-        self.pluginLayerType = OpenlayersPluginLayerType(self.iface, self.setReferenceLayer,
-                                                    self._olLayerTypeRegistry)
-        QgsPluginLayerRegistry.instance().addPluginLayerType(self.pluginLayerType)
+        self.pluginLayerType = OpenlayersPluginLayerType(
+            self.iface, self.setReferenceLayer, self._olLayerTypeRegistry)
 
-        QObject.connect(QgsProject.instance(), SIGNAL("readProject(const QDomDocument &)"), self.projectLoaded)
+        self.pluginLayerRegistry.addPluginLayerType(
+            self.pluginLayerType)
+
+        QgsProject.instance().readProject.connect(self.projectLoaded)
         QgsProject.instance().projectSaved.connect(self.projectSaved)
 
         self.setGDALProxy()
@@ -162,9 +191,10 @@ class OpenlayersPlugin:
         del self.olOverview
 
         # Unregister plugin layer type
-        QgsPluginLayerRegistry.instance().removePluginLayerType(OpenlayersLayer.LAYER_TYPE)
+        self.pluginLayerRegistry.removePluginLayerType(
+            OpenlayersLayer.LAYER_TYPE)
 
-        QObject.disconnect(QgsProject.instance(), SIGNAL("readProject(const QDomDocument &)"), self.projectLoaded)
+        QgsProject.instance().readProject.disconnect(self.projectLoaded)
         QgsProject.instance().projectSaved.disconnect(self.projectSaved)
 
     def addLayer(self, layerType):
@@ -174,13 +204,13 @@ class OpenlayersPlugin:
         else:
             # create OpenlayersLayer
             layer = OpenlayersLayer(self.iface, self._olLayerTypeRegistry)
-            layer.setLayerName(layerType.displayName)
+            layer.setName(layerType.displayName)
             layer.setLayerType(layerType)
 
         if layer.isValid():
             coordRefSys = layerType.coordRefSys(self.canvasCrs())
             self.setMapCrs(coordRefSys)
-            QgsMapLayerRegistry.instance().addMapLayer(layer)
+            QgsProject.instance().addMapLayer(layer)
             self._ol_layers += [layer]
 
             # last added layer is new reference
@@ -190,7 +220,7 @@ class OpenlayersPlugin:
                 msg = "Printing and rotating of Javascript API " \
                       "based layers is currently not supported!"
                 self.iface.messageBar().pushMessage(
-                    "OpenLayers Plugin", msg, level=QgsMessageBar.WARNING,
+                    "OpenLayers Plugin", msg, level=Qgis.MessageLevel(1),
                     duration=5)
 
     def setReferenceLayer(self, layer):
@@ -198,80 +228,67 @@ class OpenlayersPlugin:
 
     def removeLayer(self, layerId):
         if self.layer is not None:
-            if QGis.QGIS_VERSION_INT >= 10900:
-                if self.layer.id() == layerId:
-                    self.layer = None
-            else:
-                if self.layer.getLayerID() == layerId:
-                    self.layer = None
+            if self.layer.id() == layerId:
+                self.layer = None
             # TODO: switch to next available OpenLayers layer?
 
     def canvasCrs(self):
         mapCanvas = self.iface.mapCanvas()
-        if QGis.QGIS_VERSION_INT >= 20300:
-            #crs = mapCanvas.mapRenderer().destinationCrs()
-            crs = mapCanvas.mapSettings().destinationCrs()
-        elif QGis.QGIS_VERSION_INT >= 10900:
-            crs = mapCanvas.mapRenderer().destinationCrs()
-        else:
-            crs = mapCanvas.mapRenderer().destinationSrs()
+        crs = mapCanvas.mapSettings().destinationCrs()
         return crs
 
     def setMapCrs(self, coordRefSys):
         mapCanvas = self.iface.mapCanvas()
         # On the fly
-        if QGis.QGIS_VERSION_INT >= 20300:
-            mapCanvas.setCrsTransformEnabled(True)
-        else:
-            mapCanvas.mapRenderer().setProjectionsEnabled(True)
         canvasCrs = self.canvasCrs()
         if canvasCrs != coordRefSys:
-            coordTrans = QgsCoordinateTransform(canvasCrs, coordRefSys)
+            coordTrans = QgsCoordinateTransform(canvasCrs, coordRefSys,
+                                                QgsProject.instance())
             extMap = mapCanvas.extent()
-            extMap = coordTrans.transform(extMap, QgsCoordinateTransform.ForwardTransform)
-            if QGis.QGIS_VERSION_INT >= 20300:
-                mapCanvas.setDestinationCrs(coordRefSys)
-            elif QGis.QGIS_VERSION_INT >= 10900:
-                mapCanvas.mapRenderer().setDestinationCrs(coordRefSys)
-            else:
-                mapCanvas.mapRenderer().setDestinationSrs(coordRefSys)
+            extMap = coordTrans.transform(
+                extMap, QgsCoordinateTransform.ForwardTransform)
+            mapCanvas.setDestinationCrs(coordRefSys)
             mapCanvas.freeze(False)
-            mapCanvas.setMapUnits(coordRefSys.mapUnits())
             mapCanvas.setExtent(extMap)
 
     def projectLoaded(self):
         # replace old OpenlayersLayer with GDAL TMS (OL plugin <= 1.3.6)
         rootGroup = self.iface.layerTreeView().layerTreeModel().rootGroup()
-        for layer in QgsMapLayerRegistry.instance().mapLayers().values():
+        for layer in QgsProject.instance().mapLayers().values():
             if layer.type() == QgsMapLayer.PluginLayer and layer.pluginLayerType() == OpenlayersLayer.LAYER_TYPE:
                 if layer.layerType.hasGdalTMS():
                     # replace layer
-                    gdalTMSLayer = self.createGdalTmsLayer(layer.layerType, layer.name())
+                    gdalTMSLayer = self.createGdalTmsLayer(layer.layerType,
+                                                           layer.name())
                     if gdalTMSLayer.isValid():
                         self.replaceLayer(rootGroup, layer, gdalTMSLayer)
 
     def _hasOlLayer(self):
-        for layer in QgsMapLayerRegistry.instance().mapLayers().values():
+        for layer in QgsProject.instance().mapLayers().values():
             if layer.customProperty('ol_layer_type'):
                 return True
         return False
 
     def _publicationInfo(self):
-        cloud_info_off = QSettings().value("Plugin-OpenLayers/cloud_info_off", defaultValue=False, type=bool)
+        cloud_info_off = QSettings().value("Plugin-OpenLayers/cloud_info_off",
+                                           defaultValue=False, type=bool)
         day = 3600*24
         now = time.time()
-        lastInfo = QSettings().value("Plugin-OpenLayers/cloud_info_ts", defaultValue=0.0, type=float)
+        lastInfo = QSettings().value("Plugin-OpenLayers/cloud_info_ts",
+                                     defaultValue=0.0, type=float)
         if lastInfo == 0.0:
             lastInfo = now-20*day  # Show first time after 10 days
             QSettings().setValue("Plugin-OpenLayers/cloud_info_ts", lastInfo)
         days = (now-lastInfo)/day
         if days >= 30 and not cloud_info_off:
-            self.dlgAbout.tabWidget.setCurrentWidget(self.dlgAbout.tab_publishing)
+            self.dlgAbout.tabWidget.setCurrentWidget(
+                self.dlgAbout.tab_publishing)
             self.dlgAbout.show()
             QSettings().setValue("Plugin-OpenLayers/cloud_info_ts", now)
 
     def _publicationInfoClosed(self):
-        QSettings().setValue("Plugin-OpenLayers/cloud_info_off", self.dlgAbout.cb_publishing.isChecked())
+        QSettings().setValue("Plugin-OpenLayers/cloud_info_off",
+                             self.dlgAbout.cb_publishing.isChecked())
 
     def projectSaved(self):
         if self._hasOlLayer():
@@ -289,16 +306,20 @@ class OpenlayersPlugin:
             if QgsLayerTree.isLayer(child):
                 if child.layerId() == oldLayer.id():
                     # insert new layer
-                    QgsMapLayerRegistry.instance().addMapLayer(newLayer, False)
+                    QgsProject.instance().addMapLayer(newLayer, False)
                     newLayerNode = group.insertLayer(index, newLayer)
                     newLayerNode.setVisible(child.isVisible())
 
                     # remove old layer
-                    QgsMapLayerRegistry.instance().removeMapLayer(oldLayer.id())
+                    QgsProject.instance().removeMapLayer(
+                        oldLayer.id())
 
-                    msg = "Updated layer '%s' from old OpenLayers Plugin version" % newLayer.name()
-                    self.iface.messageBar().pushMessage("OpenLayers Plugin", msg, level=QgsMessageBar.INFO)
-                    QgsMessageLog.logMessage(msg, "OpenLayers Plugin", QgsMessageLog.INFO)
+                    msg = "Updated layer '%s' from old \
+                     OpenLayers Plugin version" % newLayer.name()
+                    self.iface.messageBar().pushMessage(
+                        "OpenLayers Plugin", msg, level=Qgis.MessageLevel(0))
+                    QgsMessageLog.logMessage(
+                        msg, "OpenLayers Plugin", QgsMessageLog.INFO)
 
                     # layer replaced
                     return True
@@ -315,7 +336,8 @@ class OpenlayersPlugin:
     def setGDALProxy(self):
         proxy = getProxy()
 
-        httpProxyTypes = [QNetworkProxy.DefaultProxy, QNetworkProxy.Socks5Proxy, QNetworkProxy.HttpProxy]
+        httpProxyTypes = [QNetworkProxy.DefaultProxy,
+                          QNetworkProxy.Socks5Proxy, QNetworkProxy.HttpProxy]
         if QT_VERSION >= 0X040400:
             httpProxyTypes.append(QNetworkProxy.HttpCachingProxy)
 
@@ -330,22 +352,31 @@ class OpenlayersPlugin:
             port = proxy.port()
             if port != 0:
                 gdalHttpProxy += ":%i" % port
-            gdal.SetConfigOption("GDAL_HTTP_PROXY", gdalHttpProxy.encode('utf-8'))
+            gdal.SetConfigOption("GDAL_HTTP_PROXY",
+                                 gdalHttpProxy.encode('utf-8'))
 
             if proxy.user():
-                gdalHttpProxyuserpwd = "%s:%s" % (proxy.user(), proxy.password())
-                gdal.SetConfigOption("GDAL_HTTP_PROXYUSERPWD", gdalHttpProxyuserpwd.encode('utf-8'))
+                gdalHttpProxyuserpwd = "%s:%s" % (proxy.user(),
+                                                  proxy.password())
+                gdal.SetConfigOption("GDAL_HTTP_PROXYUSERPWD",
+                                     gdalHttpProxyuserpwd.encode('utf-8'))
 
             gdal.SetConfigOption("GDAL_PROXY_AUTH", "ANY")
 
     def showGoogleMapsApiKeyDialog(self):
         apiKey = QSettings().value("Plugin-OpenLayers/googleMapsApiKey")
-        newApiKey, ok = QInputDialog.getText(self.iface.mainWindow(), "API key", "Enter your Google Maps API key", QLineEdit.Normal, apiKey)
+        newApiKey, ok = QInputDialog.getText(
+            self.iface.mainWindow(), "API key",
+            "Enter your Google Maps API key", QLineEdit.Normal, apiKey)
         if ok:
-            QSettings().setValue("Plugin-OpenLayers/googleMapsApiKey", newApiKey)
+            QSettings().setValue("Plugin-OpenLayers/googleMapsApiKey",
+                                 newApiKey)
 
     def showThunderforestApiKeyDialog(self):
         apiKey = QSettings().value("Plugin-OpenLayers/thunderforestApiKey")
-        newApiKey, ok = QInputDialog.getText(self.iface.mainWindow(), "API key", "Enter your API key (<a href=\"https://thunderforest.com/pricing/\">https://thunderforest.com</a>)", QLineEdit.Normal, apiKey)
+        newApiKey, ok = QInputDialog.getText(
+            self.iface.mainWindow(), "API key",
+            "Enter your API key (<a href=\"https://thunderforest.com/pricing/\">https://thunderforest.com</a>)", QLineEdit.Normal, apiKey)
         if ok:
-            QSettings().setValue("Plugin-OpenLayers/thunderforestApiKey", newApiKey)
+            QSettings().setValue("Plugin-OpenLayers/thunderforestApiKey",
+                                 newApiKey)

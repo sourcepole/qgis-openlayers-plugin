@@ -20,7 +20,7 @@ email                : pka at sourcepole.ch
  ***************************************************************************/
 """
 
-from weblayer import WebLayer3857
+from .weblayer import WebLayer3857
 
 
 class WikimediaLayer(WebLayer3857):
@@ -36,11 +36,13 @@ class WikimediaLayer(WebLayer3857):
 class WikimediaLabelledLayer(WikimediaLayer):
 
     def __init__(self):
-        WikimediaLayer.__init__(self, name='Wikimedia labelled layer', html='wikimedia.html', gdalTMS='wikimedia.xml')
+        WikimediaLayer.__init__(self, name='Wikimedia labelled layer',
+                                html='wikimedia.html', gdalTMS='wikimedia.xml')
 
 
 class WikimediaUnLabelledLayer(WikimediaLayer):
 
     def __init__(self):
-        WikimediaLayer.__init__(self, name='Wikimedia unlabelled layer', html='wikimedia_nolabels.html', gdalTMS='wikimedia_nolabels.xml')
-
+        WikimediaLayer.__init__(self, name='Wikimedia unlabelled layer',
+                                html='wikimedia_nolabels.html',
+                                gdalTMS='wikimedia_nolabels.xml')

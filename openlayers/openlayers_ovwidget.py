@@ -336,16 +336,21 @@ class OpenLayersOverviewWidget(QWidget, Ui_Form):
             self.__timerMapReady.start()
 
     def __refreshMapOL(self):
+        # catch Exception where lat/long exceed limit of the loaded layer
+        # the Exception name is unknown
+        latlon = None
         try:
-            action = "map.setCenter(new OpenLayers.LonLat(%f, %f));" % (
-                self.__getCenterLongLat2OL())
+            latlon = self.__getCenterLongLat2OL()
+        except Exception as e:
+            QgsLogger().warning(e.args[0])
+
+        if latlon:
+            action = "map.setCenter(new OpenLayers.LonLat(%f, %f));" % (latlon)
             self.webViewMap.page().mainFrame().evaluateJavaScript(action)
             action = "map.zoomToScale(%f);" % self.__canvas.scale()
             self.webViewMap.page().mainFrame().evaluateJavaScript(action)
             self.webViewMap.page().mainFrame().evaluateJavaScript(
                 "oloMarker.changeMarker();")
-        except Exception as e:
-            QgsLogger().warning(e.args[0])
 
     def __getCenterLongLat2OL(self):
         pntCenter = self.__canvas.extent().center()

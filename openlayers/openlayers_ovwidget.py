@@ -24,13 +24,11 @@ import os.path
 from qgis.PyQt.QtCore import QObject, QTimer, Qt, QUrl, pyqtSlot
 from qgis.PyQt.QtWidgets import (QWidget, QMessageBox, QApplication,
                                  QFileDialog, QDockWidget)
-from qgis.PyQt.QtGui import QIcon, QPainter, QImage
-from qgis.PyQt.QtNetwork import QNetworkAccessManager
+from qgis.PyQt.QtGui import QIcon, QPainter, QImage, QGuiApplication
 from qgis.core import (QgsGeometry, QgsPointXY, QgsRectangle,
                        QgsCoordinateReferenceSystem, QgsCoordinateTransform,
                        QgsProject, QgsLogger)
 from qgis.gui import QgsVertexMarker, QgsMapCanvas
-from .tools_network import getProxy
 from . import bindogr
 
 from .ui_openlayers_ovwidget import Ui_Form
@@ -108,12 +106,6 @@ class OpenLayersOverviewWidget(QWidget, Ui_Form):
         self.__registerObjJS()
         self.lbStatusRead.setVisible(False)
         self.__setConnections()
-        # Proxy
-        proxy = getProxy()
-        if proxy is not None:
-            self.__manager = QNetworkAccessManager()
-            self.__manager.setProxy(proxy)
-            self.webViewMap.page().setNetworkAccessManager(self.__manager)
 
         self.__timerMapReady = QTimer()
         self.__timerMapReady.setSingleShot(True)
@@ -246,7 +238,9 @@ class OpenLayersOverviewWidget(QWidget, Ui_Form):
     def __signal_pbAddRaster_clicked(self, checked):
         index = self.comboBoxTypeMap.currentIndex()
         layer = self.__olLayerTypeRegistry.getById(index)
+        QGuiApplication.setOverrideCursor(Qt.WaitCursor)
         layer.addLayer()
+        QGuiApplication.restoreOverrideCursor()
 
     def __signal_pbCopyKml_clicked(self, cheked):
         # Extent Openlayers

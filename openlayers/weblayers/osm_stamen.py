@@ -27,39 +27,43 @@ class OlOSMStamenLayer(WebLayer3857):
 
     emitsLoadEnd = True
 
-    def __init__(self, name, html, gdalTMS=None):
+    def __init__(self, name, html, xyzUrl=None):
         WebLayer3857.__init__(self, groupName="OSM/Stamen",
                               groupIcon="stamen_icon.png", name=name,
-                              html=html, gdalTMS=gdalTMS)
+                              html=html, xyzUrl=xyzUrl)
 
 
 class OlOSMStamenTonerLayer(OlOSMStamenLayer):
 
     def __init__(self):
+        tmsUrl = 'http://tile.stamen.com/toner/{z}/{x}/{y}.png'
         OlOSMStamenLayer.__init__(self, name='Stamen Toner/OSM',
                                   html='stamen_toner.html',
-                                  gdalTMS='stamen_toner.xml')
+                                  xyzUrl=tmsUrl)
 
 
 class OlOSMStamenTonerLiteLayer(OlOSMStamenLayer):
 
     def __init__(self):
+        tmsUrl = 'http://tile.stamen.com/toner-lite/{z}/{x}/{y}.png'
         OlOSMStamenLayer.__init__(self, name='Stamen Toner Lite/OSM',
                                   html='stamen_toner_lite.html',
-                                  gdalTMS='stamen_toner_lite.xml')
+                                  xyzUrl=tmsUrl)
 
 
 class OlOSMStamenWatercolorLayer(OlOSMStamenLayer):
 
     def __init__(self):
+        tmsUrl = 'http://tile.stamen.com/watercolor/{z}/{x}/{y}.jpg'
         OlOSMStamenLayer.__init__(self, name='Stamen Watercolor/OSM',
                                   html='stamen_watercolor.html',
-                                  gdalTMS='stamen_watercolor.xml')
+                                  xyzUrl=tmsUrl)
 
 
 class OlOSMStamenTerrainLayer(OlOSMStamenLayer):
 
     def __init__(self):
+        tmsUrl = 'http://tile.stamen.com/terrain/{z}/{x}/{y}.png'
         OlOSMStamenLayer.__init__(self, name='Stamen Terrain-USA/OSM',
                                   html='stamen_terrain.html',
-                                  gdalTMS='stamen_terrain.xml')
+                                  xyzUrl=tmsUrl)

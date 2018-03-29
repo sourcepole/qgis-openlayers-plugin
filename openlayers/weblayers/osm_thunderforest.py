@@ -32,7 +32,7 @@ class OlOSMThunderforest(WebLayer3857):
         WebLayer3857.__init__(self, groupName="OSM/Thunderforest",
                               groupIcon="osm_icon.png",
                               name=name, html='osm_thunderforest.html',
-                              gdalTMS='inline')
+                              xyzUrl='inline')
         self._layer = layer
 
     def apiKey(self):
@@ -45,32 +45,12 @@ class OlOSMThunderforest(WebLayer3857):
             url += "&key=%s" % self.apiKey().strip()
         return url
 
-    def gdalTMSConfig(self):
-        gdal_xml = """<GDAL_WMS>
-  <Service name="TMS">
-    <ServerUrl>https://tile.thunderforest.com/{layer}/${{z}}/${{x}}/${{y}}.png{apikey}</ServerUrl>
-  </Service>
-  <DataWindow>
-    <UpperLeftX>-20037508.34</UpperLeftX>
-    <UpperLeftY>20037508.34</UpperLeftY>
-    <LowerRightX>20037508.34</LowerRightX>
-    <LowerRightY>-20037508.34</LowerRightY>
-    <TileLevel>18</TileLevel>
-    <TileCountX>1</TileCountX>
-    <TileCountY>1</TileCountY>
-    <YOrigin>top</YOrigin>
-  </DataWindow>
-  <Projection>EPSG:3857</Projection>
-  <BlockSizeX>256</BlockSizeX>
-  <BlockSizeY>256</BlockSizeY>
-  <BandsCount>3</BandsCount>
-  <Cache />
-</GDAL_WMS>"""
+    def xyzUrlConfig(self):
         if self.apiKey():
-            keyarg = "?apikey=%s" % self.apiKey().strip()
+            keyarg = self.apiKey().strip()
+            return 'https://tile.thunderforest.com/%s/{z}/{x}/{y}.png?apikey=%s' % (self._layer, keyarg)
         else:
-            keyarg = ""
-        return gdal_xml.format(layer=self._layer, apikey=keyarg)
+            return 'https://tile.thunderforest.com/%s/{z}/{x}/{y}.png' % (self._layer)
 
 
 class OlOpenCycleMapLayer(OlOSMThunderforest):

@@ -20,12 +20,10 @@ email                : pka at sourcepole.ch
  ***************************************************************************/
 """
 # Import the PyQt and QGIS libraries
-from qgis.PyQt.QtCore import (QUrl, QSettings, QT_VERSION, QTranslator)
+from qgis.PyQt.QtCore import (QSettings, QTranslator)
 from qgis.PyQt.QtWidgets import (QApplication, QLineEdit, QInputDialog,
                                  QAction, QMenu)
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtNetwork import (QNetworkProxyFactory, QNetworkProxyQuery,
-                                 QNetworkProxy)
 from qgis.core import (QgsCoordinateTransform, Qgis, QgsProject,
                        QgsPluginLayerRegistry, QgsLayerTree, QgsMapLayer,
                        QgsRasterLayer, QgsMessageLog)
@@ -35,7 +33,6 @@ from .about_dialog import AboutDialog
 from .openlayers_overview import OLOverview
 from .openlayers_layer import OpenlayersLayer
 from .openlayers_plugin_layer_type import OpenlayersPluginLayerType
-from .tools_network import getProxy
 from .weblayers.weblayer_registry import WebLayerTypeRegistry
 from .weblayers.google_maps import (OlGooglePhysicalLayer,
                                     OlGoogleStreetsLayer, OlGoogleHybridLayer,
@@ -60,7 +57,6 @@ from .weblayers.osm_stamen import (OlOSMStamenTonerLayer,
                                    OlOSMStamenTerrainLayer)
 from .weblayers.wikimedia_maps import (WikimediaLabelledLayer,
                                        WikimediaUnLabelledLayer)
-from osgeo import gdal
 import os.path
 import time
 
@@ -182,8 +178,6 @@ class OpenlayersPlugin:
         QgsProject.instance().readProject.connect(self.projectLoaded)
         QgsProject.instance().projectSaved.connect(self.projectSaved)
 
-        self.setGDALProxy()
-
     def unload(self):
         self.iface.webMenu().removeAction(self._olMenu.menuAction())
 
@@ -198,9 +192,10 @@ class OpenlayersPlugin:
         QgsProject.instance().projectSaved.disconnect(self.projectSaved)
 
     def addLayer(self, layerType):
-        if layerType.hasGdalTMS():
-            # create GDAL TMS layer
-            layer = self.createGdalTmsLayer(layerType, layerType.displayName)
+        if layerType.hasXYZUrl():
+            # create XYZ layer
+            layer, url = self.createXYZLayer(layerType,
+                                             layerType.displayName)
         else:
             # create OpenlayersLayer
             layer = OpenlayersLayer(self.iface, self._olLayerTypeRegistry)
@@ -211,12 +206,30 @@ class OpenlayersPlugin:
             coordRefSys = layerType.coordRefSys(self.canvasCrs())
             self.setMapCrs(coordRefSys)
             QgsProject.instance().addMapLayer(layer)
+
+            # store xyz config into qgis settings
+            if layerType.hasXYZUrl():
+                settings = QSettings()
+                settings.beginGroup('qgis/connections-xyz')
+                settings.setValue("%s/authcfg" % (layer.name()), '')
+                settings.setValue("%s/password" % (layer.name()), '')
+                settings.setValue("%s/referer" % (layer.name()), '')
+                settings.setValue("%s/url" % (layer.name()), url)
+                settings.setValue("%s/username" % (layer.name()), '')
+                # specify max/min or else only a picture of the map is saved
+                # in settings
+                settings.setValue("%s/zmax" % (layer.name()), '18')
+                settings.setValue("%s/zmin" % (layer.name()), '0')
+                settings.endGroup()
+                # reload connections to update Browser Panel content
+                self.iface.reloadConnections()
+
             self._ol_layers += [layer]
 
             # last added layer is new reference
             self.setReferenceLayer(layer)
 
-            if not layerType.hasGdalTMS():
+            if not layerType.hasXYZUrl():
                 msg = "Printing and rotating of Javascript API " \
                       "based layers is currently not supported!"
                 self.iface.messageBar().pushMessage(
@@ -252,16 +265,16 @@ class OpenlayersPlugin:
             mapCanvas.setExtent(extMap)
 
     def projectLoaded(self):
-        # replace old OpenlayersLayer with GDAL TMS (OL plugin <= 1.3.6)
+        # replace old OpenlayersLayer with XYZ layer(OL plugin <= 1.3.6)
         rootGroup = self.iface.layerTreeView().layerTreeModel().rootGroup()
         for layer in QgsProject.instance().mapLayers().values():
             if layer.type() == QgsMapLayer.PluginLayer and layer.pluginLayerType() == OpenlayersLayer.LAYER_TYPE:
-                if layer.layerType.hasGdalTMS():
+                if layer.layerType.hasXYZUrl():
                     # replace layer
-                    gdalTMSLayer = self.createGdalTmsLayer(layer.layerType,
-                                                           layer.name())
-                    if gdalTMSLayer.isValid():
-                        self.replaceLayer(rootGroup, layer, gdalTMSLayer)
+                    xyzLayer, url = self.createXYZLayer(layer.layerType,
+                                                        layer.name())
+                    if xyzLayer.isValid():
+                        self.replaceLayer(rootGroup, layer, xyzLayer)
 
     def _hasOlLayer(self):
         for layer in QgsProject.instance().mapLayers().values():
@@ -294,11 +307,14 @@ class OpenlayersPlugin:
         if self._hasOlLayer():
             self._publicationInfo()
 
-    def createGdalTmsLayer(self, layerType, name):
-        # create GDAL TMS layer with XML string as datasource
-        layer = QgsRasterLayer(layerType.gdalTMSConfig(), name)
+    def createXYZLayer(self, layerType, name):
+        # create XYZ layer with tms url as uri
+        provider = 'wms'
+        url = "type=xyz&url=" + layerType.xyzUrlConfig()
+        layer = QgsRasterLayer(url, name, provider,
+                               QgsRasterLayer.LayerOptions())
         layer.setCustomProperty('ol_layer_type', layerType.layerTypeName)
-        return layer
+        return layer, layerType.xyzUrlConfig()
 
     def replaceLayer(self, group, oldLayer, newLayer):
         index = 0
@@ -332,36 +348,6 @@ class OpenlayersPlugin:
 
         # layer not in this group
         return False
-
-    def setGDALProxy(self):
-        proxy = getProxy()
-
-        httpProxyTypes = [QNetworkProxy.DefaultProxy,
-                          QNetworkProxy.Socks5Proxy, QNetworkProxy.HttpProxy]
-        if QT_VERSION >= 0X040400:
-            httpProxyTypes.append(QNetworkProxy.HttpCachingProxy)
-
-        if proxy is not None and proxy.type() in httpProxyTypes:
-            # set HTTP proxy for GDAL
-            if proxy.type() == QNetworkProxy.DefaultProxy:
-                npq = QNetworkProxyQuery(QUrl("http://tile.openstreetmap.org"))
-                proxies = QNetworkProxyFactory.systemProxyForQuery(npq)
-                if len(proxies) > 0:
-                    proxy = proxies[0]
-            gdalHttpProxy = proxy.hostName()
-            port = proxy.port()
-            if port != 0:
-                gdalHttpProxy += ":%i" % port
-            gdal.SetConfigOption("GDAL_HTTP_PROXY",
-                                 gdalHttpProxy.encode('utf-8'))
-
-            if proxy.user():
-                gdalHttpProxyuserpwd = "%s:%s" % (proxy.user(),
-                                                  proxy.password())
-                gdal.SetConfigOption("GDAL_HTTP_PROXYUSERPWD",
-                                     gdalHttpProxyuserpwd.encode('utf-8'))
-
-            gdal.SetConfigOption("GDAL_PROXY_AUTH", "ANY")
 
     def showGoogleMapsApiKeyDialog(self):
         apiKey = QSettings().value("Plugin-OpenLayers/googleMapsApiKey")

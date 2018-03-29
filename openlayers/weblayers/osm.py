@@ -27,21 +27,23 @@ class OlOSMLayer(WebLayer3857):
 
     emitsLoadEnd = True
 
-    def __init__(self, name, html, gdalTMS=None):
+    def __init__(self, name, html, xyzUrl=None):
         WebLayer3857.__init__(self, groupName="OpenStreetMap",
                               groupIcon="osm_icon.png",
-                              name=name, html=html, gdalTMS=gdalTMS)
+                              name=name, html=html, xyzUrl=xyzUrl)
 
 
 class OlOpenStreetMapLayer(OlOSMLayer):
 
     def __init__(self):
+        tmsUrl = 'http://tile.openstreetmap.org/{z}/{x}/{y}.png'
         OlOSMLayer.__init__(self, name='OpenStreetMap', html='osm.html',
-                            gdalTMS='osm.xml')
+                            xyzUrl=tmsUrl)
 
 
 class OlOSMHumanitarianDataModelLayer(OlOSMLayer):
 
     def __init__(self):
+        tmsUrl = 'http://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png'
         OlOSMLayer.__init__(self, name='OSM Humanitarian Data Model',
-                            html='osm_hdm.html', gdalTMS='osm_hdm.xml')
+                            html='osm_hdm.html', xyzUrl=tmsUrl)

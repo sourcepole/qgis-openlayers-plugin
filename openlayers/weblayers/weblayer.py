@@ -24,7 +24,6 @@ from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QMenu
 from qgis.core import Qgis as QGis, QgsCoordinateReferenceSystem
 import os
-import sys
 
 
 class WebLayerGroup:
@@ -80,7 +79,7 @@ class WebLayer:
 
     emitsLoadEnd = True
 
-    def __init__(self, groupName, groupIcon, name, html, gdalTMS=None):
+    def __init__(self, groupName, groupIcon, name, html, xyzUrl=None):
         self.groupName = groupName
         self.groupIcon = groupIcon
         self.displayName = name
@@ -89,7 +88,7 @@ class WebLayer:
         # optional GDAL TMS config to use as layer instead of an
         # OpenlayersLayer
         # the OpenlayersLayer is still used in the OpenLayers Overview
-        self._gdalTMS = gdalTMS
+        self._xyzUrl = xyzUrl
 
     def addMenuEntry(self, groupMenu, parent):
         self._actionAddLayer = QAction(self.displayName, parent)
@@ -107,18 +106,12 @@ class WebLayer:
         url = "file:///%s/html/%s" % (dir.replace("\\", "/"), self._html)
         return url
 
-    def hasGdalTMS(self):
-        return self._gdalTMS is not None
+    def hasXYZUrl(self):
+        return self._xyzUrl is not None
 
-    def gdalTMSConfig(self):
-        if self._gdalTMS is not None:
-            # read GDAL TMS config from file
-            path = os.path.join(os.path.dirname(__file__), 'gdal_tms',
-                                self._gdalTMS)
-            f = open(path, 'r')
-            config = f.read()
-            f.close()
-            return config
+    def xyzUrlConfig(self):
+        if self._xyzUrl is not None:
+            return self._xyzUrl
         else:
             return None
 

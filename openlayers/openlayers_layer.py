@@ -23,12 +23,9 @@ email                : pka at sourcepole.ch
 from qgis.PyQt.QtCore import (QUrl, Qt, QMetaObject, QTimer, QEventLoop,
                               QSize, QObject, pyqtSignal, qDebug, pyqtSlot)
 from qgis.PyQt.QtGui import QImage, QPainter
-from qgis.PyQt.QtNetwork import QNetworkAccessManager
 from qgis.PyQt.QtWebKitWidgets import QWebPage
 from qgis.core import (QgsMapLayerRenderer, Qgis, QgsMessageLog,
                        QgsPluginLayer, QgsRectangle)
-
-from .tools_network import getProxy
 
 
 debuglevel = 4  # 0 (none) - 4 (all)
@@ -45,13 +42,6 @@ def debug(msg, verbosity=1):
 class OLWebPage(QWebPage):
     def __init__(self, parent=None):
         QWebPage.__init__(self, parent)
-        self.__manager = None  # Need persist for PROXY
-        # Set Proxy in webpage
-        proxy = getProxy()
-        if proxy is not None:
-            self.__manager = QNetworkAccessManager()
-            self.__manager.setProxy(proxy)
-            self.setNetworkAccessManager(self.__manager)
 
         self.loaded = False
 

@@ -128,9 +128,14 @@ class OpenlayersController(QObject):
 
     def pageLoaded(self):
         debug("[GUI THREAD] pageLoaded", 3)
-        if self.cancelled:
-            self.emitErrorImage()
-            return
+        try:
+            if self.cancelled:
+                self.emitErrorImage()
+                return
+        except:
+            # if you spam the addmap button in the overview then an error
+            # appears where self.cancelled is not known/defined
+            debug("Exception raised while adding too many OpenlayersLayer at the same time", 4)
 
         # wait until OpenLayers map is ready
         self.checkMapReady()
@@ -249,9 +254,13 @@ class OpenlayersController(QObject):
     def checkMapUpdate(self):
         if self.layerType.emitsLoadEnd:
             # wait for OpenLayers to finish loading
-            loadEndOL = self.page.mainFrame().evaluateJavaScript("loadEnd")
-            debug("waiting for loadEnd: renderingStopped=%r loadEndOL=%r" % (
-                  self.context.renderingStopped(), loadEndOL), 4)
+            try:
+                loadEndOL = self.page.mainFrame().evaluateJavaScript("loadEnd")
+                debug("waiting for loadEnd: renderingStopped=%r loadEndOL=%r" % (
+                    self.context.renderingStopped(), loadEndOL), 4)
+            except:
+                # Multi threading problem when deleting multiple Openlayers layers
+                debug("Exception raised while deleting multiple Openlayers layers", 4)
             if loadEndOL is not None:
                 self.mapFinished = loadEndOL
             else:

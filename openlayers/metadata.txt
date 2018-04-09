@@ -1,13 +1,18 @@
 [general]
 name=OpenLayers Plugin
-qgisMinimumVersion=3.0
+qgisMinimumVersion=3.0.1
 description=Google Maps, Bing Maps, OpenStreetMap layers and more
 about=Google Maps, Bing Maps, OpenStreetMap layers and more
-version=1.4.7
+version=2.0.0
 author=Sourcepole and contributors
 email=pka@sourcepole.ch
 
-changelog=1.4.7
+changelog=2.0.0
+    - Port to QGIS 3 (Python 3 / QT 5)
+    - Requires QT5 WebKit (Package python3-pyqt5.qtwebkit on Debian/Ubuntu)
+    - Use XYZ Layers instead of GDAL TMS for non-Javascript service providers
+    - Catch lat/lon transformation exceptions
+  1.4.7
     - Fix disappearance of previously loaded layers
   1.4.6
     - Improved use of proxy settings for GDAL Layers (OSM, etc.)
@@ -80,5 +85,5 @@ tracker=https://github.com/sourcepole/qgis-openlayers-plugin/issues
 repository=https://github.com/sourcepole/qgis-openlayers-plugin
 icon=openlayers.png
 
-experimental=False
+experimental=True
 deprecated=False
